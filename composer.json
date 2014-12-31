@@ -1,20 +1,20 @@
 {
-    "name": "zfcampus/zf-apigility-skeleton",
-    "description": "Skeleton Application for Apigility",
+    "name": "stuki/utf8-convert",
+    "description": "A tool to facilitate a MySQL database conversion to UTF8",
     "type": "library",
     "license": "BSD-3-Clause",
     "keywords": [
-        "api",
-        "apigility",
-        "framework",
-        "zf2"
+        "mysql",
+        "database",
+        "character",
+        "set",
+        "hell",
+        "redeption",
+        "kit"
     ],
-    "homepage": "http://apigility.org/",
+    "homepage": "https://github.com/StukiOrg",
     "support": {
-        "email": "apigility-users@zend.com",
-        "irc": "irc://irc.freenode.net/apigility",
-        "source": "https://github.com/zfcampus/zf-apigility-skeleton",
-        "issues": "https://github.com/zfcampus/zf-apigility-skeleton/issues"
+        "issues": "https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell"
     },
     "config": {
     	"process-timeout": 5000

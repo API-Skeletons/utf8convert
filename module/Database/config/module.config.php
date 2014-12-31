@@ -12,38 +12,39 @@ return array(
     ),
     'router' => array(
         'routes' => array(
-            'index' => array(
-                'type'    => 'Segment',
-                'options' => array(
-                    'route'    => '/database',
-                    'defaults' => array(
-                        'controller'    => 'Database\Controller\Index',
-                        'action'        => 'index',
+        ),
+    ),
+    // Placeholder for console routes
+    'console' => array(
+        'router' => array(
+            'routes' => array(
+                'index' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'validate',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Index',
+                            'action'        => 'index',
+                        ),
                     ),
                 ),
-            ),
-            'page' => array(
-                'type'    => 'Literal',
-                'options' => array(
-                    'route'    => '/page',
-                    'defaults' => array(
-                        'controller'    => 'ContentManagement\Controller\Page',
-                        'action'        => 'index',
+                'generateUtf8TableConversion' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'generate table conversion',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Index',
+                            'action'        => 'generateUtf8TableConversion',
+                        ),
                     ),
                 ),
-                'may_terminate' => true,
-                'child_routes' => array(
-                    'detail' => array(
-                        'type'    => 'Segment',
-                        'options' => array(
-                            'route'    => '/:url-identifier',
-                            'defaults' => array(
-                                'controller'    => 'ContentManagement\Controller\Page',
-                                'action'        => 'detail',
-                            ),
-                            'constraints' => array(
-#                                'url-identifier' => '^(!create)|(!edit)$',
-                            ),
+                'refactor' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'refactor',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Index',
+                            'action'        => 'refactor',
                         ),
                     ),
                 ),

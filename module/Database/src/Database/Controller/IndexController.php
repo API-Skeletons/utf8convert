@@ -8,21 +8,153 @@ use Zend\Db\Adapter\Exception\RuntimeException;
 
 class IndexController extends AbstractActionController
 {
-
     public function indexAction()
     {
-        $this->validateDatabaseSettings();
-        $this->validateAllTablesAreUtf8();
+        if (!$this->validateDatabaseSettings()) {
+            // output sent in function
+            return;
+        }
 
+        if (!$this->validateAllTablesAreUtf8()) {
+            echo "\nOne or more tables are not utf8.  Run 'generate table conversion' and save the output to a shell script then run.\n";
+            return;
+        }
 
-        $db = $this->getServiceLocator()->get('database');
+        if (!$this->validateAllColumnsAreUtf8()) {
+            // output sent in function
+            return;
+        }
 
-        die('SUCCESS');
-
-        return new ViewModel();
+        echo "\nThe database has passed initial validation.\n";
     }
 
-    public function validateAllTablesAreUtf8()
+    public function generateUtf8TableConversionAction()
+    {
+        // Validate all database settings are utf8
+        $informationSchema = $this->getServiceLocator()->get('information-schema');
+        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
+
+        $invalidTables = $informationSchema->query("
+            SELECT TABLE_NAME, COLLATION_CHARACTER_SET_APPLICABILITY.CHARACTER_SET_NAME
+              FROM TABLES, COLLATION_CHARACTER_SET_APPLICABILITY
+             WHERE COLLATION_CHARACTER_SET_APPLICABILITY.COLLATION_NAME = TABLES.TABLE_COLLATION
+               AND TABLES.TABLE_SCHEMA = ?
+               AND COLLATION_CHARACTER_SET_APPLICABILITY.CHARACTER_SET_NAME != 'utf8'
+        ", [$databaseConnection['database']]);
+
+        foreach ($invalidTables as $key => $value) {
+            echo "mysqldump -u " . $databaseConnection['username'];
+            if (isset($databaseConnection['password']) and $databaseConnection['password']) {
+                echo " -p" . $databaseConnection['password'];
+            }
+            echo " --opt --skip-set-charset --skip-extended-insert --default-character-set=" . $value['CHARACTER_SET_NAME'];
+            echo " " . $databaseConnection['database'] . " --tables " . $value['TABLE_NAME'] . " > utf8convert.table.sql;\n";
+            echo "perl -i -pe 's/DEFAULT CHARSET=" . $value['CHARACTER_SET_NAME'] . "/DEFAULT CHARSET=utf8/' utf8convert.table.sql;\n";
+            echo "mysql -u " . $databaseConnection['username'];
+            if (isset($databaseConnection['password']) and $databaseConnection['password']) {
+                echo " -p" . $databaseConnection['password'];
+            }
+            echo " " . $databaseConnection['database'] . " < utf8convert.table.sql;\n\n";
+        }
+    }
+
+    /**
+     * Refactor the database so all
+        varchar and char columns are varchar(255)
+        *text columns are longtext
+        integer and tinyint and smallint, mediumint columns are bigint unsigned;
+     */
+    public function refactorAction()
+    {
+        $informationSchema = $this->getServiceLocator()->get('information-schema');
+        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
+
+        $refactorColumns = $informationSchema->query("
+            SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME, COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH
+            FROM COLUMNS, TABLES
+            WHERE COLUMNS.TABLE_SCHEMA = ?
+            AND COLUMNS.TABLE_NAME = TABLES.TABLE_NAME
+            AND TABLES.TABLE_SCHEMA = COLUMNS.TABLE_SCHEMA
+            AND TABLES.TABLE_TYPE = 'BASE TABLE'
+            AND COLUMNS.DATA_TYPE IN ('varchar', 'char', 'text', 'mediumtext')
+            ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
+        ", [$databaseConnection['database']]);
+
+        foreach ($refactorColumns as $row) {
+            $table = $row['TABLE_NAME'];
+            $column = $row['COLUMN_NAME'];
+            echo "$table $column ";
+            echo "FROM " . $row['DATA_TYPE'];
+            echo "\n";
+
+            $this->refactorRow($row);
+        }
+
+        die("\nRefactoring finished\n");
+    }
+
+    public function refactorRow($row)
+    {
+        $database = $this->getServiceLocator()->get('database');
+
+        switch ($row['DATA_TYPE']) {
+            case 'varchar':
+            case 'char':
+                if ($row['CHARACTER_MAXIMUM_LENGTH'] == 255 and $row['DATA_TYPE'] != 'char') {
+                    return true;
+                }
+
+                $database->query("ALTER TABLE `" . $row['TABLE_NAME'] . "` MODIFY `" . $row['COLUMN_NAME'] . '` varchar(255) ' . $row['EXTRA'])
+                    ->execute();
+                break;
+/*
+            case 'int':
+            case 'integer':
+            case 'smallint':
+            case 'mediumint':
+                $database->query("ALTER TABLE `" . $row['TABLE_NAME'] . "` MODIFY `" . $row['COLUMN_NAME'] . '` bigint ' . $row['EXTRA'])
+                    ->execute();
+                break;
+*/
+            case 'text':
+            case 'mediumtext':
+                $database->query("ALTER TABLE `" . $row['TABLE_NAME'] . "` MODIFY `" . $row['COLUMN_NAME'] . '` longtext ' . $row['EXTRA'])
+                    ->execute();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    public function convertAction()
+    {
+        $database = $this->getServiceLocator()->get('database');
+    }
+
+    private function convertRow()
+    {
+
+    }
+
+    private function generateUtf8ChangesSQL()
+    {
+        $sql = "
+        create table Utf8Changes (
+            id int not null primary key auto_increment,
+            entity varchar(255),
+            field varchar(255),
+            primaryKey int,
+            iteration int,
+            oldValue longtext,
+            newValue longtext
+        );
+        ";
+
+        return $sql;
+    }
+
+    private function validateAllTablesAreUtf8()
     {
         // Validate all database settings are utf8
         $informationSchema = $this->getServiceLocator()->get('information-schema');
@@ -37,30 +169,18 @@ class IndexController extends AbstractActionController
         ", [$databaseConnection['database']]);
 
         if (sizeof($invalidTables)) {
-            echo "Some or all of your database tables are not in utf8.  ";
-            echo "Correct this by copying the following to a shell script and running from the command line: ";
-            echo '<pre>';
-            foreach ($invalidTables as $key => $value) {
-                echo "mysqldump -u " . $databaseConnection['username'];
-                if (isset($databaseConnection['password']) and $databaseConnection['password']) {
-                    echo " -p" . $databaseConnection['password'];
-                }
-                echo " --opt --skip-set-charset --skip-extended-insert --default-character-set" . $value['CHARACTER_SET_NAME'];
-                echo " " . $databaseConnection['database'] . " --tables " . $value['TABLE_NAME'] . " > convert.table.sql;\n";
-                echo "perl -i -pe 's/DEFAULT CHARSET=" . $value['CHARACTER_SET_NAME'] . "/' convert.table.sql;\n";
-                echo "mysql -u " . $databaseConnection['username'];
-                if (isset($databaseConnection['password']) and $databaseConnection['password']) {
-                    echo " -p" . $databaseConnection['password'];
-                }
-                echo " " . $databaseConnection['database'] . " < convert.table.sql;\n\n";
-            }
-
-            echo '</pre>';
-            die();
-#mysqldump -u root --opt --skip-set-charset   --default-character-set=latin1 --skip-extended-insert   etree --tables artist_aliases > etree.table.sql;
-#perl -i -pe 's/DEFAULT CHARSET=latin1/DEFAULT CHARSET=utf8/'   etree.table.sql;
-#mysql -u root etree < etree.table.sql;
+            return false;
         }
+
+        return true;
+    }
+
+
+    private function validateAllColumnsAreUtf8()
+    {
+        // Validate all database settings are utf8
+        $informationSchema = $this->getServiceLocator()->get('information-schema');
+        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
 
         $invalidColumns = $informationSchema->query("
             SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME, COLLATION_NAME
@@ -72,15 +192,19 @@ class IndexController extends AbstractActionController
         ", [$databaseConnection['database']]);
 
         if (sizeof($invalidColumns)) {
-            echo "The following columns are of the wrong character set: ";
-            foreach ($invalidColumns as $key => $value) {
-                echo "$key => "; print_r($value);
-            }
-            die();
-       }
-   }
+            echo "\nThe following columns are of the wrong character set: \n\n";
 
-    public function validateDatabaseSettings()
+            foreach ($invalidColumns as $row) {
+                echo $row['TABLE_NAME'] . '.' . $row['COLUMN_NAME'] . "\n";
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function validateDatabaseSettings()
     {
         // Validate all database settings are utf8
         $informationSchema = $this->getServiceLocator()->get('information-schema');
@@ -101,11 +225,15 @@ class IndexController extends AbstractActionController
             }
         }
 
+        $success = true;
         foreach ($utf8Settings as $setting => $value) {
             if ($value !== 'utf8') {
-                die("The database variable $setting must be changed to 'utf8'");
+                echo ("\nThe database variable $setting must be changed to 'utf8'\n");
+                $success = false;
             }
         }
+
+        return $success;
     }
 }
 

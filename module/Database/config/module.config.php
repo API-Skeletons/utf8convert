@@ -24,7 +24,7 @@ return array(
                         'route'    => 'validate',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
-                            'action'        => 'index',
+                            'action'        => 'validate',
                         ),
                     ),
                 ),
@@ -45,6 +45,16 @@ return array(
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
                             'action'        => 'refactor',
+                        ),
+                    ),
+                ),
+                'convert' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'convert',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Index',
+                            'action'        => 'convert',
                         ),
                     ),
                 ),

@@ -8,7 +8,10 @@ use Zend\Db\Adapter\Exception\RuntimeException;
 
 class IndexController extends AbstractActionController
 {
-    public function indexAction()
+    /**
+     * Check MySQL utf8 settings for the database
+     */
+    public function validateAction()
     {
         if (!$this->validateDatabaseSettings()) {
             // output sent in function
@@ -28,6 +31,9 @@ class IndexController extends AbstractActionController
         echo "\nThe database has passed initial validation.\n";
     }
 
+    /**
+     * Create a shell script to convert tables to utf8
+     */
     public function generateUtf8TableConversionAction()
     {
         // Validate all database settings are utf8
@@ -60,9 +66,8 @@ class IndexController extends AbstractActionController
 
     /**
      * Refactor the database so all
-        varchar and char columns are varchar(255)
+        varchar, char, enum columns are varchar(255)
         *text columns are longtext
-        integer and tinyint and smallint, mediumint columns are bigint unsigned;
      */
     public function refactorAction()
     {
@@ -70,76 +75,173 @@ class IndexController extends AbstractActionController
         $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
 
         $refactorColumns = $informationSchema->query("
+            SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME,
+                COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH,
+                COLUMNS.IS_NULLABLE
+            FROM COLUMNS, TABLES
+            WHERE COLUMNS.TABLE_SCHEMA = ?
+            AND COLUMNS.TABLE_NAME = TABLES.TABLE_NAME
+            AND TABLES.TABLE_SCHEMA = COLUMNS.TABLE_SCHEMA
+            AND TABLES.TABLE_TYPE = 'BASE TABLE'
+            AND COLUMNS.DATA_TYPE IN ('varchar', 'char', 'enum', 'text', 'mediumtext')
+            ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
+        ", [$databaseConnection['database']]);
+
+        $refactorTables = [];
+        foreach ($refactorColumns as $row) {
+            $refactorTables[$row['TABLE_NAME']][] = $row;
+        }
+
+        foreach ($refactorTables as $table => $rows) {
+            $this->refactorTable($rows);
+        }
+
+        echo "\nRefactoring finished\n";
+    }
+
+    public function refactorTable($rows)
+    {
+        $database = $this->getServiceLocator()->get('database');
+
+        $sql = [];
+        foreach ($rows as $row) {
+            switch ($row['DATA_TYPE']) {
+                case 'varchar':
+                case 'char':
+                case 'enum':
+                    if ($row['CHARACTER_MAXIMUM_LENGTH'] == 255 and $row['DATA_TYPE'] != 'char') {
+                        return true;
+                    }
+
+                    $sqlLine = "MODIFY `" . $row['COLUMN_NAME'] . '` varchar(255) ';
+
+                    if ($row['IS_NULLABLE'] == 'NO') {
+                        $sqlLine .= ' NOT NULL ';
+                    }
+                    if ($row['EXTRA']) {
+                        $sqlLine .= $row['EXTRA'];
+                    }
+
+                    $sql[] = $sqlLine;
+                    break;
+                case 'text':
+                case 'mediumtext':
+                    $sqlLine = "MODIFY `" . $row['COLUMN_NAME'] . '` longtext ';
+
+                    if ($row['IS_NULLABLE'] == 'NO') {
+                        $sqlLine .= ' NOT NULL ';
+                    }
+                    if ($row['EXTRA']) {
+                        $sqlLine .= $row['EXTRA'];
+                    }
+
+                    $sql[] = $sqlLine;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        if ($sql) {
+            $command = "ALTER TABLE `" . $row['TABLE_NAME'] . "` " . implode(', ', $sql);
+            echo $command . ";\n\n";
+
+            try {
+                $database->query($command)->execute();
+            } catch (RuntimeException $e) {
+                die("\n\n" . $e->getMessage());
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Convert all data in all string columns to utf8 by correcting encoding
+     */
+    public function convertAction()
+    {
+        $informationSchema = $this->getServiceLocator()->get('information-schema');
+        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
+
+        $convertColumns = $informationSchema->query("
             SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME, COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH
             FROM COLUMNS, TABLES
             WHERE COLUMNS.TABLE_SCHEMA = ?
             AND COLUMNS.TABLE_NAME = TABLES.TABLE_NAME
             AND TABLES.TABLE_SCHEMA = COLUMNS.TABLE_SCHEMA
             AND TABLES.TABLE_TYPE = 'BASE TABLE'
-            AND COLUMNS.DATA_TYPE IN ('varchar', 'char', 'text', 'mediumtext')
+            AND COLUMNS.DATA_TYPE IN ('varchar', 'longtext')
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
         ", [$databaseConnection['database']]);
 
-        foreach ($refactorColumns as $row) {
-            $table = $row['TABLE_NAME'];
-            $column = $row['COLUMN_NAME'];
-            echo "$table $column ";
-            echo "FROM " . $row['DATA_TYPE'];
-            echo "\n";
+        $this->createUtf8ChangesTable();
 
-            $this->refactorRow($row);
-        }
+        foreach ($convertColumns as $row) {
+            $primaryKeys = $informationSchema->query("
+                SELECT COLUMN_NAME, COLUMN_KEY
+                FROM COLUMNS
+                WHERE TABLE_SCHEMA = ?
+                AND TABLE_NAME = ?
+                AND column_key = 'PRI'
+            ", [$databaseConnection['database'], $row['TABLE_NAME']]);
 
-        die("\nRefactoring finished\n");
-    }
-
-    public function refactorRow($row)
-    {
-        $database = $this->getServiceLocator()->get('database');
-
-        switch ($row['DATA_TYPE']) {
-            case 'varchar':
-            case 'char':
-                if ($row['CHARACTER_MAXIMUM_LENGTH'] == 255 and $row['DATA_TYPE'] != 'char') {
-                    return true;
+            $primaryKey = null;
+            $keys = [];
+            if (sizeof($primaryKeys)) {
+                foreach ($primaryKeys as $primaryKeyColumn) {
+                    $keys[] = $primaryKeyColumn['COLUMN_NAME'];
+                }
+                if (!$keys) {
+                    die('Table ' . $row['TABLE_NAME'] . ' has no primary key');
                 }
 
-                $database->query("ALTER TABLE `" . $row['TABLE_NAME'] . "` MODIFY `" . $row['COLUMN_NAME'] . '` varchar(255) ' . $row['EXTRA'])
-                    ->execute();
-                break;
-/*
-            case 'int':
-            case 'integer':
-            case 'smallint':
-            case 'mediumint':
-                $database->query("ALTER TABLE `" . $row['TABLE_NAME'] . "` MODIFY `" . $row['COLUMN_NAME'] . '` bigint ' . $row['EXTRA'])
-                    ->execute();
-                break;
-*/
-            case 'text':
-            case 'mediumtext':
-                $database->query("ALTER TABLE `" . $row['TABLE_NAME'] . "` MODIFY `" . $row['COLUMN_NAME'] . '` longtext ' . $row['EXTRA'])
-                    ->execute();
-                break;
+                $primaryKey = 'concat(`' . implode('`, `', $keys) . '`)';
+            }
 
-            default:
-                break;
+            $this->convertRow($row, $primaryKey);
         }
+
+        echo "\nDatabase has been converted to utf8\n";
     }
 
-    public function convertAction()
+    /**
+     * Convert a single row to utf8 and interate until
+     * there are no more conversions to be made
+     */
+    private function convertRow($row, $primaryKey)
     {
+        $dirtyData = true;
+        $iteration = 0;
         $database = $this->getServiceLocator()->get('database');
-    }
 
-    private function convertRow()
-    {
+        echo "\n" . $row['TABLE_NAME'] . ' ' . $row['COLUMN_NAME'] . "\n";
 
-    }
+        while ($dirtyData) {
+            $iteration ++;
+            try {
+                $command = "DROP TABLE temptable";
+                $database->query($command)->execute();
+            } catch (RuntimeException $e) {
+                // table does not exist
+            }
 
-    private function generateUtf8ChangesSQL()
-    {
-        $sql = "
+            $sql = "CREATE TABLE temptable (SELECT * FROM `"
+                . $row['TABLE_NAME'] . "` WHERE length(`"
+                . $row['COLUMN_NAME'] . "`) != char_length(`"
+                . $row['COLUMN_NAME'] . "`))";
+
+            $database->query($sql)->execute();
+
+            $sql = "INSERT INTO Utf8Changes (entity, field, iteration, oldValue, primaryKey) "
+                . " select '" . $row['TABLE_NAME'] . "', '" . $row['COLUMN_NAME']
+                . "', " . $iteration . ", " . "`" . $row['COLUMN_NAME'] . "`, "
+                . $primaryKey . " FROM temptable";
+
+            $database->query($sql)->execute();
+/*
+            $database->query($sql)->execute();
         create table Utf8Changes (
             id int not null primary key auto_increment,
             entity varchar(255),
@@ -149,11 +251,94 @@ class IndexController extends AbstractActionController
             oldValue longtext,
             newValue longtext
         );
+*/
+
+            switch ($row['DATA_TYPE']) {
+                case 'varchar':
+                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` varchar(255) character set latin1";
+                    $database->query($sql)->execute();
+
+                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` blob";
+                    $database->query($sql)->execute();
+
+                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` varchar(255) character set utf8";
+                    $database->query($sql)->execute();
+                    break;
+
+                case 'longtext':
+                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` longtext character set latin1";
+                    $database->query($sql)->execute();
+
+                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` blob";
+                    $database->query($sql)->execute();
+
+                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` longtext character set utf8";
+                    $database->query($sql)->execute();
+                    break;
+                default:
+                    break;
+            }
+
+            $sql = "DELETE FROM temptable WHERE length(`"
+                . $row['COLUMN_NAME'] . "`) = char_length(`"
+                . $row['COLUMN_NAME'] . "`)";
+            $database->query($sql)->execute();
+
+            $sql = "UPDATE Utf8Changes SET newValue = (
+                    SELECT `" . $row['COLUMN_NAME'] . "`
+                    FROM temptable
+                    WHERE Utf8Changes.primaryKey = " . $primaryKey . "
+                    AND Utf8Changes.entity = '" . $row['TABLE_NAME'] . "'
+                    AND Utf8Changes.field = '" . $row['COLUMN_NAME'] . "'
+                    )
+                    WHERE newValue IS NULL
+                    ";
+            $database->query($sql)->execute();
+
+            $database->query("DELETE FROM Utf8Changes WHERE newValue IS NULL")->execute();
+
+            $sql = "REPLACE INTO `" . $row['TABLE_NAME'] . "` (select * from temptable)";
+            $result = $database->query($sql)->execute();
+
+            if (!$result->getAffectedRows()) {
+                $dirtyData = false;
+            }
+
+            echo "Replaced " . $result->getAffectedRows() . " rows on iteration $iteration\n";
+        }
+    }
+
+    /**
+     * Create the Utf8Changes table for comparing converted data
+     */
+    private function createUtf8ChangesTable()
+    {
+        $database = $this->getServiceLocator()->get('database');
+
+        $sql = "
+            create table Utf8Changes (
+                id int not null primary key auto_increment,
+                entity varchar(255),
+                field varchar(255),
+                primaryKey longtext,
+                iteration int,
+                oldValue longtext,
+                newValue longtext
+            );
         ";
+
+        try {
+            $database->query($sql)->execute();
+        } catch (RuntimeException $e) {
+            // table already exists
+        }
 
         return $sql;
     }
 
+    /**
+     * Verify all table are utf8
+     */
     private function validateAllTablesAreUtf8()
     {
         // Validate all database settings are utf8
@@ -175,7 +360,9 @@ class IndexController extends AbstractActionController
         return true;
     }
 
-
+    /**
+     * Verify all columns are utf8
+     */
     private function validateAllColumnsAreUtf8()
     {
         // Validate all database settings are utf8
@@ -204,6 +391,9 @@ class IndexController extends AbstractActionController
         return true;
     }
 
+    /**
+     * Check the MySQL variables for this database
+     */
     private function validateDatabaseSettings()
     {
         // Validate all database settings are utf8

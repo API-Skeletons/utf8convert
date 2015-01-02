@@ -60,7 +60,8 @@ class IndexController extends AbstractActionController
             if (isset($databaseConnection['password']) and $databaseConnection['password']) {
                 echo " -p" . $databaseConnection['password'];
             }
-            echo " " . $databaseConnection['database'] . " < utf8convert.table.sql;\n\n";
+            echo " " . $databaseConnection['database'] . " < utf8convert.table.sql;\n";
+            echo "rm utf8convert.table.sql;\n\n";
         }
     }
 
@@ -77,7 +78,7 @@ class IndexController extends AbstractActionController
         $refactorColumns = $informationSchema->query("
             SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME,
                 COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH,
-                COLUMNS.IS_NULLABLE
+                COLUMNS.IS_NULLABLE, COLUMNS.COLUMN_DEFAULT
             FROM COLUMNS, TABLES
             WHERE COLUMNS.TABLE_SCHEMA = ?
             AND COLUMNS.TABLE_NAME = TABLES.TABLE_NAME
@@ -110,13 +111,16 @@ class IndexController extends AbstractActionController
                 case 'char':
                 case 'enum':
                     if ($row['CHARACTER_MAXIMUM_LENGTH'] == 255 and $row['DATA_TYPE'] != 'char') {
-                        return true;
+                        continue;
                     }
 
                     $sqlLine = "MODIFY `" . $row['COLUMN_NAME'] . '` varchar(255) ';
 
                     if ($row['IS_NULLABLE'] == 'NO') {
                         $sqlLine .= ' NOT NULL ';
+                    }
+                    if (!is_null($row['COLUMN_DEFAULT'])) {
+                        $sqlLine .= ' DEFAULT ' . $database->getPlatform()->quoteValue($row['COLUMN_DEFAULT']) . ' ';
                     }
                     if ($row['EXTRA']) {
                         $sqlLine .= $row['EXTRA'];
@@ -131,6 +135,9 @@ class IndexController extends AbstractActionController
                     if ($row['IS_NULLABLE'] == 'NO') {
                         $sqlLine .= ' NOT NULL ';
                     }
+                    if (!is_null($row['COLUMN_DEFAULT'])) {
+                        $sqlLine .= ' DEFAULT ' . $database->getPlatform()->quoteValue($row['COLUMN_DEFAULT']) . ' ';
+                    }
                     if ($row['EXTRA']) {
                         $sqlLine .= $row['EXTRA'];
                     }
@@ -139,6 +146,7 @@ class IndexController extends AbstractActionController
                     break;
 
                 default:
+                    die("not found: " . $row['TABLE_NAME'] . '.' . $row['COLUMN_NAME'] . ' ' . $row['DATA_TYPE'] . "\n");
                     break;
             }
         }
@@ -221,13 +229,13 @@ class IndexController extends AbstractActionController
         while ($dirtyData) {
             $iteration ++;
             try {
-                $command = "DROP TABLE temptable";
+                $command = "DROP TEMPORARY TABLE temptable";
                 $database->query($command)->execute();
             } catch (RuntimeException $e) {
                 // table does not exist
             }
 
-            $sql = "CREATE TABLE temptable (SELECT * FROM `"
+            $sql = "CREATE TEMPORARY TABLE temptable (SELECT * FROM `"
                 . $row['TABLE_NAME'] . "` WHERE length(`"
                 . $row['COLUMN_NAME'] . "`) != char_length(`"
                 . $row['COLUMN_NAME'] . "`))";
@@ -240,18 +248,6 @@ class IndexController extends AbstractActionController
                 . $primaryKey . " FROM temptable";
 
             $database->query($sql)->execute();
-/*
-            $database->query($sql)->execute();
-        create table Utf8Changes (
-            id int not null primary key auto_increment,
-            entity varchar(255),
-            field varchar(255),
-            primaryKey int,
-            iteration int,
-            oldValue longtext,
-            newValue longtext
-        );
-*/
 
             switch ($row['DATA_TYPE']) {
                 case 'varchar':
@@ -284,18 +280,19 @@ class IndexController extends AbstractActionController
                 . $row['COLUMN_NAME'] . "`)";
             $database->query($sql)->execute();
 
-            $sql = "UPDATE Utf8Changes SET newValue = (
+            $sql = "
+                UPDATE Utf8Changes SET newValue = (
                     SELECT `" . $row['COLUMN_NAME'] . "`
                     FROM temptable
                     WHERE Utf8Changes.primaryKey = " . $primaryKey . "
-                    AND Utf8Changes.entity = '" . $row['TABLE_NAME'] . "'
-                    AND Utf8Changes.field = '" . $row['COLUMN_NAME'] . "'
                     )
-                    WHERE newValue IS NULL
-                    ";
+                WHERE newValue IS NULL
+                AND Utf8Changes.entity = '" . $row['TABLE_NAME'] . "'
+                AND Utf8Changes.field = '" . $row['COLUMN_NAME'] . "'
+            ";
             $database->query($sql)->execute();
 
-            $database->query("DELETE FROM Utf8Changes WHERE newValue IS NULL")->execute();
+#            $database->query("DELETE FROM Utf8Changes WHERE newValue IS NULL")->execute();
 
             $sql = "REPLACE INTO `" . $row['TABLE_NAME'] . "` (select * from temptable)";
             $result = $database->query($sql)->execute();
@@ -323,7 +320,8 @@ class IndexController extends AbstractActionController
                 primaryKey longtext,
                 iteration int,
                 oldValue longtext,
-                newValue longtext
+                newValue longtext,
+                corrected tinyint(1) default 0
             );
         ";
 

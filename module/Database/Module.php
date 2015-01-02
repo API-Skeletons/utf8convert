@@ -4,9 +4,27 @@ namespace Database;
 
 use Zend\ServiceManager\ServiceManager;
 use Zend\Db\Adapter\Adapter;
+use Zend\ModuleManager\Feature\ConsoleBannerProviderInterface;
+use Zend\Console\Adapter\AdapterInterface as Console;
+use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 
-class Module
+class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInterface
 {
+    public function getConsoleUsage(Console $console)
+    {
+        return array(
+            'validate' => 'Validate the database is configured for utf8',
+            'generate table conversion' => 'Create a shell script to move all non-utf8 tables to utf8',
+            'refactor' => 'Change character fields to varchar(255) and text to longtext',
+            'convert' => 'Fix utf8 data in all tables and columns'
+        );
+    }
+
+    public function getConsoleBanner(Console $console)
+    {
+        return 'Stuki Org Utf8Convert';
+    }
+
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';

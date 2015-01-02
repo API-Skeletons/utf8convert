@@ -3,6 +3,7 @@ return array(
     'controllers' => array(
         'invokables' => array(
             'Database\Controller\Index' => 'Database\Controller\IndexController',
+            'Database\Controller\Data' => 'Database\Controller\DataController',
         ),
     ),
     'view_manager' => array(
@@ -12,13 +13,23 @@ return array(
     ),
     'router' => array(
         'routes' => array(
+            'database' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route'    => '/database',
+                    'defaults' => array(
+                        'controller'    => 'Database\Controller\Data',
+                        'action'     => 'index',
+                    ),
+                ),
+            ),
         ),
     ),
     // Placeholder for console routes
     'console' => array(
         'router' => array(
             'routes' => array(
-                'index' => array(
+                'validate' => array(
                     'type'    => 'simple',
                     'options' => array(
                         'route'    => 'validate',

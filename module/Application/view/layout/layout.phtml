@@ -3,54 +3,78 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-<?php
-    echo $this->headTitle('Apigility');
-    echo $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1.0');
-    echo $this->headLink(array('rel' => 'icon', 'type' => 'image/png', 'href' => $this->basePath('/img/favicon.png')))
-        ->prependStylesheet($this->basePath('/zf-apigility/css/main.min.css'))
-        ->prependStylesheet($this->basePath('/zf-apigility/css/bootstrap.min.css'));
-    echo $this->headScript()
-        ->prependFile($this->basePath('/zf-apigility/js/bootstrap.min.js'))
-        ->prependFile($this->basePath('/zf-apigility/js/jquery.min.js'));
-?>
+        <?php
+            echo $this->headTitle()->prepend($this->translate('Stuki Org - Utf8Convert'))
+                ->setSeparator(' - ')
+                ->setAutoEscape(false)
+                ;
+        ?>
+
+        <?php echo $this->headMeta()
+            ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+            ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+        ?>
+
+        <!-- Le styles -->
+        <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+            ->appendStylesheet($this->basePath() . '/bower_components/bootstrap/dist/css/bootstrap.min.css')
+            ->appendStylesheet($this->basePath() . '/bower_components/bootstrap/dist/css/bootstrap-theme.min.css')
+            ->appendStylesheet($this->basePath() . '/bower_components/angular-busy/dist/angular-busy.css')
+            ->appendStylesheet($this->basePath() . '/bower_components/angular-loading-bar/build/loading-bar.css')
+            ->appendStylesheet($this->basePath() . '/bower_components/font-awesome/css/font-awesome.min.css')
+            ->appendStylesheet($this->basePath() . '/css/style.css')
+            ;
+        ?>
+
+        <!-- Scripts -->
+        <?php echo $this->headScript()
+            ->appendFile($this->basePath() . '/js/html5shiv.js',   'text/javascript', array('conditional' => 'lt IE 9',))
+            ->appendFile($this->basePath() . '/js/respond.min.js', 'text/javascript', array('conditional' => 'lt IE 9',))
+            ->appendFile($this->basePath() . '/bower_components/jquery/dist/jquery.min.js')
+            ->appendFile($this->basePath() . '/bower_components/bootstrap/dist/js/bootstrap.min.js')
+            ->appendFile($this->basePath() . "/bower_components/angular/angular.min.js")
+            ->appendFile($this->basePath() . '/bower_components/angular-touch/angular-touch.min.js')
+            ->appendFile($this->basePath() . '/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js')
+            ->appendFile($this->basePath() . '/bower_components/angular-loading-bar/build/loading-bar.min.js')
+            ->appendFile($this->basePath() . '/bower_components/angular-filter/dist/angular-filter.min.js')
+            ->appendFile($this->basePath() . '/bower_components/angular-busy/dist/angular-busy.min.js')
+            ->appendFile($this->basePath() . '/bower_components/angular-sanitize/angular-sanitize.min.js')
+            ->appendFile($this->basePath() . '/bower_components/angular-encode-uri/dist/angular-encode-uri.min.js')
+            ->appendFile($this->basePath() . '/bower_components/markdown/lib/markdown.js')
+            ->appendFile($this->basePath() . '/js/app.js')
+            ;
+
+        ?>
 
     </head>
     <body>
-        <header class="navbar navbar-inverse navbar-fixed-top primary" role="navigation">
-            <a class="sr-only" href="#content"> … </a>
-            <div class="container-fluid">
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
                 <div class="navbar-header">
-                    <a href="<?php echo $this->url('home') ?>" class="navbar-brand">
-                        <img src="<?php echo $this->basePath('/zf-apigility/img/ag-logo.png') ?>">
-                    </a>
-                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".ag-navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
+                    <a class="navbar-brand" href="<?php echo $this->url('home') ?>"><?php echo $this->translate('Utf8Convert'); ?></a>
                 </div>
 
-                <div class="collapse navbar-collapse ag-navbar-collapse">
+                <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <?php if (class_exists('ZF\Apigility\Admin\Module', false)): ?>
-                            <li><a href="<?php echo $this->url('zf-apigility/ui') ?>">Admin</a></li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-            </div>
-        </header>
+                        <li class=""><a href="<?php echo $this->url('home') ?>"><?php echo $this->translate('Home') ?></a></li>
 
+                    </ul>
+
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
         <div class="container">
             <?php echo $this->content; ?>
-        </div> <!-- /container -->
-
-        <footer>
             <hr>
-            <div class="container center-block">
-                <p>&copy; 2013 - <?php echo date('Y') ?> by <a href="http://www.zend.com">Zend Technologies</a> Ltd. <?php echo $this->translate('All rights reserved.') ?></p>
-            </div>
-        </footer>
+            <footer>
+                <p>&copy; <?php echo date('Y') ?> by Stuki Org <?php echo $this->translate('All rights reserved.') ?></p>
+            </footer>
+        </div> <!-- /container -->
         <?php echo $this->inlineScript() ?>
     </body>
 </html>

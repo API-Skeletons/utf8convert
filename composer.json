@@ -2,7 +2,7 @@
     "name": "stuki/utf8-convert",
     "description": "A tool to facilitate a MySQL database conversion to UTF8",
     "type": "library",
-    "license": "BSD-3-Clause",
+    "license": "proprietary",
     "keywords": [
         "mysql",
         "database",
@@ -12,7 +12,7 @@
         "redeption",
         "kit"
     ],
-    "homepage": "https://github.com/StukiOrg",
+    "homepage": "https://github.com/StukiOrg/Utf8Convert",
     "support": {
         "issues": "https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell"
     },
@@ -20,23 +20,14 @@
     	"process-timeout": 5000
     },
     "extra": {
-        "branch-alias": {
-            "dev-master": "1.0-dev",
-            "dev-develop": "1.1-dev"
-        }
     },
     "require": {
-        "php": ">=5.3.23",
+        "php": ">=5.4",
         "zendframework/zendframework": ">=2.3.2,<3.0.0",
-        "zfcampus/zf-apigility": "~1.0",
-        "zfcampus/zf-apigility-documentation": "~1.0",
         "zfcampus/zf-development-mode": "~2.0"
     },
     "require-dev": {
         "zendframework/zftool": "dev-master",
-        "zendframework/zend-developer-tools": "dev-master",
-        "zfcampus/zf-apigility-admin": "~1.0",
-        "zfcampus/zf-apigility-welcome": "~1.0",
-        "zfcampus/zf-deploy": "~1.0"
+        "zendframework/zend-developer-tools": "dev-master"
     }
 }

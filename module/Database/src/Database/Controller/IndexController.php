@@ -75,6 +75,13 @@ class IndexController extends AbstractActionController
         $informationSchema = $this->getServiceLocator()->get('information-schema');
         $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
 
+        $refactorDataTypes = $this->getServiceLocator()->get('Config')['utf8-convert']['refactor']['data-types'];
+
+        if (!$refactorDataTypes) {
+            echo "\nNo data types to refactor have been defined\n";
+            return;
+        }
+
         $refactorColumns = $informationSchema->query("
             SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME,
                 COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH,
@@ -84,7 +91,7 @@ class IndexController extends AbstractActionController
             AND COLUMNS.TABLE_NAME = TABLES.TABLE_NAME
             AND TABLES.TABLE_SCHEMA = COLUMNS.TABLE_SCHEMA
             AND TABLES.TABLE_TYPE = 'BASE TABLE'
-            AND COLUMNS.DATA_TYPE IN ('varchar', 'char', 'enum', 'text', 'mediumtext')
+            AND COLUMNS.DATA_TYPE IN ('" . implode("', '", array_keys($refactorDataTypes)) . "')
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
         ", [$databaseConnection['database']]);
 
@@ -103,52 +110,26 @@ class IndexController extends AbstractActionController
     public function refactorTable($rows)
     {
         $database = $this->getServiceLocator()->get('database');
+        $refactorDataTypes = $this->getServiceLocator()->get('Config')['utf8-convert']['refactor']['data-types'];
 
         $sql = [];
         foreach ($rows as $row) {
-            switch ($row['DATA_TYPE']) {
-                case 'varchar':
-                case 'char':
-                case 'enum':
-                    if ($row['CHARACTER_MAXIMUM_LENGTH'] == 255 and $row['DATA_TYPE'] != 'char') {
-                        continue;
-                    }
-
-                    $sqlLine = "MODIFY `" . $row['COLUMN_NAME'] . '` varchar(255) ';
-
-                    if ($row['IS_NULLABLE'] == 'NO') {
-                        $sqlLine .= ' NOT NULL ';
-                    }
-                    if (!is_null($row['COLUMN_DEFAULT'])) {
-                        $sqlLine .= ' DEFAULT ' . $database->getPlatform()->quoteValue($row['COLUMN_DEFAULT']) . ' ';
-                    }
-                    if ($row['EXTRA']) {
-                        $sqlLine .= $row['EXTRA'];
-                    }
-
-                    $sql[] = $sqlLine;
-                    break;
-                case 'text':
-                case 'mediumtext':
-                    $sqlLine = "MODIFY `" . $row['COLUMN_NAME'] . '` longtext ';
-
-                    if ($row['IS_NULLABLE'] == 'NO') {
-                        $sqlLine .= ' NOT NULL ';
-                    }
-                    if (!is_null($row['COLUMN_DEFAULT'])) {
-                        $sqlLine .= ' DEFAULT ' . $database->getPlatform()->quoteValue($row['COLUMN_DEFAULT']) . ' ';
-                    }
-                    if ($row['EXTRA']) {
-                        $sqlLine .= $row['EXTRA'];
-                    }
-
-                    $sql[] = $sqlLine;
-                    break;
-
-                default:
-                    die("not found: " . $row['TABLE_NAME'] . '.' . $row['COLUMN_NAME'] . ' ' . $row['DATA_TYPE'] . "\n");
-                    break;
+            if (!in_array($row['DATA_TYPE'], array_keys($refactorDataTypes))) {
+                die("Unmapped data type found: " . $row['DATA_TYPE']);
             }
+            $sqlLine = "MODIFY `" . $row['COLUMN_NAME'] . '` ' . $refactorDataTypes[$row['DATA_TYPE']] . ' ';
+
+            if ($row['IS_NULLABLE'] == 'NO') {
+                $sqlLine .= ' NOT NULL ';
+            }
+            if (!is_null($row['COLUMN_DEFAULT'])) {
+                $sqlLine .= ' DEFAULT ' . $database->getPlatform()->quoteValue($row['COLUMN_DEFAULT']) . ' ';
+            }
+            if ($row['EXTRA']) {
+                $sqlLine .= $row['EXTRA'];
+            }
+
+            $sql[] = $sqlLine;
         }
 
         if ($sql) {
@@ -173,6 +154,14 @@ class IndexController extends AbstractActionController
         $informationSchema = $this->getServiceLocator()->get('information-schema');
         $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
 
+        $config = $this->getServiceLocator()->get('Config');
+
+        $ignoreTables = '';
+        if ($config['utf8-convert']['convert']['ignore-tables']) {
+            $ignoreTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", $config['utf8-convert']['ignore-tables'])
+                . "')";
+        }
+
         $convertColumns = $informationSchema->query("
             SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME, COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH
             FROM COLUMNS, TABLES
@@ -181,6 +170,7 @@ class IndexController extends AbstractActionController
             AND TABLES.TABLE_SCHEMA = COLUMNS.TABLE_SCHEMA
             AND TABLES.TABLE_TYPE = 'BASE TABLE'
             AND COLUMNS.DATA_TYPE IN ('varchar', 'longtext')
+            $ignoreTables
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
         ", [$databaseConnection['database']]);
 
@@ -223,6 +213,7 @@ class IndexController extends AbstractActionController
         $dirtyData = true;
         $iteration = 0;
         $database = $this->getServiceLocator()->get('database');
+        $refactorDataTypes = $this->getServiceLocator()->get('Config')['utf8-convert']['refactor']['data-types'];
 
         echo "\n" . $row['TABLE_NAME'] . ' ' . $row['COLUMN_NAME'] . "\n";
 
@@ -249,31 +240,14 @@ class IndexController extends AbstractActionController
 
             $database->query($sql)->execute();
 
-            switch ($row['DATA_TYPE']) {
-                case 'varchar':
-                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` varchar(255) character set latin1";
-                    $database->query($sql)->execute();
+            $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` " . $refactorDataTypes[$row['DATA_TYPE']] . " character set latin1";
+            $database->query($sql)->execute();
 
-                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` blob";
-                    $database->query($sql)->execute();
+            $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` blob";
+            $database->query($sql)->execute();
 
-                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` varchar(255) character set utf8";
-                    $database->query($sql)->execute();
-                    break;
-
-                case 'longtext':
-                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` longtext character set latin1";
-                    $database->query($sql)->execute();
-
-                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` blob";
-                    $database->query($sql)->execute();
-
-                    $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` longtext character set utf8";
-                    $database->query($sql)->execute();
-                    break;
-                default:
-                    break;
-            }
+            $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` " . $refactorDataTypes[$row['DATA_TYPE']] . " character set utf8";
+            $database->query($sql)->execute();
 
             $sql = "DELETE FROM temptable WHERE length(`"
                 . $row['COLUMN_NAME'] . "`) = char_length(`"

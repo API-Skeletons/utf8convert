@@ -1,5 +1,27 @@
 <?php
 return array(
+    'utf8-convert' => array(
+        'convert' => array(
+            'ignore-tables' => array(
+                'artists_audit',
+                'md5s_audit',
+                'pending_shninfo_audit',
+                'shninfo_audit',
+                'shows_audit',
+                'userrating_audit',
+            ),
+        ),
+        'refactor' => array(
+            'data-types' => array(
+                'varchar' => 'varchar(255)',
+                'char' => 'varchar(255)',
+                'enum' => 'varchar(255)',
+                'text' => 'longtext',
+                'mediumtext' => 'longtext',
+                'longtext' => 'longtext',
+            ),
+        ),
+    ),
     'db' => array(
         'adapters' => array(
             'database' => array(

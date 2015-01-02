@@ -2,13 +2,16 @@
 return array(
     'utf8-convert' => array(
         'convert' => array(
-            'ignore-tables' => array(
+            'blacklist-tables' => array(
                 'artists_audit',
                 'md5s_audit',
                 'pending_shninfo_audit',
                 'shninfo_audit',
                 'shows_audit',
                 'userrating_audit',
+            ),
+            'whitelist-tables' => array(
+                'artists',
             ),
         ),
         'refactor' => array(

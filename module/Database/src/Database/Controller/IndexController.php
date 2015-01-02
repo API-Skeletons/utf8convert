@@ -72,6 +72,9 @@ class IndexController extends AbstractActionController
      */
     public function refactorAction()
     {
+        $consoleWhitelist = $this->getRequest()->getParam('whitelist');
+        $consoleBlacklist = $this->getRequest()->getParam('blacklist');
+
         $informationSchema = $this->getServiceLocator()->get('information-schema');
         $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
 
@@ -80,6 +83,28 @@ class IndexController extends AbstractActionController
         if (!$refactorDataTypes) {
             echo "\nNo data types to refactor have been defined\n";
             return;
+        }
+
+        $blacklistTables = '';
+        if ($consoleBlacklist) {
+            $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", explode(',', $consoleBlacklist))
+                . "')";
+        } else {
+            if (isset($config['utf8-convert']['refactor']['blacklist-tables']) and $config['utf8-convert']['convert']['blacklist-tables']) {
+                $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", $config['utf8-convert']['blacklist-tables'])
+                    . "')";
+            }
+        }
+
+        $whitelistTables= '';
+        if ($consoleWhitelist) {
+            $whitelistTables = "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", explode(',', $consoleWhitelist))
+                . "')";
+        } else {
+            if (isset($config['utf8-convert']['refactor']['whitelist-tables']) and $config['utf8-convert']['convert']['whitelist-tables']) {
+                $whitelistTables= "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", $config['utf8-convert']['whitelist-tables'])
+                    . "')";
+            }
         }
 
         $refactorColumns = $informationSchema->query("
@@ -92,6 +117,8 @@ class IndexController extends AbstractActionController
             AND TABLES.TABLE_SCHEMA = COLUMNS.TABLE_SCHEMA
             AND TABLES.TABLE_TYPE = 'BASE TABLE'
             AND COLUMNS.DATA_TYPE IN ('" . implode("', '", array_keys($refactorDataTypes)) . "')
+            $blacklistTables
+            $whitelistTables
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
         ", [$databaseConnection['database']]);
 
@@ -151,16 +178,38 @@ class IndexController extends AbstractActionController
      */
     public function convertAction()
     {
+        $consoleWhitelist = $this->getRequest()->getParam('whitelist');
+        $consoleBlacklist = $this->getRequest()->getParam('blacklist');
+        $clearLog = $this->getRequest()->getParam('clear-log');
+
         $informationSchema = $this->getServiceLocator()->get('information-schema');
         $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
 
         $config = $this->getServiceLocator()->get('Config');
 
-        $ignoreTables = '';
-        if ($config['utf8-convert']['convert']['ignore-tables']) {
-            $ignoreTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", $config['utf8-convert']['ignore-tables'])
+        $blacklistTables = '';
+        if ($consoleBlacklist) {
+            $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", explode(',', $consoleBlacklist))
                 . "')";
+        } else {
+            if (isset($config['utf8-convert']['convert']['blacklist-tables']) and $config['utf8-convert']['convert']['blacklist-tables']) {
+                $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", $config['utf8-convert']['convert']['blacklist-tables'])
+                    . "')";
+            }
         }
+
+        $whitelistTables= '';
+        if ($consoleWhitelist) {
+            $whitelistTables = "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", explode(',', $consoleWhitelist))
+                . "')";
+        } else {
+            $whitelistTables= '';
+            if (isset($config['utf8-convert']['convert']['whitelist-tables']) and $config['utf8-convert']['convert']['whitelist-tables']) {
+                $whitelistTables= "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", $config['utf8-convert']['whitelist-tables'])
+                    . "')";
+            }
+        }
+
 
         $convertColumns = $informationSchema->query("
             SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME, COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH
@@ -170,19 +219,26 @@ class IndexController extends AbstractActionController
             AND TABLES.TABLE_SCHEMA = COLUMNS.TABLE_SCHEMA
             AND TABLES.TABLE_TYPE = 'BASE TABLE'
             AND COLUMNS.DATA_TYPE IN ('varchar', 'longtext')
-            $ignoreTables
+            $blacklistTables
+            $whitelistTables
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
         ", [$databaseConnection['database']]);
 
+        if ($clearLog) {
+            $this->deleteUtf8ChangesTable();
+        }
+
         $this->createUtf8ChangesTable();
+
 
         foreach ($convertColumns as $row) {
             $primaryKeys = $informationSchema->query("
                 SELECT COLUMN_NAME, COLUMN_KEY
-                FROM COLUMNS
-                WHERE TABLE_SCHEMA = ?
-                AND TABLE_NAME = ?
-                AND column_key = 'PRI'
+                  FROM COLUMNS
+                 WHERE TABLE_SCHEMA = ?
+                   AND TABLE_NAME = ?
+                   AND column_key = 'PRI'
+              ORDER BY COLUMN_NAME
             ", [$databaseConnection['database'], $row['TABLE_NAME']]);
 
             $primaryKey = null;
@@ -201,7 +257,7 @@ class IndexController extends AbstractActionController
             $this->convertRow($row, $primaryKey);
         }
 
-        echo "\nDatabase has been converted to utf8\n";
+        echo "\nutf8 conversion complete\n";
     }
 
     /**
@@ -266,8 +322,6 @@ class IndexController extends AbstractActionController
             ";
             $database->query($sql)->execute();
 
-#            $database->query("DELETE FROM Utf8Changes WHERE newValue IS NULL")->execute();
-
             $sql = "REPLACE INTO `" . $row['TABLE_NAME'] . "` (select * from temptable)";
             $result = $database->query($sql)->execute();
 
@@ -275,8 +329,29 @@ class IndexController extends AbstractActionController
                 $dirtyData = false;
             }
 
+            $command = "DROP TEMPORARY TABLE temptable";
+            $database->query($command)->execute();
+
             echo "Replaced " . $result->getAffectedRows() . " rows on iteration $iteration\n";
         }
+    }
+
+    /**
+     * Delete the Utf8Changes table
+     */
+    private function deleteUtf8ChangesTable()
+    {
+        $database = $this->getServiceLocator()->get('database');
+
+        $sql = "DROP TABLE Utf8Changes";
+
+        try {
+            $database->query($sql)->execute();
+        } catch (RuntimeException $e) {
+            // table didn't exist
+        }
+
+        return true;
     }
 
     /**
@@ -287,15 +362,15 @@ class IndexController extends AbstractActionController
         $database = $this->getServiceLocator()->get('database');
 
         $sql = "
-            create table Utf8Changes (
-                id int not null primary key auto_increment,
+            CREATE TABLE Utf8Changes (
+                id int NOT NULL PRIMARY KEY auto_increment,
                 entity varchar(255),
                 field varchar(255),
                 primaryKey longtext,
                 iteration int,
                 oldValue longtext,
                 newValue longtext,
-                corrected tinyint(1) default 0
+                corrected tinyint(1) DEFAULT 0
             );
         ";
 

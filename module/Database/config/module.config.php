@@ -52,7 +52,7 @@ return array(
                 'refactor' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'refactor',
+                        'route'    => 'refactor [--whitelist=] [--blacklist=]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
                             'action'        => 'refactor',
@@ -62,7 +62,7 @@ return array(
                 'convert' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'convert',
+                        'route'    => 'convert [--whitelist=] [--blacklist=] [--clear-log]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
                             'action'        => 'convert',

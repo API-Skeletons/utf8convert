@@ -239,10 +239,10 @@ class IndexController extends AbstractActionController
         ", array($databaseConnection['database']));
 
         if ($clearLog) {
-            $this->deleteUtf8ChangesTable();
+            $this->deleteUtf8ConvertTable();
         }
 
-        $this->createUtf8ChangesTable();
+        $this->createUtf8ConvertTable();
 
 
         foreach ($convertColumns as $row) {
@@ -304,7 +304,7 @@ class IndexController extends AbstractActionController
 
             $database->query($sql)->execute();
 
-            $sql = "INSERT INTO Utf8Changes (entity, field, iteration, oldValue, primaryKey) "
+            $sql = "INSERT INTO Utf8Convert (entity, field, iteration, oldValue, primaryKey) "
                 . " select '" . $row['TABLE_NAME'] . "', '" . $row['COLUMN_NAME']
                 . "', " . $iteration . ", " . "`" . $row['COLUMN_NAME'] . "`, "
                 . $primaryKey . " FROM temptable";
@@ -326,14 +326,14 @@ class IndexController extends AbstractActionController
             $database->query($sql)->execute();
 
             $sql = "
-                UPDATE Utf8Changes SET newValue = (
+                UPDATE Utf8Convert SET newValue = (
                     SELECT `" . $row['COLUMN_NAME'] . "`
                     FROM temptable
-                    WHERE Utf8Changes.primaryKey = " . $primaryKey . "
+                    WHERE Utf8Convert.primaryKey = " . $primaryKey . "
                     )
                 WHERE newValue IS NULL
-                AND Utf8Changes.entity = '" . $row['TABLE_NAME'] . "'
-                AND Utf8Changes.field = '" . $row['COLUMN_NAME'] . "'
+                AND Utf8Convert.entity = '" . $row['TABLE_NAME'] . "'
+                AND Utf8Convert.field = '" . $row['COLUMN_NAME'] . "'
             ";
             $database->query($sql)->execute();
 
@@ -352,13 +352,13 @@ class IndexController extends AbstractActionController
     }
 
     /**
-     * Delete the Utf8Changes table
+     * Delete the Utf8Convert table
      */
-    private function deleteUtf8ChangesTable()
+    private function deleteUtf8ConvertTable()
     {
         $database = $this->getServiceLocator()->get('database');
 
-        $sql = "DROP TABLE Utf8Changes";
+        $sql = "DROP TABLE Utf8Convert";
 
         try {
             $database->query($sql)->execute();
@@ -370,14 +370,14 @@ class IndexController extends AbstractActionController
     }
 
     /**
-     * Create the Utf8Changes table for comparing converted data
+     * Create the Utf8Convert table for comparing converted data
      */
-    private function createUtf8ChangesTable()
+    private function createUtf8ConvertTable()
     {
         $database = $this->getServiceLocator()->get('database');
 
         $sql = "
-            CREATE TABLE Utf8Changes (
+            CREATE TABLE Utf8Convert (
                 id int NOT NULL PRIMARY KEY auto_increment,
                 entity varchar(255),
                 field varchar(255),

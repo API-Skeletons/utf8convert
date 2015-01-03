@@ -10,7 +10,7 @@ return array(
                 'shninfo_audit',
                 'shows_audit',
                 'userrating_audit',
-                'Utf8Changes',
+                'Utf8Convert',
             ),
             'whitelist-tables' => array(
 #                'artists',

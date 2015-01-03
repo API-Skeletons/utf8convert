@@ -43,6 +43,16 @@ return array(
                     ),
                 ),
             ),
+            'row' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route'    => '/row/:entity/:primaryKey',
+                    'defaults' => array(
+                        'controller'    => 'Database\Controller\Data',
+                        'action'     => 'row',
+                    ),
+                ),
+            ),
         ),
     ),
     // Placeholder for console routes

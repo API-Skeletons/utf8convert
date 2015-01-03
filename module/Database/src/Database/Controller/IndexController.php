@@ -62,6 +62,10 @@ class IndexController extends AbstractActionController
                 echo " -p" . $databaseConnection['password'];
             }
             echo " " . $databaseConnection['database'] . " < utf8convert.table.sql;\n";
+            if (isset($databaseConnection['host']) and $databaseConnection['host']) {
+                echo " -h " . $databaseConnection['host'];
+            }
+            echo " " . $databaseConnection['database'] . " < utf8convert.table.sql;\n";
             echo "rm utf8convert.table.sql;\n\n";
         }
     }

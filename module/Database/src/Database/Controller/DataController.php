@@ -9,6 +9,42 @@ use Horde_Text_Diff_Renderer_Inline;
 
 class DataController extends AbstractActionController
 {
+	public function validateAction()
+	{
+        // Validate all database settings are utf8
+        $informationSchema = $this->getServiceLocator()->get('information-schema');
+        $databaseVariables = $informationSchema->query("SHOW VARIABLES LIKE 'char%'")->execute();
+
+        $utf8Settings = array(
+            'character_set_client' => null,
+            'character_set_connection' => null,
+            'character_set_database' => null,
+            'character_set_results' => null,
+            'character_set_server' => null,
+            'character_set_system' => null,
+        );
+
+        foreach ($databaseVariables as $key => $row) {
+            if (in_array($row['Variable_name'], array_keys($utf8Settings))) {
+                $utf8Settings[$row['Variable_name']] = $row['Value'];
+            }
+        }
+
+        $success = true;
+        foreach ($utf8Settings as $setting => $value) {
+            if ($value !== 'utf8') {
+                echo ("\nThe database variable $setting must be changed to 'utf8'\n");
+                $success = false;
+            }
+        }
+		
+		if ($success) {
+			die('Validation Passed');
+		}
+
+		die('Validation Failed');
+	}
+
     public function iterationAction()
     {
         $entity = $this->params()->fromRoute('entity');

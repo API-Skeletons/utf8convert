@@ -13,6 +13,16 @@ return array(
     ),
     'router' => array(
         'routes' => array(
+            'validate' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route'    => '/validate',
+                    'defaults' => array(
+                        'controller'    => 'Database\Controller\Data',
+                        'action'     => 'validate',
+                    ),
+                ),
+            ),
             'database' => array(
                 'type' => 'Segment',
                 'options' => array(

@@ -38,7 +38,8 @@ class IndexController extends AbstractActionController
     {
         // Validate all database settings are utf8
         $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
+        $databaseConnection = $this->getServiceLocator()->get('Config');
+        $databaseConnection = $databaseConnection['db']['adapters']['database'];
 
         $invalidTables = $informationSchema->query("
             SELECT TABLE_NAME, COLLATION_CHARACTER_SET_APPLICABILITY.CHARACTER_SET_NAME
@@ -46,7 +47,7 @@ class IndexController extends AbstractActionController
              WHERE COLLATION_CHARACTER_SET_APPLICABILITY.COLLATION_NAME = TABLES.TABLE_COLLATION
                AND TABLES.TABLE_SCHEMA = ?
                AND COLLATION_CHARACTER_SET_APPLICABILITY.CHARACTER_SET_NAME != 'utf8'
-        ", [$databaseConnection['database']]);
+        ", array($databaseConnection['database']));
 
         foreach ($invalidTables as $key => $value) {
             echo "mysqldump -u " . $databaseConnection['username'];
@@ -76,9 +77,11 @@ class IndexController extends AbstractActionController
         $consoleBlacklist = $this->getRequest()->getParam('blacklist');
 
         $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
+        $databaseConnection = $this->getServiceLocator()->get('Config');
+        $databaseConnection = $databaseConnection['db']['adapters']['database'];
 
-        $refactorDataTypes = $this->getServiceLocator()->get('Config')['utf8-convert']['refactor']['data-types'];
+        $refactorDataTypes = $this->getServiceLocator()->get('Config');
+        $refactorDataTypes = $refactorDataTypes['utf8-convert']['refactor']['data-types'];
 
         if (!$refactorDataTypes) {
             echo "\nNo data types to refactor have been defined\n";
@@ -120,9 +123,9 @@ class IndexController extends AbstractActionController
             $blacklistTables
             $whitelistTables
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
-        ", [$databaseConnection['database']]);
+        ", array($databaseConnection['database']));
 
-        $refactorTables = [];
+        $refactorTables = array();
         foreach ($refactorColumns as $row) {
             $refactorTables[$row['TABLE_NAME']][] = $row;
         }
@@ -137,9 +140,10 @@ class IndexController extends AbstractActionController
     private function refactorTable($rows)
     {
         $database = $this->getServiceLocator()->get('database');
-        $refactorDataTypes = $this->getServiceLocator()->get('Config')['utf8-convert']['refactor']['data-types'];
+        $refactorDataTypes = $this->getServiceLocator()->get('Config');
+        $refactorDataTypes = $refactorDataTypes['utf8-convert']['refactor']['data-types'];
 
-        $sql = [];
+        $sql = array();
         foreach ($rows as $row) {
             if (!in_array($row['DATA_TYPE'], array_keys($refactorDataTypes))) {
                 die("Unmapped data type found: " . $row['DATA_TYPE']);
@@ -183,7 +187,8 @@ class IndexController extends AbstractActionController
         $clearLog = $this->getRequest()->getParam('clear-log');
 
         $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
+        $databaseConnection = $this->getServiceLocator()->get('Config');
+        $databaseConnection = $databaseConnection['db']['adapters']['database'];
 
         $config = $this->getServiceLocator()->get('Config');
 
@@ -222,7 +227,7 @@ class IndexController extends AbstractActionController
             $blacklistTables
             $whitelistTables
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
-        ", [$databaseConnection['database']]);
+        ", array($databaseConnection['database']));
 
         if ($clearLog) {
             $this->deleteUtf8ChangesTable();
@@ -239,10 +244,10 @@ class IndexController extends AbstractActionController
                    AND TABLE_NAME = ?
                    AND column_key = 'PRI'
               ORDER BY COLUMN_NAME
-            ", [$databaseConnection['database'], $row['TABLE_NAME']]);
+            ", array($databaseConnection['database'], $row['TABLE_NAME']));
 
             $primaryKey = null;
-            $keys = [];
+            $keys = array();
             if (sizeof($primaryKeys)) {
                 foreach ($primaryKeys as $primaryKeyColumn) {
                     $keys[] = $primaryKeyColumn['COLUMN_NAME'];
@@ -269,7 +274,8 @@ class IndexController extends AbstractActionController
         $dirtyData = true;
         $iteration = 0;
         $database = $this->getServiceLocator()->get('database');
-        $refactorDataTypes = $this->getServiceLocator()->get('Config')['utf8-convert']['refactor']['data-types'];
+        $refactorDataTypes = $this->getServiceLocator()->get('Config');
+        $refactorDataTypes = $refactorDataTypes['utf8-convert']['refactor']['data-types'];
 
         echo "\n" . $row['TABLE_NAME'] . ' ' . $row['COLUMN_NAME'] . "\n";
 
@@ -390,7 +396,8 @@ class IndexController extends AbstractActionController
     {
         // Validate all database settings are utf8
         $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
+        $databaseConnection = $this->getServiceLocator()->get('Config');
+        $databaseConnection = $databaseConnection['db']['adapters']['database'];
 
         $invalidTables = $informationSchema->query("
             SELECT TABLE_NAME, COLLATION_CHARACTER_SET_APPLICABILITY.CHARACTER_SET_NAME
@@ -398,7 +405,7 @@ class IndexController extends AbstractActionController
              WHERE COLLATION_CHARACTER_SET_APPLICABILITY.COLLATION_NAME = TABLES.TABLE_COLLATION
                AND TABLES.TABLE_SCHEMA = ?
                AND COLLATION_CHARACTER_SET_APPLICABILITY.CHARACTER_SET_NAME != 'utf8'
-        ", [$databaseConnection['database']]);
+        ", array($databaseConnection['database']));
 
         if (sizeof($invalidTables)) {
             return false;
@@ -414,7 +421,8 @@ class IndexController extends AbstractActionController
     {
         // Validate all database settings are utf8
         $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config')['db']['adapters']['database'];
+        $databaseConnection = $this->getServiceLocator()->get('Config');
+        $databaseConnection = $databaseConnection['db']['adapters']['database'];
 
         $invalidColumns = $informationSchema->query("
             SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME, COLLATION_NAME
@@ -423,7 +431,7 @@ class IndexController extends AbstractActionController
             AND CHARACTER_SET_NAME IS NOT null
             AND CHARACTER_SET_NAME != 'utf8'
             AND COLLATION_NAME = 'utf8_general_ci'
-        ", [$databaseConnection['database']]);
+        ", array($databaseConnection['database']));
 
         if (sizeof($invalidColumns)) {
             echo "\nThe following columns are of the wrong character set: \n\n";
@@ -447,14 +455,14 @@ class IndexController extends AbstractActionController
         $informationSchema = $this->getServiceLocator()->get('information-schema');
         $databaseVariables = $informationSchema->query("SHOW VARIABLES LIKE 'char%'")->execute();
 
-        $utf8Settings = [
+        $utf8Settings = array(
             'character_set_client' => null,
             'character_set_connection' => null,
             'character_set_database' => null,
             'character_set_results' => null,
             'character_set_server' => null,
             'character_set_system' => null,
-        ];
+        );
 
         foreach ($databaseVariables as $key => $row) {
             if (in_array($row['Variable_name'], array_keys($utf8Settings))) {

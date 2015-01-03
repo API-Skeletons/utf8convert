@@ -29,12 +29,12 @@
     ?>
         <tr>
             <th>
-                <a href="<?= $this->url('database', ['field' => $row['entity']]); ?>">
+                <a href="<?= $this->url('database', array('field' => $row['entity'])); ?>">
                     <?= $this->escapeHtml($row['entity']); ?>
                 </a>
             </th>
             <th>
-                <a href="<?= $this->url('database', ['field' => $row['entity'], 'entity' => $row['entity']]); ?>">
+                <a href="<?= $this->url('database', array('field' => $row['entity'], 'entity' => $row['entity'])); ?>">
                     <?= $this->escapeHtml($row['field']); ?>
                 </a>
             </th>
@@ -42,11 +42,11 @@
                 <?php
                 foreach ($row['iterations'] as $iteration) {
                 ?>
-                <a class="btn btn-<?= ($iteration['data_point_errors']) ? 'danger': 'success'; ?>" href="<?= $this->url('iteration', [
+                <a class="btn btn-<?= ($iteration['data_point_errors']) ? 'danger': 'success'; ?>" href="<?= $this->url('iteration', array(
                     'entity' => $row['entity'],
                     'field' => $row['field'],
                     'iteration' => $iteration['index'],
-                ]); ?>">
+                )); ?>">
                     <?= $this->escapeHtml($iteration['index']); ?>
                     (<?= $this->escapeHtml($iteration['data_point_changes']); ?>)
                     <?php

@@ -46,14 +46,16 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
             'factories' => array(
                 'database' => function (ServiceManager $serviceManager)
                 {
-                    $config = $serviceManager->get('Config')['db']['adapters']['database'];
+                    $config = $serviceManager->get('Config');
+                    $config = $config['db']['adapters']['database'];
                     $adapter = new Adapter($config);
 
                     return $adapter;
                 },
                 'information-schema' => function (ServiceManager $serviceManager)
                 {
-                    $config = $serviceManager->get('Config')['db']['adapters']['information-schema'];
+                    $config = $serviceManager->get('Config');
+                    $config = $config['db']['adapters']['information-schema'];
                     $adapter = new Adapter($config);
 
                     return $adapter;

@@ -25,23 +25,17 @@ class DataController extends AbstractActionController
               AND iteration = ?
               AND newValue IS NOT NULL
           ORDER BY newValue
-        ", [$entity, $field, $iteration]);
-
-        $a = ['this and that'];
-        $b = ['this or that'];
-        $options = [];
-
-        #die('end');
+        ", array($entity, $field, $iteration));
 
         $renderer = new Horde_Text_Diff_Renderer_Inline();
 
-        return [
+        return array(
             'entity' => $entity,
             'field' => $field,
             'iteration' => $iteration,
             'data' => $changes,
             'renderer' => $renderer,
-        ];
+        );
     }
 
     public function indexAction()
@@ -55,7 +49,7 @@ class DataController extends AbstractActionController
           ORDER BY entity, field
         ")->execute();
 
-        $entities = [];
+        $entities = array();
         foreach ($cols as $row) {
             $entityRow['entity'] = $row['entity'];
             $entityRow['field'] = $row['field'];
@@ -72,7 +66,7 @@ class DataController extends AbstractActionController
                 AND field = ?
                 AND newValue like (concat('%', char(15712189), '%'))
                 AND oldValue not like (concat('%', char(15712189), '%'))
-            ", [$row['entity'], $row['field']]);
+            ", array($row['entity'], $row['field']));
 
             foreach ($erroredRows as $r) {
                 $entities[$key]['data_point_errors'] = $r['data_point_errors'];
@@ -84,7 +78,7 @@ class DataController extends AbstractActionController
                 WHERE entity = ?
                 AND field = ?
                 AND newValue IS NULL
-            ", [$row['entity'], $row['field']]);
+            ", array($row['entity'], $row['field']));
 
             foreach ($unchangedRows as $r) {
                 $entities[$key]['data_point_unchanged'] = $r['data_point_unchanged'];
@@ -97,9 +91,9 @@ class DataController extends AbstractActionController
                 AND field = ?
                 AND newValue IS NOT NULL
                 GROUP BY entity, field, iteration
-            ", [$row['entity'], $row['field']]);
+            ", array($row['entity'], $row['field']));
 
-            $entities[$key]['iterations'] = [];
+            $entities[$key]['iterations'] = array();
             foreach ($iterations as $iRow) {
                 $dataPointErrors = 0;
                 $errorRows = $database->query("
@@ -110,20 +104,20 @@ class DataController extends AbstractActionController
                     AND iteration = ?
                     AND newValue IS NOT NULL
                     AND newValue like (concat('%', char(15712189), '%'))
-                ", [$row['entity'], $row['field'], $iRow['iteration']]);
+                ", array($row['entity'], $row['field'], $iRow['iteration']));
 
                 foreach ($errorRows as $r) {
                     $dataPointErrors = $r['data_point_errors'];
                 }
 
-                $entities[$key]['iterations'][] = [
+                $entities[$key]['iterations'][] = array(
                     'index' => $iRow['iteration'],
                     'data_point_changes' => $iRow['changeCount'],
                     'data_point_errors' => $dataPointErrors,
-                ];
+                );
             }
         }
 
-        return new ViewModel(['entities' => $entities]);
+        return new ViewModel(array('entities' => $entities));
     }
 }

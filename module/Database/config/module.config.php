@@ -72,7 +72,7 @@ return array(
                 'convert' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'convert [--whitelist=] [--blacklist=] [--clear-log]',
+                        'route'    => 'convert --supplement-has-been-ran [--whitelist=] [--blacklist=] [--clear-log]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
                             'action'        => 'convert',

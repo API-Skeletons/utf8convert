@@ -134,7 +134,7 @@ class IndexController extends AbstractActionController
         echo "\nRefactoring finished\n";
     }
 
-    public function refactorTable($rows)
+    private function refactorTable($rows)
     {
         $database = $this->getServiceLocator()->get('database');
         $refactorDataTypes = $this->getServiceLocator()->get('Config')['utf8-convert']['refactor']['data-types'];
@@ -205,7 +205,7 @@ class IndexController extends AbstractActionController
         } else {
             $whitelistTables= '';
             if (isset($config['utf8-convert']['convert']['whitelist-tables']) and $config['utf8-convert']['convert']['whitelist-tables']) {
-                $whitelistTables= "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", $config['utf8-convert']['whitelist-tables'])
+                $whitelistTables= "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", $config['utf8-convert']['convert']['whitelist-tables'])
                     . "')";
             }
         }

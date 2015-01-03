@@ -1,4 +1,5 @@
 <?php
+
 return array(
     'utf8-convert' => array(
         'convert' => array(
@@ -9,12 +10,28 @@ return array(
                 'shninfo_audit',
                 'shows_audit',
                 'userrating_audit',
+                'Utf8Changes',
             ),
             'whitelist-tables' => array(
-                'artists',
+#                'artists',
             ),
         ),
         'refactor' => array(
+            'blacklist-tables' => array(
+                'artist_groups_seq',
+                'artists_seq',
+                'auth_user_seq',
+                'md5s_seq',
+                'myshows_seq',
+                'shninfo_seq',
+                'shows_seq',
+                'states_seq',
+                'tips_seq',
+                'venue_seq',
+            ),
+            'whitelist-tables' => array(
+#                'artists',
+            ),
             'data-types' => array(
                 'varchar' => 'varchar(255)',
                 'char' => 'varchar(255)',
@@ -32,6 +49,9 @@ return array(
                 'database' => 'etree',
                 'username' => 'root',
                 'charset' => 'utf8',
+                'options' => array(
+                    'buffer_results' => true,
+                ),
             ),
             'information-schema' => array(
                 'driver' => 'Mysqli',

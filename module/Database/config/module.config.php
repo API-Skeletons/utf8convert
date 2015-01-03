@@ -23,6 +23,16 @@ return array(
                     ),
                 ),
             ),
+            'iteration' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route'    => '/iteration/:entity/:field/:iteration',
+                    'defaults' => array(
+                        'controller'    => 'Database\Controller\Data',
+                        'action'     => 'iteration',
+                    ),
+                ),
+            ),
         ),
     ),
     // Placeholder for console routes

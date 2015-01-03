@@ -15,8 +15,8 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
         return array(
             'validate' => 'Validate the database is configured for utf8',
             'generate table conversion' => 'Create a shell script to move all non-utf8 tables to utf8',
-            'refactor [--whitelist=table,list] [--blacklist=table,list]' => 'Change character fields to varchar(255) and text to longtext',
-            'convert [--whitelist=table,list] [--blacklist=table,list] [--clear-log]' => 'Fix utf8 data in all tables and columns'
+            'refactor [--whitelist=table,list] [--blacklist=table,list]' => 'Refactor database character fields to varchar(255) and text to longtext',
+            'convert [--whitelist=table,list] [--blacklist=table,list] [--clear-log]' => 'Fix utf8 data in tables and columns'
         );
     }
 

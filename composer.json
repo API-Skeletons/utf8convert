@@ -17,14 +17,23 @@
         "issues": "https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell"
     },
     "config": {
-    	"process-timeout": 5000
+        "process-timeout": 5000
     },
-    "extra": {
-    },
+    "repositories": [
+        {
+            "type": "pear",
+            "url": "http://pear.php.net"
+        },
+        {
+            "type": "pear",
+            "url": "http://pear.horde.org"
+        }
+    ],
     "require": {
         "php": ">=5.4",
         "zendframework/zendframework": ">=2.3.2,<3.0.0",
-        "zfcampus/zf-development-mode": "~2.0"
+        "zfcampus/zf-development-mode": "~2.0",
+        "pear-pear.horde.org/horde_text_diff": "2.*"
     },
     "require-dev": {
         "zendframework/zftool": "dev-master",

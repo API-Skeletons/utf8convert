@@ -1,1 +1,78 @@
-data index
+<h1>Data Review</h1>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>
+                Entity
+            </th>
+            <th>
+                Field
+            </th>
+            <th>
+                Iterations (Modifications) [<?= chr(15712189); ?>]
+            </th>
+            <th>
+                Total Analyzed Data Points
+            </th>
+            <th>
+                Analyzed Without Modification
+            </th>
+            <th>
+                Modified Data <u>Now Contains</u> <?= chr(15712189); ?>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php
+    foreach ($entities as $row) {
+    ?>
+        <tr>
+            <th>
+                <a href="<?= $this->url('database', ['field' => $row['entity']]); ?>">
+                    <?= $this->escapeHtml($row['entity']); ?>
+                </a>
+            </th>
+            <th>
+                <a href="<?= $this->url('database', ['field' => $row['entity'], 'entity' => $row['entity']]); ?>">
+                    <?= $this->escapeHtml($row['field']); ?>
+                </a>
+            </th>
+            <th>
+                <?php
+                foreach ($row['iterations'] as $iteration) {
+                ?>
+                <a class="btn btn-<?= ($iteration['data_point_errors']) ? 'danger': 'success'; ?>" href="<?= $this->url('iteration', [
+                    'entity' => $row['entity'],
+                    'field' => $row['field'],
+                    'iteration' => $iteration['index'],
+                ]); ?>">
+                    <?= $this->escapeHtml($iteration['index']); ?>
+                    (<?= $this->escapeHtml($iteration['data_point_changes']); ?>)
+                    <?php
+                    if ($iteration['data_point_errors']) {
+                    ?>
+                        [<?= $this->escapeHtml($iteration['data_point_errors']); ?>]
+                    <?php
+                    }
+                    ?>
+                </a>
+                <?php
+                }
+                ?>
+            </th>
+            <th>
+                <?= $this->escapeHtml($row['total_data_points']); ?>
+            </th>
+            <th>
+                <?= $this->escapeHtml($row['data_point_unchanged']); ?>
+            </th>
+            <th>
+                <?= $this->escapeHtml($row['data_point_errors']); ?>
+            </th>
+        </tr>
+    <?php
+    }
+    ?>
+    </tbody>
+</table>

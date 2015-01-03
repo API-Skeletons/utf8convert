@@ -1,4 +1,4 @@
-<h1>Review Entity Row</h1>
+<h1>Review Entity Row Changes</h1>
 
 <h2>
     Entity: <?= $this->escapeHtml($entity); ?>
@@ -60,11 +60,40 @@
 
             </td>
             <td colspan="2">
-                <?php
-                    $diff = new \Horde_Text_Diff('auto', array(explode("\n", $row['oldValue']), explode("\n", $row['newValue'])));
-                    echo $renderer->render($diff);
-                ?>
+                <?= $renderer->render(new \Horde_Text_Diff(
+                        'auto',
+                        array(
+                            explode("\n", $row['oldValue']),
+                            explode("\n", $row['newValue'])
+                        )
+                    ); ?>
             </td>
+        </tr>
+    <?php
+    }
+    ?>
+    </tbody>
+</table>
+
+<table class="table">
+    <caption>Current Data</caption>
+    <thead>
+        <tr>
+            <th>
+                Field
+            </th>
+            <th>
+                Value
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php
+    foreach ($currentData as $columnName => $value) {
+    ?>
+        <tr>
+            <td><?= $this->escapeHtml($columnName); ?></td>
+            <td><?= $this->escapeHtml($value); ?></td>
         </tr>
     <?php
     }

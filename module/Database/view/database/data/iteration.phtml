@@ -56,10 +56,13 @@
 
             </td>
             <td colspan="2">
-                <?php
-                    $diff = new \Horde_Text_Diff('auto', array(explode("\n", $row['oldValue']), explode("\n", $row['newValue'])));
-                    echo $renderer->render($diff);
-                ?>
+                <?= $renderer->render(new \Horde_Text_Diff(
+                        'auto',
+                        array(
+                            explode("\n", $row['oldValue']),
+                            explode("\n", $row['newValue'])
+                        )
+                    ); ?>
             </td>
         </tr>
     <?php

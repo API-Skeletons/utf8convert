@@ -14,7 +14,10 @@ class DataController extends AbstractActionController
         $entity = $this->params()->fromRoute('entity');
         $primaryKey = $this->params()->fromRoute('primaryKey');
 
+if ($entity == 'auth_user') die ('Cannot display auth_user data for security');
+
         $database = $this->getServiceLocator()->get('database');
+        $informationSchema = $this->getServiceLocator()->get('information-schema');
 
         $changes = $database->query("
             SELECT field, iteration, oldValue, newValue
@@ -26,10 +29,38 @@ class DataController extends AbstractActionController
 
         $renderer = new Horde_Text_Diff_Renderer_Inline();
 
+        $primaryKeys = $informationSchema->query("
+            SELECT COLUMN_NAME, COLUMN_KEY
+              FROM COLUMNS
+             WHERE TABLE_SCHEMA = ?
+               AND TABLE_NAME = ?
+               AND column_key = 'PRI'
+          ORDER BY COLUMN_NAME
+        ", array($databaseConnection['database'], $entity));
+
+        $keySql = array();
+        $keyValues = explode(',', $primaryKey);
+        foreach ($primaryKeys as $row) {
+            $keySql[] = "`" . $row['COLUMN_NAME'] . "` = '" . array_shift($keyValues) . "'";
+        }
+
+        $result= $database->query("
+            SELECT *
+              FROM `" . $entity . "`
+             WHERE " . implode(' AND ', $keySql)
+        )->execute();
+
+        $currentData = array();
+        foreach ($result as $row) {
+            if ($currentData) die('more than one current data found');
+            $currentData = $row;
+        }
+
         return array(
             'entity' => $entity,
             'primaryKey' => $primaryKey,
             'data' => $changes,
+            'currentData' => $currentData,
             'renderer' => $renderer,
         );
     }
@@ -39,6 +70,8 @@ class DataController extends AbstractActionController
         $entity = $this->params()->fromRoute('entity');
         $field = $this->params()->fromRoute('field');
         $iteration = $this->params()->fromRoute('iteration');
+
+if ($entity == 'auth_user') die ('Cannot display auth_user data for security');
 
         $database = $this->getServiceLocator()->get('database');
 

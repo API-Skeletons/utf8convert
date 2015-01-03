@@ -188,7 +188,6 @@ class IndexController extends AbstractActionController
      */
     public function convertAction()
     {
-        $verifySupplement = $this->getRequest()->getParam('supplement-has-been-ran');
         $consoleWhitelist = $this->getRequest()->getParam('whitelist');
         $consoleBlacklist = $this->getRequest()->getParam('blacklist');
         $clearLog = $this->getRequest()->getParam('clear-log');

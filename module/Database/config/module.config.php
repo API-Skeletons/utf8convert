@@ -62,7 +62,7 @@ return array(
                 'refactor' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'refactor [--whitelist=] [--blacklist=]',
+                        'route'    => 'refactor --supplement-has-been-ran [--whitelist=] [--blacklist=]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
                             'action'        => 'refactor',
@@ -72,7 +72,7 @@ return array(
                 'convert' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'convert --supplement-has-been-ran [--whitelist=] [--blacklist=] [--clear-log]',
+                        'route'    => 'convert [--whitelist=] [--blacklist=] [--clear-log]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
                             'action'        => 'convert',

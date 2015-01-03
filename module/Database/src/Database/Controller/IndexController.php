@@ -64,7 +64,6 @@ class IndexController extends AbstractActionController
             if (isset($databaseConnection['password']) and $databaseConnection['password']) {
                 echo " -p" . $databaseConnection['password'];
             }
-            echo " " . $databaseConnection['database'] . " < utf8convert.table.sql;\n";
             if (isset($databaseConnection['host']) and $databaseConnection['host']) {
                 echo " -h " . $databaseConnection['host'];
             }

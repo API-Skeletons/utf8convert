@@ -9,6 +9,31 @@ use Horde_Text_Diff_Renderer_Inline;
 
 class DataController extends AbstractActionController
 {
+    public function rowAction()
+    {
+        $entity = $this->params()->fromRoute('entity');
+        $primaryKey = $this->params()->fromRoute('primaryKey');
+
+        $database = $this->getServiceLocator()->get('database');
+
+        $changes = $database->query("
+            SELECT field, iteration, oldValue, newValue
+              FROM Utf8Convert
+             WHERE entity = ?
+               AND primaryKey = ?
+          ORDER BY field, iteration
+        ", array($entity, $primaryKey));
+
+        $renderer = new Horde_Text_Diff_Renderer_Inline();
+
+        return array(
+            'entity' => $entity,
+            'primaryKey' => $primaryKey,
+            'data' => $changes,
+            'renderer' => $renderer,
+        );
+    }
+
     public function iterationAction()
     {
         $entity = $this->params()->fromRoute('entity');
@@ -19,11 +44,11 @@ class DataController extends AbstractActionController
 
         $changes = $database->query("
             SELECT primaryKey, oldValue, newValue
-              FROM Utf8Changes
-              WHERE entity = ?
-              AND field = ?
-              AND iteration = ?
-              AND newValue IS NOT NULL
+              FROM Utf8Convert
+             WHERE entity = ?
+               AND field = ?
+               AND iteration = ?
+               AND newValue IS NOT NULL
           ORDER BY newValue
         ", array($entity, $field, $iteration));
 
@@ -44,7 +69,7 @@ class DataController extends AbstractActionController
 
         $cols = $database->query("
             SELECT entity, field, count(*) as changeCount
-              FROM Utf8Changes
+              FROM Utf8Convert
           GROUP BY entity, field
           ORDER BY entity, field
         ")->execute();
@@ -61,7 +86,7 @@ class DataController extends AbstractActionController
         foreach ($entities as $key => $row) {
             $erroredRows = $database->query("
                 SELECT count(*) as data_point_errors
-                FROM Utf8Changes
+                FROM Utf8Convert
                 WHERE entity = ?
                 AND field = ?
                 AND newValue like (concat('%', char(15712189), '%'))
@@ -74,7 +99,7 @@ class DataController extends AbstractActionController
 
             $unchangedRows = $database->query("
                 SELECT count(*) as data_point_unchanged
-                FROM Utf8Changes
+                FROM Utf8Convert
                 WHERE entity = ?
                 AND field = ?
                 AND newValue IS NULL
@@ -86,7 +111,7 @@ class DataController extends AbstractActionController
 
             $iterations = $database->query("
                 SELECT iteration, count(*) as changeCount
-                FROM Utf8Changes
+                FROM Utf8Convert
                 WHERE entity = ?
                 AND field = ?
                 AND newValue IS NOT NULL
@@ -98,7 +123,7 @@ class DataController extends AbstractActionController
                 $dataPointErrors = 0;
                 $errorRows = $database->query("
                     SELECT count(*) as data_point_errors
-                    FROM Utf8Changes
+                    FROM Utf8Convert
                     WHERE entity = ?
                     AND field = ?
                     AND iteration = ?

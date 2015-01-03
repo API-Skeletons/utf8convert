@@ -1,18 +1,19 @@
-<h1>Review Iteration</h1>
+<h1>Review Entity Row</h1>
 
 <h2>
     Entity: <?= $this->escapeHtml($entity); ?>
     <br>
-    Field: <?= $this->escapeHtml($field); ?>
-    <br>
-    Iteration: <?= $this->escapeHtml($iteration); ?>
+    Primary Key: <?= $this->escapeHtml($primaryKey); ?>
 </h2>
 
 <table class="table table-striped table-hover">
     <thead>
         <tr>
             <th>
-                Primary Key
+                Field
+            </th>
+            <th>
+                Iteration
             </th>
             <th>
                 Old Value
@@ -34,8 +35,11 @@
             }
         ?>">
             <td>
-                <a href="<?= $this->url('row', array('entity' => $entity, 'primaryKey' => $primaryKey)); ?>">
-                    <?= $row['primaryKey']; ?>
+                <?= $this->escapeHtml($row['field']); ?>
+            </td>
+            <td>
+                <a class="btn btn-info" href="<?= $this->url('iteration', array('entity' => $entity, 'iteration' => $iteration, 'field' => $row['field'])); ?>">
+                    <?= $row['iteration']; ?>
                 </a>
             </td>
             <td>

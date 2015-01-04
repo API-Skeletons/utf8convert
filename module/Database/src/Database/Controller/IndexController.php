@@ -131,6 +131,8 @@ class IndexController extends AbstractActionController
         $refactorDataTypes = $this->getServiceLocator()->get('Config');
         $refactorDataTypes = $refactorDataTypes['utf8-convert']['refactor']['data-types'];
 
+		$informationSchema->query("SET session wait_timeout=86400")->execute();
+
         if (!$refactorDataTypes) {
             echo "\nNo data types to refactor have been defined\n";
             return;
@@ -240,6 +242,8 @@ class IndexController extends AbstractActionController
 
         $config = $this->getServiceLocator()->get('Config');
 
+		$informationSchema->query("SET session wait_timeout=86400")->execute();
+
         $blacklistTables = '';
         if ($consoleBlacklist) {
             $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", explode(',', $consoleBlacklist))
@@ -262,7 +266,6 @@ class IndexController extends AbstractActionController
                     . "')";
             }
         }
-
 
         $convertColumns = $informationSchema->query("
             SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME, COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH

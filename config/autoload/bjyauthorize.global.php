@@ -43,6 +43,8 @@ return array(
                 array('route' => 'iteration', 'roles' => array('guest')),
 
                 array('route' => 'zfcuser', 'roles' => array('view')),
+                array('route' => 'zfcuser/changepassword', 'roles' => array('view')),
+                array('route' => 'zfcuser/changeemail', 'roles' => array('view')),
                 array('route' => 'zfcuser/login', 'roles' => array('guest')),
                 array('route' => 'zfcuser/logout', 'roles' => array('guest')),
 

@@ -25,6 +25,21 @@ class Column
     private $length;
 
     /**
+     * @var string
+     */
+    private $defaultValue;
+
+    /**
+     * @var boolean
+     */
+    private $isNullable;
+
+    /**
+     * @var string
+     */
+    private $extra;
+
+    /**
      * @var integer
      */
     private $id;
@@ -117,87 +132,6 @@ class Column
     }
 
     /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Add dataPoint
-     *
-     * @param \Db\Entity\DataPoint $dataPoint
-     * @return Column
-     */
-    public function addDataPoint(\Db\Entity\DataPoint $dataPoint)
-    {
-        $this->dataPoint[] = $dataPoint;
-
-        return $this;
-    }
-
-    /**
-     * Remove dataPoint
-     *
-     * @param \Db\Entity\DataPoint $dataPoint
-     */
-    public function removeDataPoint(\Db\Entity\DataPoint $dataPoint)
-    {
-        $this->dataPoint->removeElement($dataPoint);
-    }
-
-    /**
-     * Get dataPoint
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getDataPoint()
-    {
-        return $this->dataPoint;
-    }
-
-    /**
-     * Set table
-     *
-     * @param \Db\Entity\Table $table
-     * @return Column
-     */
-    public function setTable(\Db\Entity\Table $table)
-    {
-        $this->table = $table;
-
-        return $this;
-    }
-
-    /**
-     * Get table
-     *
-     * @return \Db\Entity\Table 
-     */
-    public function getTable()
-    {
-        return $this->table;
-    }
-    /**
-     * @var string
-     */
-    private $defaultValue;
-
-    /**
-     * @var boolean
-     */
-    private $isNullable;
-
-    /**
-     * @var string
-     */
-    private $extra;
-
-
-    /**
      * Set defaultValue
      *
      * @param string $defaultValue
@@ -264,5 +198,71 @@ class Column
     public function getExtra()
     {
         return $this->extra;
+    }
+
+    /**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Add dataPoint
+     *
+     * @param \Db\Entity\DataPoint $dataPoint
+     * @return Column
+     */
+    public function addDataPoint(\Db\Entity\DataPoint $dataPoint)
+    {
+        $this->dataPoint[] = $dataPoint;
+
+        return $this;
+    }
+
+    /**
+     * Remove dataPoint
+     *
+     * @param \Db\Entity\DataPoint $dataPoint
+     */
+    public function removeDataPoint(\Db\Entity\DataPoint $dataPoint)
+    {
+        $this->dataPoint->removeElement($dataPoint);
+    }
+
+    /**
+     * Get dataPoint
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getDataPoint()
+    {
+        return $this->dataPoint;
+    }
+
+    /**
+     * Set table
+     *
+     * @param \Db\Entity\Table $table
+     * @return Column
+     */
+    public function setTable(\Db\Entity\Table $table)
+    {
+        $this->table = $table;
+
+        return $this;
+    }
+
+    /**
+     * Get table
+     *
+     * @return \Db\Entity\Table 
+     */
+    public function getTable()
+    {
+        return $this->table;
     }
 }

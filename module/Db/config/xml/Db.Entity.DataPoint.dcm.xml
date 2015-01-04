@@ -19,11 +19,11 @@
         <join-column name="conversion_id" referenced-column-name="id" nullable="false"/>
       </join-columns>
     </many-to-one>
-    <many-to-one field="column" target-entity="Db\Entity\Column" inversed-by="dataPoint">
+    <many-to-one field="columnDef" target-entity="Db\Entity\ColumnDef" inversed-by="dataPoint">
       <join-columns>
-        <join-column name="column_id" referenced-column-name="id" nullable="false"/>
+        <join-column name="column_def_id" referenced-column-name="id" nullable="false"/>
       </join-columns>
     </many-to-one>
-    <one-to-many field="dataPointPrimaryKey" target-entity="Db\Entity\DataPointPrimaryKey" mapped-by="dataPoint"/>
+    <one-to-many field="dataPointPrimaryKey" target-entity="Db\Entity\DataPointPrimaryKeyDef" mapped-by="dataPoint"/>
   </entity>
 </doctrine-mapping>

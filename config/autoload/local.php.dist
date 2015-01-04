@@ -3,6 +3,7 @@
 return array(
     'utf8-convert' => array(
         'convert' => array(
+            'fetch-limit' => 1000,
             'blacklist-tables' => array(
                 'artists_audit',
                 'md5s_audit',

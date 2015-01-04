@@ -5,9 +5,9 @@ namespace Db\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * DataPointPrimaryKey
+ * DataPointPrimaryKeyDef
  */
-class DataPointPrimaryKey
+class DataPointPrimaryKeyDef
 {
     /**
      * @var string
@@ -25,16 +25,16 @@ class DataPointPrimaryKey
     private $dataPoint;
 
     /**
-     * @var \Db\Entity\PrimaryKey
+     * @var \Db\Entity\PrimaryKeyDef
      */
-    private $primaryKey;
+    private $primaryKeyDef;
 
 
     /**
      * Set value
      *
      * @param string $value
-     * @return DataPointPrimaryKey
+     * @return DataPointPrimaryKeyDef
      */
     public function setValue($value)
     {
@@ -67,7 +67,7 @@ class DataPointPrimaryKey
      * Set dataPoint
      *
      * @param \Db\Entity\DataPoint $dataPoint
-     * @return DataPointPrimaryKey
+     * @return DataPointPrimaryKeyDef
      */
     public function setDataPoint(\Db\Entity\DataPoint $dataPoint)
     {
@@ -87,25 +87,25 @@ class DataPointPrimaryKey
     }
 
     /**
-     * Set primaryKey
+     * Set primaryKeyDef
      *
-     * @param \Db\Entity\PrimaryKey $primaryKey
-     * @return DataPointPrimaryKey
+     * @param \Db\Entity\PrimaryKeyDef $primaryKeyDef
+     * @return DataPointPrimaryKeyDef
      */
-    public function setPrimaryKey(\Db\Entity\PrimaryKey $primaryKey)
+    public function setPrimaryKeyDef(\Db\Entity\PrimaryKeyDef $primaryKeyDef)
     {
-        $this->primaryKey = $primaryKey;
+        $this->primaryKeyDef = $primaryKeyDef;
 
         return $this;
     }
 
     /**
-     * Get primaryKey
+     * Get primaryKeyDef
      *
-     * @return \Db\Entity\PrimaryKey 
+     * @return \Db\Entity\PrimaryKeyDef 
      */
-    public function getPrimaryKey()
+    public function getPrimaryKeyDef()
     {
-        return $this->primaryKey;
+        return $this->primaryKeyDef;
     }
 }

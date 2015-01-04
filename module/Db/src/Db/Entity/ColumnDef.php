@@ -5,9 +5,9 @@ namespace Db\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Conversion
+ * ColumnDef
  */
-class Conversion
+class ColumnDef
 {
     /**
      * @var string
@@ -17,17 +17,27 @@ class Conversion
     /**
      * @var string
      */
-    private $description;
+    private $dataType;
 
     /**
-     * @var \DateTime
+     * @var string
      */
-    private $createdAt;
+    private $length;
 
     /**
-     * @var \DateTime
+     * @var string
      */
-    private $completedAt;
+    private $defaultValue;
+
+    /**
+     * @var boolean
+     */
+    private $isNullable;
+
+    /**
+     * @var string
+     */
+    private $extra;
 
     /**
      * @var integer
@@ -40,7 +50,7 @@ class Conversion
     private $dataPoint;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
+     * @var \Db\Entity\TableDef
      */
     private $tableDef;
 
@@ -50,14 +60,13 @@ class Conversion
     public function __construct()
     {
         $this->dataPoint = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->tableDef = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
      * Set name
      *
      * @param string $name
-     * @return Conversion
+     * @return ColumnDef
      */
     public function setName($name)
     {
@@ -77,72 +86,118 @@ class Conversion
     }
 
     /**
-     * Set description
+     * Set dataType
      *
-     * @param string $description
-     * @return Conversion
+     * @param string $dataType
+     * @return ColumnDef
      */
-    public function setDescription($description)
+    public function setDataType($dataType)
     {
-        $this->description = $description;
+        $this->dataType = $dataType;
 
         return $this;
     }
 
     /**
-     * Get description
+     * Get dataType
      *
      * @return string 
      */
-    public function getDescription()
+    public function getDataType()
     {
-        return $this->description;
+        return $this->dataType;
     }
 
     /**
-     * Set createdAt
+     * Set length
      *
-     * @param \DateTime $createdAt
-     * @return Conversion
+     * @param string $length
+     * @return ColumnDef
      */
-    public function setCreatedAt($createdAt)
+    public function setLength($length)
     {
-        $this->createdAt = $createdAt;
+        $this->length = $length;
 
         return $this;
     }
 
     /**
-     * Get createdAt
+     * Get length
      *
-     * @return \DateTime 
+     * @return string 
      */
-    public function getCreatedAt()
+    public function getLength()
     {
-        return $this->createdAt;
+        return $this->length;
     }
 
     /**
-     * Set completedAt
+     * Set defaultValue
      *
-     * @param \DateTime $completedAt
-     * @return Conversion
+     * @param string $defaultValue
+     * @return ColumnDef
      */
-    public function setCompletedAt($completedAt)
+    public function setDefaultValue($defaultValue)
     {
-        $this->completedAt = $completedAt;
+        $this->defaultValue = $defaultValue;
 
         return $this;
     }
 
     /**
-     * Get completedAt
+     * Get defaultValue
      *
-     * @return \DateTime 
+     * @return string 
      */
-    public function getCompletedAt()
+    public function getDefaultValue()
     {
-        return $this->completedAt;
+        return $this->defaultValue;
+    }
+
+    /**
+     * Set isNullable
+     *
+     * @param boolean $isNullable
+     * @return ColumnDef
+     */
+    public function setIsNullable($isNullable)
+    {
+        $this->isNullable = $isNullable;
+
+        return $this;
+    }
+
+    /**
+     * Get isNullable
+     *
+     * @return boolean 
+     */
+    public function getIsNullable()
+    {
+        return $this->isNullable;
+    }
+
+    /**
+     * Set extra
+     *
+     * @param string $extra
+     * @return ColumnDef
+     */
+    public function setExtra($extra)
+    {
+        $this->extra = $extra;
+
+        return $this;
+    }
+
+    /**
+     * Get extra
+     *
+     * @return string 
+     */
+    public function getExtra()
+    {
+        return $this->extra;
     }
 
     /**
@@ -159,7 +214,7 @@ class Conversion
      * Add dataPoint
      *
      * @param \Db\Entity\DataPoint $dataPoint
-     * @return Conversion
+     * @return ColumnDef
      */
     public function addDataPoint(\Db\Entity\DataPoint $dataPoint)
     {
@@ -189,32 +244,22 @@ class Conversion
     }
 
     /**
-     * Add tableDef
+     * Set tableDef
      *
      * @param \Db\Entity\TableDef $tableDef
-     * @return Conversion
+     * @return ColumnDef
      */
-    public function addTableDef(\Db\Entity\TableDef $tableDef)
+    public function setTableDef(\Db\Entity\TableDef $tableDef)
     {
-        $this->tableDef[] = $tableDef;
+        $this->tableDef = $tableDef;
 
         return $this;
     }
 
     /**
-     * Remove tableDef
-     *
-     * @param \Db\Entity\TableDef $tableDef
-     */
-    public function removeTableDef(\Db\Entity\TableDef $tableDef)
-    {
-        $this->tableDef->removeElement($tableDef);
-    }
-
-    /**
      * Get tableDef
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Db\Entity\TableDef 
      */
     public function getTableDef()
     {

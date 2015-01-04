@@ -4,6 +4,8 @@ return array(
         'invokables' => array(
             'Database\Controller\Index' => 'Database\Controller\IndexController',
             'Database\Controller\Data' => 'Database\Controller\DataController',
+            'Database\Controller\Convert' => 'Database\Controller\ConvertController',
+            'Database\Controller\Database' => 'Database\Controller\DatabaseController',
         ),
     ),
     'view_manager' => array(
@@ -64,8 +66,18 @@ return array(
                     'options' => array(
                         'route'    => 'validate',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Index',
-                            'action'        => 'validate',
+                            'controller'    => 'Database\Controller\Database',
+                            'action'        => 'validateTargetDatabase',
+                        ),
+                    ),
+                ),
+                'truncate' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'truncate conversion data',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Database',
+                            'action'        => 'truncateUtf8ConvertDatabase',
                         ),
                     ),
                 ),
@@ -95,6 +107,16 @@ return array(
                         'route'    => 'convert [--whitelist=] [--blacklist=] [--clear-log]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
+                            'action'        => 'convert',
+                        ),
+                    ),
+                ),
+                'convert2' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'convert2 [--whitelist=] [--blacklist=]',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Convert',
                             'action'        => 'convert',
                         ),
                     ),

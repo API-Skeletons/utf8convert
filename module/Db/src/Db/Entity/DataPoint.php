@@ -12,12 +12,7 @@ class DataPoint
     /**
      * @var string
      */
-    private $table;
-
-    /**
-     * @var string
-     */
-    private $column;
+    private $primaryKey;
 
     /**
      * @var string
@@ -60,6 +55,11 @@ class DataPoint
     private $conversion;
 
     /**
+     * @var \Db\Entity\ColumnDef
+     */
+    private $columnDef;
+
+    /**
      * Constructor
      */
     public function __construct()
@@ -68,49 +68,26 @@ class DataPoint
     }
 
     /**
-     * Set table
+     * Set primaryKey
      *
-     * @param string $table
+     * @param string $primaryKey
      * @return DataPoint
      */
-    public function setTable($table)
+    public function setPrimaryKey($primaryKey)
     {
-        $this->table = $table;
+        $this->primaryKey = $primaryKey;
 
         return $this;
     }
 
     /**
-     * Get table
+     * Get primaryKey
      *
      * @return string 
      */
-    public function getTable()
+    public function getPrimaryKey()
     {
-        return $this->table;
-    }
-
-    /**
-     * Set column
-     *
-     * @param string $column
-     * @return DataPoint
-     */
-    public function setColumn($column)
-    {
-        $this->column = $column;
-
-        return $this;
-    }
-
-    /**
-     * Get column
-     *
-     * @return string 
-     */
-    public function getColumn()
-    {
-        return $this->column;
+        return $this->primaryKey;
     }
 
     /**
@@ -218,10 +195,10 @@ class DataPoint
     /**
      * Add dataPointPrimaryKey
      *
-     * @param \Db\Entity\DataPointPrimaryKey $dataPointPrimaryKey
+     * @param \Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKey
      * @return DataPoint
      */
-    public function addDataPointPrimaryKey(\Db\Entity\DataPointPrimaryKey $dataPointPrimaryKey)
+    public function addDataPointPrimaryKey(\Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKey)
     {
         $this->dataPointPrimaryKey[] = $dataPointPrimaryKey;
 
@@ -231,9 +208,9 @@ class DataPoint
     /**
      * Remove dataPointPrimaryKey
      *
-     * @param \Db\Entity\DataPointPrimaryKey $dataPointPrimaryKey
+     * @param \Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKey
      */
-    public function removeDataPointPrimaryKey(\Db\Entity\DataPointPrimaryKey $dataPointPrimaryKey)
+    public function removeDataPointPrimaryKey(\Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKey)
     {
         $this->dataPointPrimaryKey->removeElement($dataPointPrimaryKey);
     }
@@ -293,32 +270,27 @@ class DataPoint
     {
         return $this->conversion;
     }
-    /**
-     * @var string
-     */
-    private $primaryKey;
-
 
     /**
-     * Set primaryKey
+     * Set columnDef
      *
-     * @param string $primaryKey
+     * @param \Db\Entity\ColumnDef $columnDef
      * @return DataPoint
      */
-    public function setPrimaryKey($primaryKey)
+    public function setColumnDef(\Db\Entity\ColumnDef $columnDef)
     {
-        $this->primaryKey = $primaryKey;
+        $this->columnDef = $columnDef;
 
         return $this;
     }
 
     /**
-     * Get primaryKey
+     * Get columnDef
      *
-     * @return string 
+     * @return \Db\Entity\ColumnDef 
      */
-    public function getPrimaryKey()
+    public function getColumnDef()
     {
-        return $this->primaryKey;
+        return $this->columnDef;
     }
 }

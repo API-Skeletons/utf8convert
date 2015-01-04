@@ -9,23 +9,31 @@ About
 
 This is a program to facilitate the commands and sql as outlined in [https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell](https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell)
 
-You will need to read this whole article.
-
-This repository was created to convert db.etree.org to utf8.  It has been released in the hopes others can benefit with it.
 
 Install
 -------
 
-Run ```composer.phar install``` then copy ```~/config/autoload/local.php.dist``` to ```~/config/autoload/local.php``` and edit for your environment.
-
+```
+./composer.phar install
+cp config/autoload/local.php.dist config/autoload/local.php
+; edit local for specific environment
+php public/index orm:schema-tool:create
+php public/index data-fixture:import
+php public/index create-administrator --email=email@net --displayName=administrator
+; the admin login information is returned from create-administrator
+```
 
 Use
 ---
+Run ```php public/index.php``` to see all command line functions and options.
 
-Run ```php public/index.php validate```  This will tell you if you have any tables or columns which are not set to utf8.  If you have tables which are not utf8 you will be prompted to run ```php public/index.php generate table conversion``` which will output the command line commands to change your tables to utf8.  You may pipe this directly to shell to run the commands: ```php public/index.php generate table conversion | sh```
+```php public/index.php validate```  
+
+This will tell you if you have any tables or columns which are not set to utf8.  If you have tables which are not utf8 you will be prompted to run ```php public/index.php generate table conversion``` which will output the command line commands to change your tables to utf8.  You may pipe this directly to shell to run the commands: ```php public/index.php generate table conversion | sh```
 
 If you have a supplement.sql script run it now.
 
+```php public/index refactor```
 Next is table refactoring.  This will change all char, enum, and varchar fields to varchar(255).  This step is included because if you're bothering to fix all your utf8 data you should probably fix your tables to Doctrine 2 standards while you're at it.  To refactor run ```php public/indx.php refactor```  For this writing you may not skip this step.  There may be sql errors raised.  This often happens when there is a multi-column index for strings and the new index size is out of bounds.  Create a supplement.sql script with sql to fix this problem the next time you run the refactoring.  If a sql error is encountered you may safely re-run this command after fixing it.
 
 

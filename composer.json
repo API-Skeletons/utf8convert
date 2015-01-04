@@ -32,11 +32,21 @@
     "require": {
         "php": ">=5.4",
         "zendframework/zendframework": ">=2.3.2,<3.0.0",
+        "zendframework/zend-developer-tools": "dev-master",
         "zfcampus/zf-development-mode": "~2.0",
-        "pear-pear.horde.org/horde_text_diff": "2.*"
+        "zfcampus/zf-apigility": "~1.0",
+        "zfcampus/zf-apigility-documentation": "~1.0",
+        "zfcampus/zf-apigility-doctrine": "0.2.*",
+        "zf-commons/zfc-user-doctrine-orm": "*",
+        "bjyoungblood/bjy-authorize": "1.4.*",
+        "hounddog/doctrine-data-fixture-module": "0.0.*",
+        "san/san-session-toolbar": "0.*",
+        "pear-pear.horde.org/horde_text_diff": "2.*",
+        "danielss89/zfc-user-admin": "dev-master"
     },
     "require-dev": {
         "zendframework/zftool": "dev-master",
-        "zendframework/zend-developer-tools": "dev-master"
+        "zfcampus/zf-apigility-admin": "~1.0",
+        "zfcampus/zf-deploy": "~1.0"
     }
 }

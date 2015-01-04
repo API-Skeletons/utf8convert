@@ -34,6 +34,17 @@ if (file_exists(APPLICATION_PATH . '/config/development.config.php')) {
     $appConfig = Zend\Stdlib\ArrayUtils::merge($appConfig, include APPLICATION_PATH . '/config/development.config.php');
 }
 
+// Load console/http specific configurations
+if (\Zend\Console\Console::isConsole()) {
+    if (file_exists(APPLICATION_PATH . '/config/console.config.php')) {
+        $appConfig = Zend\Stdlib\ArrayUtils::merge($appConfig, include APPLICATION_PATH . '/config/console.config.php');
+    }
+} else {
+    if (file_exists(APPLICATION_PATH . '/config/http.config.php')) {
+        $appConfig = Zend\Stdlib\ArrayUtils::merge($appConfig, include APPLICATION_PATH . '/config/http.config.php');
+    }
+}
+
 // Some OS/Web Server combinations do not glob properly for paths unless they
 // are fully qualified (e.g., IBM i). The following prefixes the default glob
 // path with the value of the current working directory to ensure configuration

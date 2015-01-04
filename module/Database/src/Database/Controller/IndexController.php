@@ -8,6 +8,48 @@ use Zend\Db\Adapter\Exception\RuntimeException;
 
 class IndexController extends AbstractActionController
 {
+    public function createAdministratorAction()
+    {
+        $email = $this->getRequest()->getParam('email');
+        $displayName = $this->getRequest()->getParam('displayName');
+
+        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+        if (sizeof($objectManager->getRepository('Db\Entity\User')->findAll())) {
+            echo "\nUsers already exist in the system.\n";
+            return;
+        }
+
+        $zfcUserService = $this->getServiceLocator()->get('zfcuser_user_service');
+
+        $password = 'u' . substr(hash('sha512', rand()), 0, 10);
+        $data = array(
+            'display_name' => $displayName,
+            'email' => $email,
+            'password' => $password,
+            'passwordVerify' => $password,
+        );
+
+        $user = $zfcUserService->register($data);
+
+        if (!$user) {
+            echo "\nFailed to create administrator\n";
+            return;
+        }
+
+        $user = $objectManager->getRepository('Db\Entity\User')->find($user->getId());
+        $administratorRole = $objectManager->getRepository('Db\Entity\Role')->findOneBy(array(
+            'roleId' => 'administrator'
+        ));
+
+        $user->addRole($administratorRole);
+        $administratorRole->addUser($user);
+
+        $objectManager->flush();
+
+        echo "\nCreated Administrator: " . $user->getEmail() . " " . $password . "\n";
+        return;
+    }
+
     /**
      * Check MySQL utf8 settings for the database
      */

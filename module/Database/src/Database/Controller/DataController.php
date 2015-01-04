@@ -14,8 +14,6 @@ class DataController extends AbstractActionController
         $entity = $this->params()->fromRoute('entity');
         $primaryKey = $this->params()->fromRoute('primaryKey');
 
-if ($entity == 'auth_user') die ('Cannot display auth_user data for security');
-
         $database = $this->getServiceLocator()->get('database');
         $informationSchema = $this->getServiceLocator()->get('information-schema');
 
@@ -70,8 +68,6 @@ if ($entity == 'auth_user') die ('Cannot display auth_user data for security');
         $entity = $this->params()->fromRoute('entity');
         $field = $this->params()->fromRoute('field');
         $iteration = $this->params()->fromRoute('iteration');
-
-if ($entity == 'auth_user') die ('Cannot display auth_user data for security');
 
         $database = $this->getServiceLocator()->get('database');
 

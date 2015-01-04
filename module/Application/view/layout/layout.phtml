@@ -60,9 +60,47 @@
                 </div>
 
                 <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav">
-                        <li class=""><a href="<?php echo $this->url('home') ?>"><?php echo $this->translate('Home') ?></a></li>
+                    <ul class="nav navbar-nav dropdown-menu-right pull-right">
+                        <?php
+                        if ($this->zfcUserIdentity()) {
+                        ?>
+                            <?php
+                            if ($this->isAllowed('administration', 'access')) {
+                            ?>
+                                <li class=""><a href="<?php echo $this->url('zfcadmin/zfcuseradmin/list') ?>"><?php echo $this->translate('Administration') ?></a></li>
+                            <?php
+                            }
+                            ?>
 
+                        <li id="user-menu" class="dropdown">
+                            <a id="user-drop" class="dropdown-toggle" data-toggle="dropdown" role="button" href="#">
+                                <?= $this->escapeHtml($this->zfcUserIdentity()->getDisplayName()); ?>
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="user-drop" role="menu">
+                                <li role="menuitem"><a href="<?php echo $this->url('zfcuser/logout') ?>"><?php echo $this->translate('Logout') ?></a></li>
+                            </ul>
+                        </li>
+                        <?php
+                        } else {
+                        ?>
+                            <li class=""><a href="<?php echo $this->url('zfcuser/login') ?>"><?php echo $this->translate('Login') ?></a></li>
+                        <?php
+                        }
+                        ?>
+                    </ul>
+
+                    <ul class="nav navbar-nav">
+                        <?php
+                        if ($this->zfcUserIdentity()) {
+                        ?>
+                            <li class=""><a href="<?php echo $this->url('database') ?>"><?php echo $this->translate('Review Data') ?></a></li>
+                        <?php
+                        } else {
+                        ?>
+                        <?php
+                        }
+                        ?>
                     </ul>
 
                 </div><!--/.nav-collapse -->

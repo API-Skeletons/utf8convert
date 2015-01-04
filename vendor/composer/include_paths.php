@@ -6,8 +6,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    $vendorDir . '/pear-pear.horde.org/Horde_Util',
     $vendorDir . '/pear-pear.horde.org/Horde_Translation',
     $vendorDir . '/pear-pear.horde.org/Horde_Exception',
-    $vendorDir . '/pear-pear.horde.org/Horde_Util',
     $vendorDir . '/pear-pear.horde.org/Horde_Text_Diff',
 );

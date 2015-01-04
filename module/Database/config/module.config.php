@@ -89,6 +89,16 @@ return array(
                         ),
                     ),
                 ),
+                'createAdministrator' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'create-administrator [--email=] [--displayName=]',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Index',
+                            'action'        => 'createAdministrator',
+                        ),
+                    ),
+                ),
             ),
         ),
     ),

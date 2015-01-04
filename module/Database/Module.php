@@ -13,6 +13,7 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
     public function getConsoleUsage(Console $console)
     {
         return array(
+            'create-administrator --email=email@net --displayName=administrator' => 'Create the administrator for this instance',
             'validate' => 'Validate the database is configured for utf8',
             'generate table conversion' => 'Create a shell script to move all non-utf8 tables to utf8',
             'refactor --supplement-has-been-ran [--whitelist=table,list] [--blacklist=table,list]' => 'Refactor database character fields to varchar(255) and text to longtext',

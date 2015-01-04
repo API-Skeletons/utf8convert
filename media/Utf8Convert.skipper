@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<skipper version="3.0.0.1104" name="Utf8Convert" mvc="Without MVC" orm="Doctrine2" uuid="a90f0648-66e9-4a07-91db-c4c8e3a51864">
+  <module name="Utf8Convert" import-format="Doctrine2Xml" import-path="../module/Db/config/xml" uuid="2492e6cc-ebbf-4021-b0da-9b8a264a678a">
+    <entity name="User" uuid="d39deddb-4b37-453e-a0d9-94804f0b2a12">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="d9cb0bd8-d391-4147-9df1-12e8aaaa6b9f"/>
+      <field name="username" type="string" uuid="3247374f-b5bc-457b-9f50-d1816767e32a"/>
+      <field name="email" type="string" uuid="353e9856-3aac-4427-9554-bc110ea87971"/>
+      <field name="displayName" type="string" uuid="7f4af2f0-e384-4e24-8c1f-173d4581a65c"/>
+      <field name="password" type="string" uuid="5bd90452-4a5c-464a-8db8-4cfd54c368cd"/>
+      <field name="state" type="integer" uuid="d5f9b92c-4c83-4313-a391-186a33ea462e"/>
+    </entity>
+    <entity name="Role" uuid="f31e7603-99b1-40eb-9547-4071b5470019">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="177ec1f1-5507-4b2d-b414-bd1d29adb501"/>
+      <field name="roleId" uuid="5a51d38a-6066-4f9b-af9c-d2e9cfc2dd0b"/>
+      <field name="role_id" type="integer" uuid="febacb8e-7c09-4c98-a2bf-11c58373d3f0"/>
+    </entity>
+    <association from="Role" to="Role" inverse-alias="parent" uuid="d41adf57-1185-4809-bc0f-fd5477bfb4a2">
+      <association-field from="role_id" to="id"/>
+    </association>
+    <entity name="UserToRole" uuid="1486a327-c989-4d35-8065-c62cdb0d538b">
+      <field name="user_id" type="integer" required="true" primary="true" uuid="7d329232-db92-484d-99f7-ebdfb6ba34b5"/>
+      <field name="role_id" type="integer" required="true" primary="true" uuid="3b9e05e9-7686-4beb-b462-b5e86c3dad20"/>
+    </entity>
+    <many-to-many mn-entity="UserToRole" uuid="23cb8b11-23eb-4f58-a6c1-317dda96ede5">
+      <many-to-many-entity name="Role" owning-side="true" alias="role" uuid="aafe7fc1-abe4-41db-b816-ef8fc59d4692">
+        <many-to-many-field from="role_id" to="id"/>
+      </many-to-many-entity>
+      <many-to-many-entity name="User" owning-side="false" alias="user" uuid="18e16aa4-09ef-46ea-b586-2d221344b945">
+        <many-to-many-field from="user_id" to="id"/>
+      </many-to-many-entity>
+    </many-to-many>
+    <orm-attributes>
+      <attribute name="namespace">Db\Entity</attribute>
+    </orm-attributes>
+  </module>
+  <visual-data>
+    <entity uuid="1486a327-c989-4d35-8065-c62cdb0d538b" bg-color="4294967295" hdr-color="4292006610" position-x="244" position-y="79" size-x="0" size-x2="89" size-y="0" size-y2="60"/>
+    <many-to-many-association uuid="23cb8b11-23eb-4f58-a6c1-317dda96ede5" color="4288059030"/>
+    <module uuid="2492e6cc-ebbf-4021-b0da-9b8a264a678a" bg-color="4287552497" position-x="50" position-y="50" size-x="0" size-x2="648" size-y="0" size-y2="598"/>
+    <project uuid="a90f0648-66e9-4a07-91db-c4c8e3a51864" size-x="0" size-x2="729" size-y="0" size-y2="687"/>
+    <entity uuid="d39deddb-4b37-453e-a0d9-94804f0b2a12" bg-color="4294967295" hdr-color="4292006610" position-x="66" position-y="60" size-x="0" size-x2="20" size-y="0" size-y2="20"/>
+    <association uuid="d41adf57-1185-4809-bc0f-fd5477bfb4a2" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="-20" color="4288059030"/>
+    <entity uuid="f31e7603-99b1-40eb-9547-4071b5470019" bg-color="4294967295" hdr-color="4292006610" position-x="398" position-y="80" size-x="0" size-x2="87" size-y="0" size-y2="59"/>
+  </visual-data>
+</skipper>

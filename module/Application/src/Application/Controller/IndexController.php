@@ -16,6 +16,8 @@ class IndexController extends AbstractActionController
 {
     public function indexAction()
     {
-        return $this->plugin('redirect')->toRoute('database');
+        $readme = file_get_contents(__DIR__ . '/../../../../../README.md');
+
+        return new ViewModel(array('readme' => $readme));
     }
 }

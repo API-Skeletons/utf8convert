@@ -29,17 +29,108 @@
         <many-to-many-field from="user_id" to="id"/>
       </many-to-many-entity>
     </many-to-many>
+    <entity name="DataPoint" uuid="34c62268-3f13-4e57-97ba-8ee0e7e54ad9">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="d0f1cda8-f00d-49ae-a494-7dff54353640"/>
+      <field name="column_id" type="integer" required="true" uuid="3715f063-ee5a-4cdb-b361-db4693d89807"/>
+      <field name="conversion_id" type="integer" required="true" uuid="fc156e3c-359c-4314-ad29-8df44760aa7d"/>
+      <field name="primaryKey" type="string" uuid="56ae70a3-e7e1-4fb6-9b8b-25171d254711"/>
+      <field name="oldValue" type="text" uuid="cb6a71d0-9dee-4e81-925c-f43299819d15"/>
+      <field name="newValue" type="text" uuid="151c3737-cc94-409d-85a8-e0a557af44e6"/>
+      <field name="iteration" type="integer" uuid="b6a06dfb-4fd9-44a1-bc56-bd844e8ab8ac"/>
+      <field name="flagForReview" type="boolean" uuid="00d48034-17d9-41d1-8a01-1ca25a408e12"/>
+      <field name="user_id" type="integer" uuid="bb0adc08-383f-4c15-b3dc-f48d90899ba4"/>
+    </entity>
+    <association from="DataPoint" to="User" owner-alias="dataPoint" inverse-alias="user" uuid="de1e9a1b-7384-44ea-928a-a478eb26a18d">
+      <association-field from="user_id" to="id"/>
+    </association>
+    <association from="DataPoint" to="Conversion" owner-alias="dataPoint" inverse-alias="conversion" uuid="7821fa10-c89e-4dbe-9758-f823901fcb06">
+      <association-field from="conversion_id" to="id"/>
+    </association>
+    <association from="DataPoint" to="Column" owner-alias="dataPoint" inverse-alias="column" uuid="fed34212-bcbe-4793-8055-4d8f50b731be">
+      <association-field from="column_id" to="id"/>
+    </association>
+    <entity name="Conversion" uuid="e482a350-bc6a-4790-8a2b-3632d78ea224">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="8cd0cca6-db81-4224-a748-d02b2e81a5f2"/>
+      <field name="name" type="string" uuid="64484a14-3048-4ed6-86df-d6985cb81187"/>
+      <field name="description" type="text" uuid="484f9979-f077-496a-b828-e7dc2853d7af"/>
+      <field name="createdAt" type="datetime" uuid="85a27ab0-8458-4d72-a279-2d6a1df7f886"/>
+      <field name="completedAt" type="datetime" uuid="863c15ae-9abf-40f0-9465-014f0f506712"/>
+    </entity>
+    <entity name="PrimaryKey" uuid="7fc6f45a-9a2c-460b-a809-cf3c36f370aa">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="4a2e5372-d334-4645-8580-8bb1bb38ff1c"/>
+      <field name="column" type="string" uuid="a7c98395-c6a5-4cf5-bf0d-dc3f4c5649a0"/>
+      <field name="table_id" type="integer" required="true" uuid="269cf8a1-ba66-4d99-b6a8-da122291bd1a"/>
+    </entity>
+    <association from="PrimaryKey" to="Table" owner-alias="primaryKey" inverse-alias="table" uuid="b33c0e47-6b5d-4063-84f5-f2de055cc8c3">
+      <association-field from="table_id" to="id"/>
+    </association>
+    <entity name="DataPointPrimaryKey" uuid="5b71554e-4c20-4b72-85fd-fbb05c04beb5">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="18ed45db-e19b-48f7-ab89-893e60a66586"/>
+      <field name="value" type="string" uuid="4640cfc4-db01-4b59-b875-2a62b6f97d68"/>
+      <field name="data_point_id" type="integer" required="true" uuid="756cffe5-25ca-4e25-9200-c665e73cf1ec"/>
+      <field name="primary_key_id" type="integer" required="true" uuid="21fd4ed2-5094-4bef-98b6-16c3503515df"/>
+    </entity>
+    <association from="DataPointPrimaryKey" to="DataPoint" owner-alias="dataPointPrimaryKey" inverse-alias="dataPoint" uuid="6dfc4c01-7fec-4cb5-a750-09fb3ff2b93b">
+      <association-field from="data_point_id" to="id"/>
+    </association>
+    <association from="DataPointPrimaryKey" to="PrimaryKey" owner-alias="dataPointPrimaryKey" inverse-alias="primaryKey" uuid="a5060d03-3f36-4952-ac1f-a652ba2c4012">
+      <association-field from="primary_key_id" to="id"/>
+    </association>
+    <entity name="Table" uuid="51b89a76-be62-4924-89a6-34f29b523c7f">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="e7d6bf11-1e56-489e-80c4-0613a17646c4"/>
+      <field name="name" type="string" uuid="35c0d7c8-afa4-4da0-a0e7-0b4d19c6f4d4"/>
+    </entity>
+    <entity name="ConversionToTable" uuid="f523074d-eb26-48d1-9e8a-8b124f0347d1">
+      <field name="conversion_id" type="integer" required="true" primary="true" uuid="6a556620-8ef5-489c-8d28-e2cfc8129426"/>
+      <field name="table_id" type="integer" required="true" primary="true" uuid="af2b115b-19db-4f0e-a05c-c073b00f1a56"/>
+    </entity>
+    <many-to-many mn-entity="ConversionToTable" uuid="18c91ef1-3c05-4d4d-bc69-96706e41e0f6">
+      <many-to-many-entity name="Table" owning-side="true" alias="table" uuid="cdc18459-81e9-4251-82b7-cdd67a4c0b5c">
+        <many-to-many-field from="table_id" to="id"/>
+      </many-to-many-entity>
+      <many-to-many-entity name="Conversion" owning-side="false" alias="conversion" uuid="b6fd12b6-7546-48b6-b853-249d3b937c66">
+        <many-to-many-field from="conversion_id" to="id"/>
+      </many-to-many-entity>
+    </many-to-many>
+    <entity name="Column" uuid="b61b9955-5fa9-4003-a410-e680304380d6">
+      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="a74aef7f-8abd-46f0-90d1-28aca0e9ab76"/>
+      <field name="table_id" type="integer" required="true" uuid="73e02074-be52-4165-9ea6-eab024c04839"/>
+      <field name="name" type="string" uuid="bf4aa3c1-2f0d-4375-93da-570d830ea3ea"/>
+      <field name="dataType" type="string" uuid="78b3dd6b-f495-4794-a4d9-e1d5c1b86364"/>
+      <field name="length" type="string" uuid="8d7ac55d-2246-4ff8-b14c-9f6d6fc6e8e3"/>
+      <field name="defaultValue" type="text" uuid="bc7b2ae4-addb-4120-a007-9fdf5bf69a81"/>
+      <field name="isNullable" type="boolean" uuid="40a46c68-90aa-4599-8715-07a961a62cb7"/>
+      <field name="extra" type="text" uuid="1660d9a3-89de-415d-9703-91d5c04d60b2"/>
+    </entity>
+    <association from="Column" to="Table" owner-alias="column" inverse-alias="table" uuid="d22b1e65-8fcd-47ef-8abe-ff6e30a4e1e9">
+      <association-field from="table_id" to="id"/>
+    </association>
     <orm-attributes>
       <attribute name="namespace">Db\Entity</attribute>
     </orm-attributes>
   </module>
   <visual-data>
-    <entity uuid="1486a327-c989-4d35-8065-c62cdb0d538b" bg-color="4294967295" hdr-color="4292006610" position-x="244" position-y="79" size-x="0" size-x2="89" size-y="0" size-y2="60"/>
+    <entity uuid="1486a327-c989-4d35-8065-c62cdb0d538b" bg-color="4294967295" hdr-color="4292006610" position-x="218" position-y="92" size-x="0" size-x2="89" size-y="0" size-y2="60"/>
+    <many-to-many-association uuid="18c91ef1-3c05-4d4d-bc69-96706e41e0f6" color="4288059030"/>
     <many-to-many-association uuid="23cb8b11-23eb-4f58-a6c1-317dda96ede5" color="4288059030"/>
     <module uuid="2492e6cc-ebbf-4021-b0da-9b8a264a678a" bg-color="4287552497" position-x="50" position-y="50" size-x="0" size-x2="648" size-y="0" size-y2="598"/>
+    <entity uuid="34c62268-3f13-4e57-97ba-8ee0e7e54ad9" bg-color="4294967295" hdr-color="4292006610" position-x="33" position-y="333" size-x="0" size-x2="122" size-y="0" size-y2="129"/>
+    <entity uuid="51b89a76-be62-4924-89a6-34f29b523c7f" bg-color="4294967295" hdr-color="4292006610" position-x="355" position-y="321" size-x="0" size-x2="77" size-y="0" size-y2="45"/>
+    <entity uuid="5b71554e-4c20-4b72-85fd-fbb05c04beb5" bg-color="4294967295" hdr-color="4292006610" position-x="182" position-y="201" size-x="0" size-x2="121" size-y="0" size-y2="73"/>
+    <association uuid="6dfc4c01-7fec-4cb5-a750-09fb3ff2b93b" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
+    <association uuid="7821fa10-c89e-4dbe-9758-f823901fcb06" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
+    <entity uuid="7fc6f45a-9a2c-460b-a809-cf3c36f370aa" bg-color="4294967295" hdr-color="4292006610" position-x="349" position-y="208" size-x="0" size-x2="83" size-y="0" size-y2="59"/>
+    <association uuid="a5060d03-3f36-4952-ac1f-a652ba2c4012" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
     <project uuid="a90f0648-66e9-4a07-91db-c4c8e3a51864" size-x="0" size-x2="729" size-y="0" size-y2="687"/>
-    <entity uuid="d39deddb-4b37-453e-a0d9-94804f0b2a12" bg-color="4294967295" hdr-color="4292006610" position-x="66" position-y="60" size-x="0" size-x2="20" size-y="0" size-y2="20"/>
+    <association uuid="b33c0e47-6b5d-4063-84f5-f2de055cc8c3" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
+    <entity uuid="b61b9955-5fa9-4003-a410-e680304380d6" bg-color="4294967295" hdr-color="4292006610" position-x="196" position-y="290" size-x="0" size-x2="103" size-y="0" size-y2="129"/>
+    <association uuid="d22b1e65-8fcd-47ef-8abe-ff6e30a4e1e9" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
+    <entity uuid="d39deddb-4b37-453e-a0d9-94804f0b2a12" bg-color="4294967295" hdr-color="4292006610" position-x="45" position-y="72" size-x="0" size-x2="106" size-y="0" size-y2="101"/>
     <association uuid="d41adf57-1185-4809-bc0f-fd5477bfb4a2" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="-20" color="4288059030"/>
-    <entity uuid="f31e7603-99b1-40eb-9547-4071b5470019" bg-color="4294967295" hdr-color="4292006610" position-x="398" position-y="80" size-x="0" size-x2="87" size-y="0" size-y2="59"/>
+    <association uuid="de1e9a1b-7384-44ea-928a-a478eb26a18d" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
+    <entity uuid="e482a350-bc6a-4790-8a2b-3632d78ea224" bg-color="4294967295" hdr-color="4292006610" position-x="490" position-y="482" size-x="0" size-x2="117" size-y="0" size-y2="87"/>
+    <entity uuid="f31e7603-99b1-40eb-9547-4071b5470019" bg-color="4294967295" hdr-color="4292006610" position-x="396" position-y="93" size-x="0" size-x2="87" size-y="0" size-y2="59"/>
+    <entity uuid="f523074d-eb26-48d1-9e8a-8b124f0347d1" bg-color="4294967295" hdr-color="4292006610" position-x="527" position-y="285" size-x="0" size-x2="115" size-y="0" size-y2="60"/>
+    <association uuid="fed34212-bcbe-4793-8055-4d8f50b731be" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
   </visual-data>
 </skipper>

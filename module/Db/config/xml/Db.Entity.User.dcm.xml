@@ -9,6 +9,7 @@
     <field name="displayName" type="string" nullable="true"/>
     <field name="password" type="string" nullable="true"/>
     <field name="state" type="integer" nullable="true"/>
+    <one-to-many field="dataPoint" target-entity="Db\Entity\DataPoint" mapped-by="user"/>
     <many-to-many field="role" target-entity="Db\Entity\Role" mapped-by="user"/>
   </entity>
 </doctrine-mapping>

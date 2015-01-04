@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xsi="http://www.w3.org/2001/XMLSchema-instance" schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="Db\Entity\Column">
+    <id name="id" type="integer">
+      <generator strategy="AUTO"/>
+    </id>
+    <field name="name" type="string" nullable="true"/>
+    <field name="dataType" type="string" nullable="true"/>
+    <field name="length" type="string" nullable="true"/>
+    <field name="defaultValue" type="text" nullable="true"/>
+    <field name="isNullable" type="boolean" nullable="true"/>
+    <field name="extra" type="text" nullable="true"/>
+    <many-to-one field="table" target-entity="Db\Entity\Table" inversed-by="column">
+      <join-columns>
+        <join-column name="table_id" referenced-column-name="id" nullable="false"/>
+      </join-columns>
+    </many-to-one>
+    <one-to-many field="dataPoint" target-entity="Db\Entity\DataPoint" mapped-by="column"/>
+  </entity>
+</doctrine-mapping>

@@ -223,4 +223,42 @@ class User implements UserInterface, ProviderInterface
     {
         return $this->role;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $dataPoint;
+
+
+    /**
+     * Add dataPoint
+     *
+     * @param \Db\Entity\DataPoint $dataPoint
+     * @return User
+     */
+    public function addDataPoint(\Db\Entity\DataPoint $dataPoint)
+    {
+        $this->dataPoint[] = $dataPoint;
+
+        return $this;
+    }
+
+    /**
+     * Remove dataPoint
+     *
+     * @param \Db\Entity\DataPoint $dataPoint
+     */
+    public function removeDataPoint(\Db\Entity\DataPoint $dataPoint)
+    {
+        $this->dataPoint->removeElement($dataPoint);
+    }
+
+    /**
+     * Get dataPoint
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getDataPoint()
+    {
+        return $this->dataPoint;
+    }
 }

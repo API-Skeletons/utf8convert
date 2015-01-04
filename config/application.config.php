@@ -20,8 +20,9 @@ return array(
         'DoctrineModule',
         'DoctrineORMModule',
         'DoctrineDataFixtureModule',
-        'Phpro\\DoctrineHydrationModule',
-        'ZF\\Apigility\\Doctrine\\Server',
+// php5.4
+//        'Phpro\\DoctrineHydrationModule',
+//        'ZF\\Apigility\\Doctrine\\Server',
         'ZfcBase',
         'ZfcUser',
         'ZfcUserDoctrineORM',

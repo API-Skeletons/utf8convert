@@ -3,20 +3,40 @@ namespace Db\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Db\Entity;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 class DataPointIterationRepository extends EntityRepository
 {
     public function audit($iteration)
     {
-        $convertWorker = $this->_em->getRepository('Db\Entity\ConvertWorker')->findAll();
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select("cw")
+            ->from('Db\Entity\ConvertWorker', 'cw')
+            ;
 
-        foreach ($convertWorker as $worker) {
-            $dataPointIteration = new Entity\DataPointIteration();
-            $dataPointIteration->setIteration($iteration);
-            $dataPointIteration->setDataPoint($worker->getDataPoint());
-            $dataPointIteration->setValue($worker->getValue());
+        $start = 0;
+        $dataCount = 0;
+        $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults(500));
+        while(true) {
+            foreach ($paginator as $convertWorker) {
+                $dataCount ++;
+                $dataPointIteration = new Entity\DataPointIteration();
+                $dataPointIteration->setIteration($iteration);
+                $dataPointIteration->setDataPoint($convertWorker->getDataPoint());
+                $dataPointIteration->setValue($convertWorker->getValue());
 
-            $this->_em->persist($worker);
+                $this->_em->persist($dataPointIteration);
+            }
+
+            if (!$dataCount) {
+                break;
+            }
+            $dataCount = 0;
+
+            $this->_em->flush();
+            $this->_em->clear();
+            $start += 100;
+            $paginator->getQuery()->setFirstResult($start);
         }
     }
 }

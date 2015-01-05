@@ -91,6 +91,7 @@ class ConvertController extends AbstractActionController
             $iteration ++;
             $objectManager->getRepository('Db\Entity\ConvertWorker')->utf8Convert();
             $objectManager->getRepository('Db\Entity\DataPointIteration')->audit($iteration);
+
             $objectManager->getRepository('Db\Entity\ConvertWorker')->moveValidDataPoint();
 
             $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
@@ -284,24 +285,19 @@ die('done');
 
         $resultSetPrototype = new ResultSet();
         $paginatorAdapter = new DbSelect(
-            // our configured select object
             $select,
-            // the adapter to run it against
             $database,
-            // the result set to hydrate
             $resultSetPrototype
         );
-        $paginator = new Paginator($paginatorAdapter);
-        $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
-
-        if ($paginator->getTotalItemCount()) {
-            echo $paginator->getTotalItemCount() . " records " . $row['TABLE_NAME'] . "." . $row['COLUMN_NAME'] . "\n";
-        }
 
         $page = 1;
-        $processing = true;
+
+        $paginator = new Paginator($paginatorAdapter);
+        $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
+        $paginator->setCurrentPageNumber($page);
+
         $rowCount = 0;
-        while ($paginator->count()) {
+        while (true) {
             foreach ($paginator as $utf8record) {
                 $rowCount ++;
 
@@ -372,17 +368,38 @@ die('done');
 
             $objectManager->flush();
             $objectManager->clear();
-
+/**
+ * this needs to be improved
+ */
             // Re-fetch working entities
             $conversion = $objectManager->getRepository('Db\Entity\Conversion')->find($conversionKey);
             $table = $objectManager->getRepository('Db\Entity\TableDef')->find($tableKey);
 
-            if ($rowCount > $paginator->getTotalItemCount()) {
+            if ($rowCount == $paginator->getTotalItemCount()) {
                 break;
             }
 
+            $select = new Select($row['TABLE_NAME']);
+            $select->columns($columns);
+            $where = new Where();
+            $where->addPredicate(new Predicate\Expression(
+                "length(`"
+                . $row['COLUMN_NAME'] . "`) != char_length(`"
+                . $row['COLUMN_NAME'] . "`)")
+            );
+            $select->where($where);
+
+            $resultSetPrototype = new ResultSet();
+            $paginatorAdapter = new DbSelect(
+                $select,
+                $database,
+                $resultSetPrototype
+            );
+
             $page ++;
+            $paginator = new Paginator($paginatorAdapter);
             $paginator->setCurrentPageNumber($page);
+            $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
         }
     }
 }

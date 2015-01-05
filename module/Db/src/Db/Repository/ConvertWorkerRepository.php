@@ -3,6 +3,8 @@ namespace Db\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Db\Entity;
+use Doctrine\ORM\Tools\Pagination\Paginator;
+
 
 class ConvertWorkerRepository extends EntityRepository
 {
@@ -21,7 +23,8 @@ class ConvertWorkerRepository extends EntityRepository
             WHERE length(newValue) != char_length(newValue)
             AND conversion_id = " . $conversion->getId());
 
-        return sizeof($this->findAll());
+        return $this->_em->createQuery('SELECT COUNT(a.id) FROM Db\Entity\ConvertWorker a')
+            ->getSingleScalarResult();
     }
 
     public function utf8Convert()
@@ -38,19 +41,30 @@ class ConvertWorkerRepository extends EntityRepository
             ->from('Db\Entity\ConvertWorker', 'cw')
             ->where('length(cw.value) = char_length(cw.value)')
             ;
+die($qb->getDql());
+        $start = 0;
+        $dataCount = 0;
+        $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults(500));
+        while(true) {
+            foreach ($paginator as $convertWorker) {
+                $dataCount ++;
+                $convertWorker->getDataPoint()->setNewValue($convertWorker->getValue());
+                $_em->remove($convertWorker);
 
-        $result = $qb->getQuery()->getResult();
+                echo "Found a valid data point";die();
+            }
 
-$count = 0;
-        foreach ($result as $worker) {
-            $worker->getDataPoint()->setNewValue($worker->getValue());
+            if (!$dataCount) {
+                break;
+            }
+            $dataCount = 0;
 
-            $this->_em->remove($worker);
-            $count ++;
+            $this->_em->flush();
+            $this->_em->clear();
+            $start += 100;
+            $paginator->getQuery()->setFirstResult($start);
         }
 
-
-        echo "\nValidated $count points\n";
-
+        echo "\moved valid points to DataPoint\n";
     }
 }

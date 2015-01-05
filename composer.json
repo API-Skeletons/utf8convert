@@ -42,7 +42,8 @@
         "hounddog/doctrine-data-fixture-module": "0.0.*",
         "san/san-session-toolbar": "0.*",
         "pear-pear.horde.org/horde_text_diff": "2.*",
-        "danielss89/zfc-user-admin": "dev-master"
+        "danielss89/zfc-user-admin": "dev-master",
+        "beberlei/DoctrineExtensions": "dev-master"
     },
     "require-dev": {
         "zendframework/zftool": "dev-master",

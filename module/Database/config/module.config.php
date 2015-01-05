@@ -1,5 +1,15 @@
 <?php
+
 return array(
+    'doctrine' => array(
+        'configuration' => array(
+            'orm_default' => array(
+                'string_functions' => array(
+                    'char_length'  => 'DoctrineExtensions\Query\Mysql\CharLength'
+                ),
+            ),
+        ),
+    ),
     'controllers' => array(
         'invokables' => array(
             'Database\Controller\Index' => 'Database\Controller\IndexController',
@@ -106,18 +116,38 @@ return array(
                     'options' => array(
                         'route'    => 'convert [--whitelist=] [--blacklist=] [--clear-log]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Index',
+                            'controller'    => 'Database\Controller\Convert',
                             'action'        => 'convert',
                         ),
                     ),
                 ),
-                'convert2' => array(
+                'createConversion' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'convert2 [--whitelist=] [--blacklist=]',
+                        'route'    => 'create conversion [--name=conversionName] [--whitelist=] [--blacklist=]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Convert',
-                            'action'        => 'convert',
+                            'action'        => 'createConversion',
+                        ),
+                    ),
+                ),
+                'runConversion' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'run conversion [--name=]',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Convert',
+                            'action'        => 'runConversion',
+                        ),
+                    ),
+                ),
+                'copyConversion' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'copy conversion [--from=] [--to=]',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Convert',
+                            'action'        => 'copyConversion',
                         ),
                     ),
                 ),

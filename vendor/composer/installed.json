@@ -3506,5 +3506,33 @@
         "keywords": [
             "zf2"
         ]
+    },
+    {
+        "name": "beberlei/DoctrineExtensions",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/beberlei/DoctrineExtensions.git",
+            "reference": "5e4ec9c3ec3434151e1c73144b4ab87ae30aefbc"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/beberlei/DoctrineExtensions/zipball/5e4ec9c3ec3434151e1c73144b4ab87ae30aefbc",
+            "reference": "5e4ec9c3ec3434151e1c73144b4ab87ae30aefbc",
+            "shasum": ""
+        },
+        "require": {
+            "doctrine/orm": "*"
+        },
+        "time": "2013-12-20 22:02:19",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "DoctrineExtensions": "lib/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/"
     }
 ]

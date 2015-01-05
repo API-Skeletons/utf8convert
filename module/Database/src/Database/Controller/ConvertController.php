@@ -17,14 +17,96 @@ use Zend\Paginator\Paginator;
 use DateTime;
 use Db\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 class ConvertController extends AbstractActionController
 {
+    public function copyConversionAction()
+    {
+        $fromConversionName = $this->getRequest()->getParam('from');
+        $toConversionName = $this->getRequest()->getParam('to');
+
+        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+
+        try {
+            $conversion = new Entity\Conversion;
+            $conversion->setCreatedAt(new DateTime());
+            $conversion->setName($toConversionName);
+            $objectManager->persist($conversion);
+
+            $objectManager->flush();
+        } catch (UniqueConstraintViolationException $e) {
+            die("\nThe conversion name " . $toConversionName . " has already been used\n");
+        }
+
+        $fromConversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
+            'name' => $fromConversionName
+        ));
+
+        if (!$fromConversion) {
+            die("\nThe from conversion name was not found\n");
+        }
+
+        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+
+        $objectManager->getConnection()->exec("
+            INSERT INTO DataPoint (conversion_id, column_def_id, primaryKey, oldValue, newValue, flagForReview, user_id)
+                SELECT " . $conversion->getId() . ", column_def_id, primaryKey, oldValue, newValue, flagForReview, user_id
+                FROM DataPoint
+                WHERE conversion_id = " . $fromConversion->getId() . "
+        ");
+
+        echo "\nConversion copy complete\n";
+    }
+
+    public function runConversionAction()
+    {
+        $conversionName = $this->getRequest()->getParam('name');
+
+        $informationSchema = $this->getServiceLocator()->get('information-schema');
+        $databaseConnection = $this->getServiceLocator()->get('Config');
+        $databaseConnection = $databaseConnection['db']['adapters']['database'];
+        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+
+        $informationSchema->query("SET session wait_timeout=86400")->execute();
+
+        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
+            'name' => $conversionName,
+        ));
+
+        if (!$conversion) {
+            echo "Conversion $conversionName cannot be found.  Use --conversion=name\n";
+            return;
+        }
+
+        echo "Running conversion " . $conversion->getName() . "\n";
+
+        $iteration = 0;
+        $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
+        $dirtyData = $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion);
+
+        while ($dirtyData) {
+            echo "Processing " . $dirtyData . " rows\n";
+
+            $iteration ++;
+            $objectManager->getRepository('Db\Entity\ConvertWorker')->utf8Convert();
+            $objectManager->getRepository('Db\Entity\DataPointIteration')->audit($iteration);
+            $objectManager->getRepository('Db\Entity\ConvertWorker')->moveValidDataPoint();
+
+            $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
+            $dirtyData = $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion);
+        }
+
+die('done');
+
+    }
+
     /**
      * Convert all data in all string columns to utf8 by correcting encoding
      */
-    public function convertAction()
+    public function createConversionAction()
     {
+        $conversionName = $this->getRequest()->getParam('name');
         $consoleWhitelist = $this->getRequest()->getParam('whitelist');
         $consoleBlacklist = $this->getRequest()->getParam('blacklist');
 
@@ -83,16 +165,23 @@ class ConvertController extends AbstractActionController
             AND TABLES.TABLE_SCHEMA = COLUMNS.TABLE_SCHEMA
             AND TABLES.TABLE_TYPE = 'BASE TABLE'
             AND COLUMNS.DATA_TYPE IN ('varchar', 'char', 'enum', 'tinytext', 'text', 'mediumtext', 'longtext')
+            $whitelistTables
+            $blacklistTables
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
         ", array($databaseConnection['database']));
 
-        $conversion = new Entity\Conversion;
-        $conversion->setCreatedAt(new DateTime());
-        $objectManager->persist($conversion);
-        $objectManager->flush();
+        try {
+            $conversion = new Entity\Conversion;
+            $conversion->setCreatedAt(new DateTime());
+            $conversion->setName($conversionName);
+            $objectManager->persist($conversion);
+
+            $objectManager->flush();
+        } catch (UniqueConstraintViolationException $e) {
+            die("\nThe conversion name " . $conversionName . " has already been used\n");
+        }
 
         $conversionKey = $conversion->getId();
-
         foreach ($convertColumns as $row) {
             $convertPrimaryKeys = $informationSchema->query("
                 SELECT COLUMN_NAME, COLUMN_KEY
@@ -104,8 +193,7 @@ class ConvertController extends AbstractActionController
             ", array($databaseConnection['database'], $row['TABLE_NAME']));
 
             if (!sizeof($convertPrimaryKeys)) {
-                echo "\nThe table " . $row['TABLE_NAME'] . " has no primary key.\n";
-                return;
+                continue;
             }
 
             $table = $objectManager->getRepository('Db\Entity\TableDef')->findOneBy(array(
@@ -117,6 +205,7 @@ class ConvertController extends AbstractActionController
                 $table->setName($row['TABLE_NAME']);
 
                 $objectManager->persist($table);
+                $objectManager->flush();
             }
 
             if (!$tableDefConversion->contains($table) and !$table->getConversion()->contains($conversion)) {
@@ -133,22 +222,27 @@ class ConvertController extends AbstractActionController
                     'name' => $primaryKeyColumn['COLUMN_NAME'],
                 ));
 
-                if (!$primaryKeyColumn) {
+                if (!$primaryKey) {
                     $primaryKey = new Entity\PrimaryKeyDef;
                     $primaryKey->setTableDef($table);
                     $primaryKey->setName($primaryKeyColumn['COLUMN_NAME']);
 
                     $objectManager->persist($primaryKey);
+                    $objectManager->flush();
                 }
             }
 
             $objectManager->flush();
 
+            $objectManager->refresh($table);
             $this->convertColumn($conversion, $table, $row);
 
             // Re-fetch working entities
             $conversion = $objectManager->getRepository('Db\Entity\Conversion')->find($conversionKey);
         }
+
+        $conversion->setCompletedAt(new DateTime());
+        $objectManager->flush();
 
         echo "\nConversion complete\n";
     }
@@ -170,12 +264,13 @@ class ConvertController extends AbstractActionController
         $conversionKey = $conversion->getId();
         $tableKey = $table->getId();
 
-        if (!$table->getPrimaryKeyDef()) return;
+        if (!sizeof($table->getPrimaryKeyDef())) return;
 
+        $columns = array();
         foreach ($table->getPrimaryKeyDef() as $primaryKey) {
-            $columns[] = $primaryKey->getName();
+            $columns[$primaryKey->getName()] = $primaryKey->getName();
         }
-        $columns[] = $row['COLUMN_NAME'];
+        $columns[$row['COLUMN_NAME']] = $row['COLUMN_NAME'];
 
         $select = new Select($row['TABLE_NAME']);
         $select->columns($columns);
@@ -199,7 +294,9 @@ class ConvertController extends AbstractActionController
         $paginator = new Paginator($paginatorAdapter);
         $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
 
-        echo $paginator->getTotalItemCount() . " records " . $row['TABLE_NAME'] . "." . $row['COLUMN_NAME'] . "\n";
+        if ($paginator->getTotalItemCount()) {
+            echo $paginator->getTotalItemCount() . " records " . $row['TABLE_NAME'] . "." . $row['COLUMN_NAME'] . "\n";
+        }
 
         $page = 1;
         $processing = true;
@@ -244,11 +341,12 @@ class ConvertController extends AbstractActionController
                     }
 
                     $objectManager->persist($column);
+                    $objectManager->flush();
                 }
 
                 $values = array();
                 foreach ($table->getPrimaryKeyDef() as $primaryKey) {
-                    $values[] = $utf8record[$primaryKey->getColumn()];
+                    $values[] = $utf8record[$primaryKey->getName()];
                 }
                 $primaryKeyString = implode(',', $values);
 
@@ -256,9 +354,18 @@ class ConvertController extends AbstractActionController
                 $dataPoint->setColumnDef($column);
                 $dataPoint->setConversion($conversion);
                 $dataPoint->setOldValue($utf8record[$column->getName()]);
-                $dataPoint->setIteration(1);
+                $dataPoint->setNewValue($utf8record[$column->getName()]);
                 $dataPoint->setFlagForReview(false);
                 $dataPoint->setPrimaryKey($primaryKeyString);
+
+                foreach ($table->getPrimaryKeyDef() as $primaryKey) {
+                    $dataPointPrimaryKey = new Entity\DataPointPrimaryKeyDef();
+                    $dataPointPrimaryKey->setPrimaryKeyDef($primaryKey);
+                    $dataPointPrimaryKey->setDataPoint($dataPoint);
+                    $dataPointPrimaryKey->setValue($utf8record[$primaryKey->getName()]);
+
+                    $objectManager->persist($dataPointPrimaryKey);
+                }
 
                 $objectManager->persist($dataPoint);
             }

@@ -293,4 +293,80 @@ class DataPoint
     {
         return $this->columnDef;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $convertWorker;
+
+
+    /**
+     * Add convertWorker
+     *
+     * @param \Db\Entity\ConvertWorker $convertWorker
+     * @return DataPoint
+     */
+    public function addConvertWorker(\Db\Entity\ConvertWorker $convertWorker)
+    {
+        $this->convertWorker[] = $convertWorker;
+
+        return $this;
+    }
+
+    /**
+     * Remove convertWorker
+     *
+     * @param \Db\Entity\ConvertWorker $convertWorker
+     */
+    public function removeConvertWorker(\Db\Entity\ConvertWorker $convertWorker)
+    {
+        $this->convertWorker->removeElement($convertWorker);
+    }
+
+    /**
+     * Get convertWorker
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getConvertWorker()
+    {
+        return $this->convertWorker;
+    }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $dataPointIteration;
+
+
+    /**
+     * Add dataPointIteration
+     *
+     * @param \Db\Entity\DataPointIteration $dataPointIteration
+     * @return DataPoint
+     */
+    public function addDataPointIteration(\Db\Entity\DataPointIteration $dataPointIteration)
+    {
+        $this->dataPointIteration[] = $dataPointIteration;
+
+        return $this;
+    }
+
+    /**
+     * Remove dataPointIteration
+     *
+     * @param \Db\Entity\DataPointIteration $dataPointIteration
+     */
+    public function removeDataPointIteration(\Db\Entity\DataPointIteration $dataPointIteration)
+    {
+        $this->dataPointIteration->removeElement($dataPointIteration);
+    }
+
+    /**
+     * Get dataPointIteration
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getDataPointIteration()
+    {
+        return $this->dataPointIteration;
+    }
 }

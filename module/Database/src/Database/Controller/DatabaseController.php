@@ -15,6 +15,8 @@ class DatabaseController extends AbstractActionController
         $connection = $objectManager->getConnection();
         $platform   = $connection->getDatabasePlatform();
 
+        $connection->executeUpdate($platform->getTruncateTableSQL('DataPointIteration'));
+        $connection->executeUpdate($platform->getTruncateTableSQL('ConvertWorker'));
         $connection->executeUpdate($platform->getTruncateTableSQL('DataPointPrimaryKeyDef'));
         $connection->executeUpdate($platform->getTruncateTableSQL('PrimaryKeyDef'));
         $connection->executeUpdate($platform->getTruncateTableSQL('DataPoint'));

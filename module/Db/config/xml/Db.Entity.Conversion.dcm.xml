@@ -4,7 +4,7 @@
     <id name="id" type="integer">
       <generator strategy="AUTO"/>
     </id>
-    <field name="name" type="string" nullable="true"/>
+    <field name="name" type="string" unique="true" nullable="true"/>
     <field name="description" type="text" nullable="true"/>
     <field name="createdAt" type="datetime" nullable="true"/>
     <field name="completedAt" type="datetime" nullable="true"/>

@@ -10,6 +10,9 @@
     <field name="defaultValue" type="text" nullable="true"/>
     <field name="isNullable" type="boolean" nullable="true"/>
     <field name="extra" type="text" nullable="true"/>
+    <unique-constraints>
+      <unique-constraint name="idx_unique_column" columns="name,table_def_id"/>
+    </unique-constraints>
     <many-to-one field="tableDef" target-entity="Db\Entity\TableDef" inversed-by="columnDef">
       <join-columns>
         <join-column name="table_def_id" referenced-column-name="id" nullable="false"/>

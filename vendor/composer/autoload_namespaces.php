@@ -37,6 +37,7 @@ return array(
     'DoctrineORMModule\\' => array($vendorDir . '/doctrine/doctrine-orm-module/src'),
     'DoctrineModule\\' => array($vendorDir . '/doctrine/doctrine-module/src'),
     'DoctrineModuleTest\\' => array($vendorDir . '/doctrine/doctrine-module/tests'),
+    'DoctrineExtensions' => array($vendorDir . '/beberlei/DoctrineExtensions/lib'),
     'DoctrineDataFixtureModule' => array($vendorDir . '/hounddog/doctrine-data-fixture-module/src'),
     'BjyAuthorize\\' => array($vendorDir . '/bjyoungblood/bjy-authorize/src'),
     'Assetic' => array($vendorDir . '/kriswallsmith/assetic/src'),

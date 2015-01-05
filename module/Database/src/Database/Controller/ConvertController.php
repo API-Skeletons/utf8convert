@@ -79,27 +79,13 @@ class ConvertController extends AbstractActionController
             return;
         }
 
-        echo "Running conversion " . $conversion->getName() . "\n";
-
-        $iteration = 0;
+        $iteration = 1;
         $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
-        $dirtyData = $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion);
-
-        while ($dirtyData) {
-            echo "Processing " . $dirtyData . " rows\n";
-
-            $iteration ++;
-            $objectManager->getRepository('Db\Entity\ConvertWorker')->utf8Convert();
-            $objectManager->getRepository('Db\Entity\DataPointIteration')->audit($iteration);
-
-            $objectManager->getRepository('Db\Entity\ConvertWorker')->moveValidDataPoint();
-
-            $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
-            $dirtyData = $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion);
-        }
-
-die('done');
-
+        $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion);
+        $objectManager->getRepository('Db\Entity\ConvertWorker')->utf8Convert();
+        $objectManager->getRepository('Db\Entity\ConvertWorker')->moveValidDataPoint();
+        $objectManager->getRepository('Db\Entity\DataPointIteration')->audit($iteration);
+        $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
     }
 
     /**
@@ -278,9 +264,11 @@ die('done');
         $where = new Where();
         $where->addPredicate(new Predicate\Expression(
             "length(`"
-            . $row['COLUMN_NAME'] . "`) != char_length(`"
-            . $row['COLUMN_NAME'] . "`)")
-        );
+            . $row['COLUMN_NAME']
+            . "`) != char_length(`"
+            . $row['COLUMN_NAME']
+            . "`)"
+        ));
         $select->where($where);
 
         $resultSetPrototype = new ResultSet();

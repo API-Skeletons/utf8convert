@@ -28,14 +28,15 @@ class DataPointIterationRepository extends EntityRepository
                 $this->_em->persist($dataPointIteration);
             }
 
+            $this->_em->flush();
+            $this->_em->clear();
+
             if (!$dataCount) {
                 break;
             }
             $dataCount = 0;
 
-            $this->_em->flush();
-            $this->_em->clear();
-            $start += 100;
+            $start += 500;
             $paginator->getQuery()->setFirstResult($start);
         }
     }

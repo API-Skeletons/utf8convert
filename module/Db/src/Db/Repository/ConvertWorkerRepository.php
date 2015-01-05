@@ -36,35 +36,14 @@ class ConvertWorkerRepository extends EntityRepository
 
     public function moveValidDataPoint()
     {
-        $qb = $this->_em->createQueryBuilder();
-        $qb->select("cw")
-            ->from('Db\Entity\ConvertWorker', 'cw')
-            ->where('length(cw.value) = char_length(cw.value)')
-            ;
-die($qb->getDql());
-        $start = 0;
-        $dataCount = 0;
-        $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults(500));
-        while(true) {
-            foreach ($paginator as $convertWorker) {
-                $dataCount ++;
-                $convertWorker->getDataPoint()->setNewValue($convertWorker->getValue());
-                $_em->remove($convertWorker);
+        $this->_em->getConnection()->exec("
+            UPDATE DataPoint SET newValue = (
+            SELECT value FROM ConvertWorker
+            WHERE DataPoint.id = ConvertWorker.data_point_id
+            )
+        ");
 
-                echo "Found a valid data point";die();
-            }
-
-            if (!$dataCount) {
-                break;
-            }
-            $dataCount = 0;
-
-            $this->_em->flush();
-            $this->_em->clear();
-            $start += 100;
-            $paginator->getQuery()->setFirstResult($start);
-        }
-
-        echo "\moved valid points to DataPoint\n";
+        return $this->_em->createQuery('SELECT COUNT(a.id) FROM Db\Entity\ConvertWorker a')
+            ->getSingleScalarResult();
     }
 }

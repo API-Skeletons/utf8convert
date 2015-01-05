@@ -43,7 +43,8 @@
         "san/san-session-toolbar": "0.*",
         "pear-pear.horde.org/horde_text_diff": "2.*",
         "danielss89/zfc-user-admin": "dev-master",
-        "beberlei/DoctrineExtensions": "dev-master"
+        "beberlei/DoctrineExtensions": "dev-master",
+        "maglnet/magl-markdown": "~1.1"
     },
     "require-dev": {
         "zendframework/zftool": "dev-master",

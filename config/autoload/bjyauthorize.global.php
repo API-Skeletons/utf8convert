@@ -38,9 +38,8 @@ return array(
             'BjyAuthorize\Guard\Route' => array(
                 array('route' => 'home', 'roles' => array('guest')),
 
-                array('route' => 'database', 'roles' => array('guest')),
-                array('route' => 'row', 'roles' => array('guest')),
-                array('route' => 'iteration', 'roles' => array('guest')),
+                array('route' => 'visualization', 'roles' => array('edit')),
+                array('route' => 'visualization/conversion', 'roles' => array('edit')),
 
                 array('route' => 'zfcuser', 'roles' => array('view')),
                 array('route' => 'zfcuser/changepassword', 'roles' => array('view')),

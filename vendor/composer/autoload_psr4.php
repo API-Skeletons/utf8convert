@@ -39,4 +39,5 @@ return array(
     'Seld\\JsonLint\\' => array($vendorDir . '/seld/jsonlint/src/Seld/JsonLint'),
     'Phpro\\DoctrineHydrationModule\\' => array($vendorDir . '/phpro/zf-doctrine-hydration-module/src'),
     'PhproTest\\DoctrineHydrationModule\\' => array($vendorDir . '/phpro/zf-doctrine-hydration-module/test/src'),
+    'MaglMarkdown\\' => array($vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown'),
 );

@@ -28,9 +28,11 @@ return array(
         'ZfcUserDoctrineORM',
         'ZfcAdmin',
         'ZfcUserAdmin',
+        'MaglMarkdown',
         'Application',
         'Database',
         'Db',
+        'DataVisualization',
     ),
     'module_listener_options' => array(
         'module_paths' => array(

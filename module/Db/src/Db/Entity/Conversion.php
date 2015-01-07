@@ -283,7 +283,7 @@ class Conversion
 	 */
 	public function getDataPointCount()
 	{
-		return $this->dataPointCount();
+		return $this->dataPointCount;
 	}
 
 	public function setDataPointCount($value)

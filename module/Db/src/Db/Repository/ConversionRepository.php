@@ -9,14 +9,13 @@ class ConversionRepository extends EntityRepository
 {
 	public function setDataPointCount($conversion) 
 	{
-	die('set data point conversion');
 		$qb = $this->_em->createQueryBuilder();
 		$qb->select('count(dp.id)')
-			->from('Db\Entity\DataPoint' 'db')
-			->andwhere('db.conversion = :conversion')
+			->from('Db\Entity\DataPoint', 'dp')
+			->andwhere('dp.conversion = :conversion')
 			->setParameter('conversion', $conversion)
 			;
 
-	    $conversion->setDataPointCount($qb->getQuery()->getSingleScalarResult();
+	    $conversion->setDataPointCount($qb->getQuery()->getSingleScalarResult());
 	}
 }

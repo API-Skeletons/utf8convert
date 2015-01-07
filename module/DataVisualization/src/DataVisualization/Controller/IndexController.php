@@ -17,6 +17,10 @@ class IndexController extends AbstractActionController
             array('createdAt' => 'DESC')
         );
 
+		foreach ($conversions as $conversion) {
+			$objectManager->getRepository('Db\Entity\Conversion')->setDataPointCount($conversion);
+		}
+
         return new ViewModel(array(
             'conversions' => $conversions
         ));

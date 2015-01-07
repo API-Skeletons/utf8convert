@@ -276,4 +276,20 @@ class Conversion
     {
         return $this->endAt;
     }
+
+	public $datPointCount;
+	/** 
+	 * This must be set manually
+	 */
+	public function getDataPointCount()
+	{
+		return $this->dataPointCount();
+	}
+
+	public function setDataPointCount($value)
+	{
+		$this->dataPointCount = $value;
+
+		return $this;
+	}
 }

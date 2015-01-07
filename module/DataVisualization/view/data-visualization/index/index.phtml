@@ -1,3 +1,8 @@
+<?php
+
+error_reporting(0);
+ini_set('display_errors', true);
+?>
 <h1>Data Visualization</h1>
 
 <table class="table table-striped table-hover">
@@ -49,7 +54,9 @@
                 ?>
             </th>
             <th>
-                <?= sizeof($conversion->getDataPoint()); ?>
+				<?php
+                	echo $conversion->getDataPointCount();
+				?>
             </th>
             <th>
                 <?= $conversion->getCreatedAt()->format('Y-m-d H:i:s'); ?>

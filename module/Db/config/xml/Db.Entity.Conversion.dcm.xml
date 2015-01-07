@@ -7,7 +7,8 @@
     <field name="name" type="string" unique="true" nullable="true"/>
     <field name="description" type="text" nullable="true"/>
     <field name="createdAt" type="datetime" nullable="true"/>
-    <field name="completedAt" type="datetime" nullable="true"/>
+    <field name="startAt" type="datetime" nullable="true"/>
+    <field name="endAt" type="datetime" nullable="true"/>
     <one-to-many field="dataPoint" target-entity="Db\Entity\DataPoint" mapped-by="conversion"/>
     <many-to-many field="tableDef" target-entity="Db\Entity\TableDef" mapped-by="conversion"/>
   </entity>

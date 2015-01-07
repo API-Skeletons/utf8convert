@@ -220,4 +220,60 @@ class Conversion
     {
         return $this->tableDef;
     }
+    /**
+     * @var \DateTime
+     */
+    private $startAt;
+
+    /**
+     * @var \DateTime
+     */
+    private $endAt;
+
+
+    /**
+     * Set startAt
+     *
+     * @param \DateTime $startAt
+     * @return Conversion
+     */
+    public function setStartAt($startAt)
+    {
+        $this->startAt = $startAt;
+
+        return $this;
+    }
+
+    /**
+     * Get startAt
+     *
+     * @return \DateTime 
+     */
+    public function getStartAt()
+    {
+        return $this->startAt;
+    }
+
+    /**
+     * Set endAt
+     *
+     * @param \DateTime $endAt
+     * @return Conversion
+     */
+    public function setEndAt($endAt)
+    {
+        $this->endAt = $endAt;
+
+        return $this;
+    }
+
+    /**
+     * Get endAt
+     *
+     * @return \DateTime 
+     */
+    public function getEndAt()
+    {
+        return $this->endAt;
+    }
 }

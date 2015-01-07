@@ -53,7 +53,8 @@
       <field name="name" type="string" unique="true" uuid="64484a14-3048-4ed6-86df-d6985cb81187"/>
       <field name="description" type="text" uuid="484f9979-f077-496a-b828-e7dc2853d7af"/>
       <field name="createdAt" type="datetime" uuid="85a27ab0-8458-4d72-a279-2d6a1df7f886"/>
-      <field name="completedAt" type="datetime" uuid="863c15ae-9abf-40f0-9465-014f0f506712"/>
+      <field name="startAt" type="datetime" uuid="863c15ae-9abf-40f0-9465-014f0f506712"/>
+      <field name="endAt" type="datetime" uuid="d143aa3b-0ab5-4b49-94e1-312e19f35996"/>
     </entity>
     <entity name="PrimaryKeyDef" uuid="7fc6f45a-9a2c-460b-a809-cf3c36f370aa">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="4a2e5372-d334-4645-8580-8bb1bb38ff1c"/>

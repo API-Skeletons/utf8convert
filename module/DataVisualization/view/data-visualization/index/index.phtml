@@ -11,10 +11,16 @@
                 Tables
             </th>
             <th>
+                Data Points
+            </th>
+            <th>
                 Created At
             </th>
             <th>
-                Completed At
+                Conversion Started At
+            </th>
+            <th>
+                Conversion Ended At
             </th>
         </tr>
     </thead>
@@ -43,10 +49,28 @@
                 ?>
             </th>
             <th>
+                <?= sizeof($conversion->getDataPoint()); ?>
+            </th>
+            <th>
                 <?= $conversion->getCreatedAt()->format('Y-m-d H:i:s'); ?>
             </th>
             <th>
-                <?= $conversion->getCompletedAt()->format('Y-m-d H:i:s'); ?>
+                <?php
+                if ($conversion->getStartAt()) {
+                ?>
+                <?= $conversion->getStartAt()->format('Y-m-d H:i:s'); ?>
+                <?php
+                }
+                ?>
+            </th>
+            <th>
+                <?php
+                if ($conversion->getEndAt()) {
+                ?>
+                <?= $conversion->getEndAt()->format('Y-m-d H:i:s'); ?>
+                <?php
+                }
+                ?>
             </th>
         </tr>
     <?php

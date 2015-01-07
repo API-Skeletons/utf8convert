@@ -28,17 +28,6 @@ class ConvertController extends AbstractActionController
 
         $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
 
-        try {
-            $conversion = new Entity\Conversion;
-            $conversion->setCreatedAt(new DateTime());
-            $conversion->setName($toConversionName);
-            $objectManager->persist($conversion);
-
-            $objectManager->flush();
-        } catch (UniqueConstraintViolationException $e) {
-            die("\nThe conversion name " . $toConversionName . " has already been used\n");
-        }
-
         $fromConversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
             'name' => $fromConversionName
         ));
@@ -47,7 +36,25 @@ class ConvertController extends AbstractActionController
             die("\nThe from conversion name was not found\n");
         }
 
-        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+        try {
+            $conversion = new Entity\Conversion;
+            $conversion->setCreatedAt($fromConversion->getCreatedAt());
+            $conversion->setName($toConversionName);
+            if ($fromConversion->getStartAt()) {
+                $conversion->setStartAt($fromConversion->getStartAt());
+                $conversion->setEndAt($fromConversion->getEndAt());
+            }
+            $objectManager->persist($conversion);
+
+            foreach ($fromConversion->getTableDef() as $table) {
+                $table->addConversion($conversion);
+                $conversion->addTableDef($table);
+            }
+
+            $objectManager->flush();
+        } catch (UniqueConstraintViolationException $e) {
+            die("\nThe conversion name " . $toConversionName . " has already been used\n");
+        }
 
         $objectManager->getConnection()->exec("
             INSERT INTO DataPoint (conversion_id, column_def_id, primaryKey, oldValue, newValue, flagForReview, user_id)
@@ -64,6 +71,7 @@ class ConvertController extends AbstractActionController
         $conversionName = $this->getRequest()->getParam('name');
 
         $informationSchema = $this->getServiceLocator()->get('information-schema');
+        $database = $this->getServiceLocator()->get('database');
         $databaseConnection = $this->getServiceLocator()->get('Config');
         $databaseConnection = $databaseConnection['db']['adapters']['database'];
         $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
@@ -79,13 +87,37 @@ class ConvertController extends AbstractActionController
             return;
         }
 
-        $iteration = 1;
-        $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
-        $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion);
-        $objectManager->getRepository('Db\Entity\ConvertWorker')->utf8Convert();
-        $objectManager->getRepository('Db\Entity\ConvertWorker')->moveValidDataPoint();
-        $objectManager->getRepository('Db\Entity\DataPointIteration')->audit($iteration);
-        $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
+        if ($conversion->getStartAt()) {
+            echo "This conversion has already been ran\n";
+            return;
+        }
+
+        $conversion->setStartAt(new DateTime());
+        $objectManager->flush();
+
+        foreach ($conversion->getTableDef() as $table) {
+            foreach ($table->getColumnDef() as $column) {
+                $iteration = 1;
+                $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
+                $objectManager->getRepository('Db\Entity\ConvertWorker')->convertValueField($database, $column);
+                $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion, $column);
+                $objectManager->getRepository('Db\Entity\ConvertWorker')->utf8Convert();
+                $objectManager->getRepository('Db\Entity\ConvertWorker')->moveValidDataPoint();
+                $objectManager->getRepository('Db\Entity\DataPointIteration')->audit($iteration);
+                $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
+
+                $revertColumn = new Entity\ColumnDef();
+                $revertColumn->setDataType('longtext');
+                $objectManager->getRepository('Db\Entity\ConvertWorker')->convertValueField($database, $revertColumn);
+            }
+        }
+
+        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
+            'name' => $conversionName,
+        ));
+
+        $conversion->setEndAt(new DateTime());
+        $objectManager->flush();
     }
 
     /**
@@ -228,10 +260,23 @@ class ConvertController extends AbstractActionController
             $conversion = $objectManager->getRepository('Db\Entity\Conversion')->find($conversionKey);
         }
 
-        $conversion->setCompletedAt(new DateTime());
+        $viewHelperManager = $this->getServiceLocator()->get('ViewHelperManager');
+        $countDataPoint = $viewHelperManager->get('countDataPoint');
+
+        foreach ($conversion->getTableDef() as $table) {
+            $count = 0;
+            foreach ($table->getColumnDef() as $column) {
+                $count += $countDataPoint($conversion, $column);
+            }
+            if (!$count) {
+                $table->removeConversion($conversion);
+                $conversion->removeTableDef($table);
+            }
+        }
+
         $objectManager->flush();
 
-        echo "\nConversion complete\n";
+        echo "\nConversion created\n";
     }
 
     /**
@@ -320,7 +365,7 @@ class ConvertController extends AbstractActionController
                         $column->setDataType($columnDef['DATA_TYPE']);
                         $column->setLength($columnDef['CHARACTER_MAXIMUM_LENGTH']);
                         $column->setDefaultValue($columnDef['COLUMN_DEFAULT']);
-                        $column->setIsNullable($columnDef['IS_NULLABLE']);
+                        $column->setIsNullable(($columnDef['IS_NULLABLE'] == 'YES'));
                         $column->setExtra($columnDef['EXTRA']);
                     }
 

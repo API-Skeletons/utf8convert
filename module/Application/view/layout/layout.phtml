@@ -21,6 +21,7 @@
             ->appendStylesheet($this->basePath() . '/bower_components/bootstrap/dist/css/bootstrap-theme.min.css')
             ->appendStylesheet($this->basePath() . '/bower_components/font-awesome/css/font-awesome.min.css')
             ->appendStylesheet($this->basePath() . '/bower_components/angular-xeditable/dist/css/xeditable.css')
+            ->appendStylesheet($this->basePath() . '/bower_components/angular-busy/dist/angular-busy.css')
             ->appendStylesheet($this->basePath() . '/css/style.css')
             ;
         ?>
@@ -29,6 +30,7 @@
         <?php echo $this->headScript()
             ->prependFile($this->basePath() . '/js/app.js')
             ->prependFile($this->basePath() . '/bower_components/markdown/lib/markdown.js')
+            ->prependFile($this->basePath() . "/bower_components/angular-busy/dist/angular-busy.js")
             ->prependFile($this->basePath() . "/bower_components/angular-xeditable/dist/js/xeditable.js")
             ->prependFile($this->basePath() . "/bower_components/angular/angular.min.js")
             ->prependFile($this->basePath() . '/bower_components/bootstrap/dist/js/bootstrap.min.js')

@@ -39,6 +39,7 @@
 </div>
 
 <div ng-controller="columnController" ng-init="columnModel.init('<?= $this->url('database-api.rest.doctrine.data-point'); ?>', <?= $conversion->getId(); ?>, <?= $column->getId(); ?>)">
+<div cg-busy="columnPromise"></div>
 
 <table class="table table-striped table-hover">
     <caption>
@@ -77,14 +78,12 @@
                 {{ dataPoint.oldValue }}
             </td>
             <td>
-                <span onaftersave="columnModel.update(dataPoint)" editable-textarea="dataPoint.newValue" e-rows="8" e-cols="120">{{ dataPoint.newValue }}</span>
+                <span onbeforesave="columnModel.update(dataPoint, {'newValue': $data})" editable-textarea="dataPoint.newValue" e-rows="8" e-cols="120">{{ dataPoint.newValue }}</span>
             </td>
             <td>
                 <a class="btn" ng-class="(dataPoint.flagged) ? 'btn-danger': 'btn-default'"
                     ng-click="
-                        dataPoint.flagged = !dataPoint.flagged;
-                        dataPoint.approved = false;
-                        columnModel.update(dataPoint);
+                        columnModel.update(dataPoint, {'flagged': !dataPoint.flagged, 'approved': false});
                     ">
                     Flagged
                 </a>
@@ -92,9 +91,7 @@
             <td>
                 <a class="btn btn-default" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
                     ng-click="
-                        dataPoint.approved = !dataPoint.approved;
-                        dataPoint.flagged = false;
-                        columnModel.update(dataPoint);
+                        columnModel.update(dataPoint, {'approved': !dataPoint.approved, 'flagged': false});
                     ">
                     Approved
                 </a>

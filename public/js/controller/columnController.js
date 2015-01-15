@@ -21,26 +21,20 @@ angular.module('utf8convert')
                     url: url
                 }).success(function(data) {
                     $scope.dataPoint = data;
-
-                    console.log(data);
                 });
 
                 return $scope.columnPromise;
             },
 
-            update: function(dataPoint)
+            update: function(dataPoint, data)
             {
 				url = this.dataPointUrl + '/' + dataPoint.id;
 
-                $scope.columnUpdatePromise = $http({
+                $scope.columnPromise = $http({
                     method: 'patch',
                     timeout: 180000,
                     url: url,
-                    data: {
-						'newValue': dataPoint.newValue,
-						'flagged': dataPoint.flagged,
-						'approved': dataPoint.approved
-					}
+                    data: data,
                 }).success(function(data) {
 					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
 						if (value.id == data.id) {
@@ -50,7 +44,7 @@ angular.module('utf8convert')
 					});
                 });
 
-                return $scope.columnUpdatePromise;
+                return $scope.columnPromise;
 			}
         }
     }

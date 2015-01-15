@@ -77,15 +77,25 @@
                 {{ dataPoint.oldValue }}
             </td>
             <td>
-                <span onbeforesave="columnModel.updateNewValue(dataPoint, $data)" editable-textarea="dataPoint.newValue" e-rows="8" e-cols="120">{{ dataPoint.newValue }}</span>
+                <span onaftersave="columnModel.update(dataPoint)" editable-textarea="dataPoint.newValue" e-rows="8" e-cols="120">{{ dataPoint.newValue }}</span>
             </td>
             <td>
-                <a class="btn" ng-class="(dataPoint.flagged) ? 'btn-danger': 'btn-default'" ng-click="columnModel.toggleFlagged(dataPoint);">
+                <a class="btn" ng-class="(dataPoint.flagged) ? 'btn-danger': 'btn-default'"
+                    ng-click="
+                        dataPoint.flagged = !dataPoint.flagged;
+                        dataPoint.approved = false;
+                        columnModel.update(dataPoint);
+                    ">
                     Flagged
                 </a>
             </td>
             <td>
-                <a class="btn btn-default" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'" ng-click="columnModel.toggleApproved(dataPoint);">
+                <a class="btn btn-default" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
+                    ng-click="
+                        dataPoint.approved = !dataPoint.approved;
+                        dataPoint.flagged = false;
+                        columnModel.update(dataPoint);
+                    ">
                     Approved
                 </a>
             </td>

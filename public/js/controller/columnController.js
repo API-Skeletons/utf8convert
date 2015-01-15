@@ -2,46 +2,13 @@ angular.module('utf8convert')
     .controller('columnController', ['$http', '$scope',
     function($http, $scope) {
 
-        $scope.conversion = 0;
-        $scope.column = 0;
-
-        $scope.setConversion = function(conversion)
-        {
-            $scope.conversion = conversion;
-        }
-
-        $scope.getConversion = function()
-        {
-            return $scope.conversion;
-        }
-
-        $scope.setColumn = function(column)
-        {
-            $scope.column = column;
-        }
-
-        $scope.getColumn = function()
-        {
-            return $scope.column;
-        }
-
-        $scope.setDataPointUrl = function(url)
-        {
-            $scope.dataPointUrl = url;
-        }
-
-        $scope.getDataPointUrl = function()
-        {
-            return $scope.dataPointUrl;
-        }
-
         $scope.columnModel =
         {
+			dataPointUrl: '',
+
             init: function(url, conversion, column)
             {
-                $scope.setConversion(conversion);
-                $scope.setColumn(column);
-                $scope.setDataPointUrl(url);
+                this.dataPointUrl = url;
 
                 this.load(url + '?conversion=' + conversion + '&column=' + column);
             },
@@ -61,16 +28,18 @@ angular.module('utf8convert')
                 return $scope.columnPromise;
             },
 
-            updateNewValue: function(dataPoint, newValue)
+            update: function(dataPoint)
             {
-				url = $scope.getDataPointUrl() + '/' + dataPoint.id;
+				url = this.dataPointUrl + '/' + dataPoint.id;
 
-                $scope.columnUpdateNewValuePromise = $http({
+                $scope.columnUpdatePromise = $http({
                     method: 'patch',
                     timeout: 180000,
                     url: url,
                     data: {
-						'newValue': newValue,
+						'newValue': dataPoint.newValue,
+						'flagged': dataPoint.flagged,
+						'approved': dataPoint.approved
 					}
                 }).success(function(data) {
 					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
@@ -81,55 +50,7 @@ angular.module('utf8convert')
 					});
                 });
 
-                return $scope.columnUpdateNewValuePromise;
-			},
-
-            toggleFlagged: function(dataPoint)
-            {
-				url = $scope.getDataPointUrl() + '/' + dataPoint.id;
-
-                $scope.columnToggleFlaggedPromise = $http({
-                    method: 'patch',
-                    timeout: 180000,
-                    url: url,
-                    data: {
-						'flagged': !dataPoint.flagged,
-						'approved': false
-					}
-                }).success(function(data) {
-					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
-						if (value.id == data.id) {
-							$scope.dataPoint._embedded.data_point[key] = data;
-							return;
-						}
-					});
-                });
-
-                return $scope.columnToggleFlaggedPromise;
-			},
-
-            toggleApproved: function(dataPoint)
-            {
-				url = $scope.getDataPointUrl() + '/' + dataPoint.id;
-
-                $scope.columnToggleFlaggedPromise = $http({
-                    method: 'patch',
-                    timeout: 180000,
-                    url: url,
-                    data: {
-						'approved': !dataPoint.approved,
-						'flagged': false
-					}
-                }).success(function(data) {
-					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
-						if (value.id == data.id) {
-							$scope.dataPoint._embedded.data_point[key] = data;
-							return;
-						}
-					});
-                });
-
-                return $scope.columnToggleFlaggedPromise;
+                return $scope.columnUpdatePromise;
 			}
         }
     }

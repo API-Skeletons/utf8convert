@@ -514,7 +514,6 @@ class ModuleOptions extends AbstractOptions implements
      */
     public function getPasswordCost()
     {
-        //throw new \Exception('adsf');
         return $this->passwordCost;
     }
 

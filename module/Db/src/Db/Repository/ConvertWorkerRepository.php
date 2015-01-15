@@ -15,7 +15,7 @@ class ConvertWorkerRepository extends EntityRepository
         $connection->executeUpdate($platform->getTruncateTableSQL('ConvertWorker'));
     }
 
-    public function convertValueField(Adapter $database, Entity\ColumnDef $column)
+    public function mutateValueField(Adapter $database, Entity\ColumnDef $column)
     {
         $convertColumnSql = 'ALTER TABLE ConvertWorker MODIFY `value` ';
         switch($column->getDataType()) {
@@ -45,9 +45,8 @@ class ConvertWorkerRepository extends EntityRepository
     {
         $this->_em->getConnection()->exec("
             INSERT INTO ConvertWorker (data_point_id, value)
-            SELECT id, newValue FROM DataPoint
-            WHERE length(newValue) != char_length(newValue)
-            AND conversion_id = " . $conversion->getId() . "
+            SELECT id, oldValue FROM DataPoint
+            WHERE conversion_id = " . $conversion->getId() . "
             AND column_def_id = " . $column->getId()
         );
 
@@ -65,10 +64,10 @@ class ConvertWorkerRepository extends EntityRepository
     public function moveValidDataPoint()
     {
         $this->_em->getConnection()->exec("
-            UPDATE DataPoint SET newValue = (
-            SELECT value FROM ConvertWorker
-            WHERE DataPoint.id = ConvertWorker.data_point_id
-            )
+            UPDATE DataPoint
+            INNER JOIN ConvertWorker ON
+                ConvertWorker.data_point_id = DataPoint.id
+            SET DataPoint.newValue = ConvertWorker.value
         ");
 
         return $this->_em->createQuery('SELECT COUNT(a.id) FROM Db\Entity\ConvertWorker a')

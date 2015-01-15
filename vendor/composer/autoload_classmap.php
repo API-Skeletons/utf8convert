@@ -49,6 +49,7 @@ return array(
     'MaglMarkdown\\Adapter\\ErusevParsedownAdapter' => $vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown/Adapter/ErusevParsedownAdapter.php',
     'MaglMarkdown\\Adapter\\ErusevParsedownExtraAdapter' => $vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown/Adapter/ErusevParsedownExtraAdapter.php',
     'MaglMarkdown\\Adapter\\GithubMarkdownAdapter' => $vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown/Adapter/GithubMarkdownAdapter.php',
+    'MaglMarkdown\\Adapter\\LeagueCommonMarkAdapter' => $vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown/Adapter/LeagueCommonMarkAdapter.php',
     'MaglMarkdown\\Adapter\\MarkdownAdapterInterface' => $vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown/Adapter/MarkdownAdapterInterface.php',
     'MaglMarkdown\\Adapter\\MichelfPHPMarkdownAdapter' => $vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown/Adapter/MichelfPHPMarkdownAdapter.php',
     'MaglMarkdown\\Adapter\\MichelfPHPMarkdownExtraAdapter' => $vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown/Adapter/MichelfPHPMarkdownExtraAdapter.php',

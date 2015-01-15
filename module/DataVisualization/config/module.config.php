@@ -14,6 +14,8 @@ return array(
     'view_helpers' => array(
         'invokables' => array(
             'countDataPoint' => 'DataVisualization\View\Helper\CountDataPoint',
+            'countDataPointApproved' => 'DataVisualization\View\Helper\CountDataPointApproved',
+            'countDataPointFlagged' => 'DataVisualization\View\Helper\CountDataPointFlagged',
         ),
     ),
     'router' => array(

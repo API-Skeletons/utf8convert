@@ -1,12 +1,15 @@
-<h1>Conversion</h1>
-
-<h2><?= $this->escapeHtml($conversion->getName()); ?></h2>
+<h1>
+    Conversion
+    <a href="<?= $this->url('visualization/conversion', array('conversion_id' => $conversion->getId())); ?>">
+        <?= $this->escapeHtml($conversion->getName()); ?>
+    </a>
+</h1>
 
 <?php
 foreach ($conversion->getTableDef() as $table) {
 ?>
 <table class="table table-striped table-hover">
-    <caption><?= $this->escapeHtml($table->getName()); ?></caption>
+    <caption>Table <?= $this->escapeHtml($table->getName()); ?></caption>
     <thead>
         <tr>
             <th>
@@ -21,6 +24,12 @@ foreach ($conversion->getTableDef() as $table) {
             <th>
                 Data Points
             </th>
+            <th>
+                Flagged
+            </th>
+            <th>
+                Approved
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -28,22 +37,28 @@ foreach ($conversion->getTableDef() as $table) {
     foreach ($table->getColumnDef() as $column) {
     ?>
         <tr>
-            <th>
-                <?= $this->escapeHtml($column->getName()); ?>
-            </th>
-            <th>
-                <?= $this->escapeHtml($column->getDataType()); ?>
-            </th>
-            <th>
-                <?= $this->escapeHtml($column->getLength()); ?>
-            </th>
-            <th>
-                <a class="btn btn-default" href="<?= $this->url('visualization/conversion/column',
+            <td>
+                <a href="<?= $this->url('visualization/conversion/column',
                     array('conversion_id' => $conversion->getId(),
                     'column_id' => $column->getId())); ?>">
-                    <?= $this->countDataPoint($conversion, $column); ?>
+                        <?= $this->escapeHtml($column->getName()); ?>
                 </a>
-            </th>
+            </td>
+            <td>
+                <?= $this->escapeHtml($column->getDataType()); ?>
+            </td>
+            <td>
+                <?= $this->escapeHtml($column->getLength()); ?>
+            </td>
+            <td>
+                <?= $this->countDataPoint($conversion, $column); ?>
+            </td>
+            <td>
+                <?= $this->countDataPointFlagged($conversion, $column); ?>
+            </td>
+            <td>
+                <?= $this->countDataPointApproved($conversion, $column); ?>
+            </td>
         </tr>
     <?php
     }

@@ -369,4 +369,60 @@ class DataPoint
     {
         return $this->dataPointIteration;
     }
+    /**
+     * @var boolean
+     */
+    private $flagged;
+
+    /**
+     * @var boolean
+     */
+    private $approved;
+
+
+    /**
+     * Set flagged
+     *
+     * @param boolean $flagged
+     * @return DataPoint
+     */
+    public function setFlagged($flagged)
+    {
+        $this->flagged = $flagged;
+
+        return $this;
+    }
+
+    /**
+     * Get flagged
+     *
+     * @return boolean 
+     */
+    public function getFlagged()
+    {
+        return $this->flagged;
+    }
+
+    /**
+     * Set approved
+     *
+     * @param boolean $approved
+     * @return DataPoint
+     */
+    public function setApproved($approved)
+    {
+        $this->approved = $approved;
+
+        return $this;
+    }
+
+    /**
+     * Get approved
+     *
+     * @return boolean 
+     */
+    public function getApproved()
+    {
+        return $this->approved;
+    }
 }

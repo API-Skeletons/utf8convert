@@ -40,4 +40,5 @@ return array(
     'Phpro\\DoctrineHydrationModule\\' => array($vendorDir . '/phpro/zf-doctrine-hydration-module/src'),
     'PhproTest\\DoctrineHydrationModule\\' => array($vendorDir . '/phpro/zf-doctrine-hydration-module/test/src'),
     'MaglMarkdown\\' => array($vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown'),
+    'League\\CommonMark\\' => array($vendorDir . '/league/commonmark/src'),
 );

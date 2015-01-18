@@ -83,13 +83,13 @@
                         ng-click="
                             columnModel.update(dataPoint, {'flagged': !dataPoint.flagged, 'approved': false});
                         ">
-                        Flagged
+                        <i class="glyphicon glyphicon-flag"></i>
                     </a>
                     <a class="btn btn-default" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
                         ng-click="
                             columnModel.update(dataPoint, {'approved': !dataPoint.approved, 'flagged': false});
                         ">
-                        Approved
+                        <i class="glyphicon glyphicon-ok"></i>
                     </a>
 
                     <a class="btn" ng-class="(dataPoint.comment) ? 'btn-info': 'btn-default'" ng-click="dataPoint.showComment = !dataPoint.showComment">

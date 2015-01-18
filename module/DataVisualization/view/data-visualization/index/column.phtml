@@ -37,18 +37,21 @@
 
 <table class="table table-striped table-hover">
     <caption>
+        <b>Page {{ dataPoint.page }} of {{ dataPoint.page_count }}</b>
+
         <ul class="pagination center-block">
             <li ng-repeat="(name, link) in dataPoint._links">
                 <a href="#" ng-click="columnModel.load(link.href)">{{ name }}</a>
             </li>
-
-            <li>
-                <a href="#" ng-click="columnModel.showAllComments()">Show All Comments</a>
-            </li>
-            <li>
-                <a href="#" ng-click="columnModel.hideAllComments()">Hide All Comments</a>
-            </li>
         </ul>
+
+
+        <span class="pull-right btn-group">
+            <a href="#" class="btn btn-default" ng-click="columnModel.showAllComments()">Show <i class="glyphicon glyphicon-comment"></i>
+</a>
+            <a href="#" class="btn btn-default" ng-click="columnModel.hideAllComments()">Hide <i class="glyphicon glyphicon-comment"></i>
+</a>
+        </span>
     </caption>
     <thead>
         <tr>
@@ -75,7 +78,7 @@
                 {{ dataPoint.oldValue }}
             </td>
             <td>
-                <span onbeforesave="columnModel.update(dataPoint, {'newValue': $data})" editable-textarea="dataPoint.newValue" e-rows="8" e-cols="120">{{ dataPoint.newValue }}</span>
+                <span onbeforesave="columnModel.update(dataPoint, {'newValue': $data})" editable-textarea="dataPoint.newValue" e-rows="8" e-cols="80">{{ dataPoint.newValue }}</span>
             </td>
             <td>
                 <span class="btn-group pull-right">
@@ -92,12 +95,14 @@
                         <i class="glyphicon glyphicon-ok"></i>
                     </a>
 
-                    <a class="btn" ng-class="(dataPoint.comment) ? 'btn-info': 'btn-default'" ng-click="dataPoint.showComment = !dataPoint.showComment">
+                    <a class="btn" ng-class="(dataPoint.comment) ? 'btn-info': 'btn-default'" ng-click="dataPoint._showComment = !dataPoint._showComment">
                         <i class="glyphicon glyphicon-comment"></i>
                     </a>
                 </span>
 
-                <span ng-hide="!dataPoint.showComment" class="ng-hide" onbeforesave="columnModel.update(dataPoint, {'comment': $data})" editable-textarea="dataPoint.comment" e-rows="8" e-cols="120">{{ dataPoint.comment || 'no comment' }}</span>
+                <br style="clear: both;">
+
+                <span ng-hide="!dataPoint._showComment" class="ng-hide pull-right" onbeforesave="columnModel.update(dataPoint, {'comment': $data})" editable-textarea="dataPoint.comment" e-rows="4" e-cols="40">{{ dataPoint.comment || 'no comment' }}</span>
             </td>
         </tr>
     </tbody>

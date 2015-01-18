@@ -30,7 +30,7 @@
         },
         {
             "type": "vcs",
-            "url": "https://github.com/TomHAnderson/zf-doctrine-hydration-module"
+            "url": "https://github.com/TomHAnderson/zf-apigility-doctrine"
         }
     ],
     "require": {
@@ -40,8 +40,7 @@
         "zfcampus/zf-development-mode": "~2.0",
         "zfcampus/zf-apigility": "~1.0",
         "zfcampus/zf-apigility-documentation": "~1.0",
-        "zfcampus/zf-apigility-doctrine": "0.2.*",
-        "phpro/zf-doctrine-hydration-module": "dev-master#083f9a2aaa18030422b210da34a27eedbf8c6db8",
+        "zfcampus/zf-apigility-doctrine": "dev-master#8063fafbeb96dbacdd7bcb14cb6acbbd9677e5f9",
         "zf-commons/zfc-user-doctrine-orm": "*",
         "bjyoungblood/bjy-authorize": "1.4.*",
         "hounddog/doctrine-data-fixture-module": "0.0.*",

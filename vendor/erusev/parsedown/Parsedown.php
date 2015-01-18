@@ -32,8 +32,7 @@ class Parsedown
         $this->DefinitionData = array();
 
         # standardize line breaks
-        $text = str_replace("\r\n", "\n", $text);
-        $text = str_replace("\r", "\n", $text);
+        $text = str_replace(array("\r\n", "\r"), "\n", $text);
 
         # remove surrounding line breaks
         $text = trim($text, "\n");
@@ -482,7 +481,7 @@ class Parsedown
                 $level ++;
             }
 
-            if ($level > 6 or $Line['text'][$level] !== ' ')
+            if ($level > 6)
             {
                 return;
             }
@@ -556,6 +555,11 @@ class Parsedown
 
             $Block['element']['text'] []= & $Block['li'];
 
+            return $Block;
+        }
+
+        if ($Line['text'][0] === '[' and $this->blockReference($Line))
+        {
             return $Block;
         }
 
@@ -892,6 +896,11 @@ class Parsedown
 
     protected function blockTableContinue($Line, array $Block)
     {
+        if (isset($Block['interrupted']))
+        {
+            return;
+        }
+
         if ($Line['text'][0] === '|' or strpos($Line['text'], '|'))
         {
             $Elements = array();
@@ -901,9 +910,9 @@ class Parsedown
             $row = trim($row);
             $row = trim($row, '|');
 
-            $cells = explode('|', $row);
+            preg_match_all('/(?:(\\\\[|])|[^|`]|`[^`]+`|`)+/', $row, $matches);
 
-            foreach ($cells as $index => $cell)
+            foreach ($matches[0] as $index => $cell)
             {
                 $cell = trim($cell);
 
@@ -1298,7 +1307,7 @@ class Parsedown
             return;
         }
 
-        if (preg_match('/^\([ ]*([^ ]+?)(?:[ ]+(".+?"|\'.+?\'))?[ ]*\)/', $remainder, $matches))
+        if (preg_match('/^[(]((?:[^ (]|[(][^ )]+[)])+)(?:[ ]+("[^"]+"|\'[^\']+\'))?[)]/', $remainder, $matches))
         {
             $Element['attributes']['href'] = $matches[1];
 
@@ -1507,7 +1516,7 @@ class Parsedown
     # Read-only
 
     protected $specialCharacters = array(
-        '\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '>', '#', '+', '-', '.', '!',
+        '\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '>', '#', '+', '-', '.', '!', '|',
     );
 
     protected $StrongRegex = array(

@@ -2637,12 +2637,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/TomHAnderson/zf-apigility-doctrine.git",
-            "reference": "8063fafbeb96dbacdd7bcb14cb6acbbd9677e5f9"
+            "reference": "07d533e8d5d533fd3d55a9f7ccd611a939ab2467"
         },
         "dist": {
             "type": "zip",
             "url": "https://api.github.com/repos/TomHAnderson/zf-apigility-doctrine/zipball/333473cf5af181962984b548523c3fbaf80d6fd2",
-            "reference": "8063fafbeb96dbacdd7bcb14cb6acbbd9677e5f9",
+            "reference": "07d533e8d5d533fd3d55a9f7ccd611a939ab2467",
             "shasum": ""
         },
         "require": {

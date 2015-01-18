@@ -1,10 +1,10 @@
 <?php
 
-namespace Db\Query\Provider;
+namespace Db\Query\Provider\DataPoint;
 
-use ZF\Apigility\Doctrine\Server\Collection\Query\FetchAllOrmQuery;
+use ZF\Apigility\Doctrine\Server\Query\Provider\DefaultOrm;
 
-class DataPointQueryProvider extends FetchAllOrmQuery
+class FetchAll extends DefaultOrm
 {
     /**
      * Create a filtered query with required parameters

@@ -40,7 +40,7 @@
         "zfcampus/zf-development-mode": "~2.0",
         "zfcampus/zf-apigility": "~1.0",
         "zfcampus/zf-apigility-documentation": "~1.0",
-        "zfcampus/zf-apigility-doctrine": "dev-master#8063fafbeb96dbacdd7bcb14cb6acbbd9677e5f9",
+        "zfcampus/zf-apigility-doctrine": "dev-master#07d533e8d5d533fd3d55a9f7ccd611a939ab2467",
         "zf-commons/zfc-user-doctrine-orm": "*",
         "bjyoungblood/bjy-authorize": "1.4.*",
         "hounddog/doctrine-data-fixture-module": "0.0.*",

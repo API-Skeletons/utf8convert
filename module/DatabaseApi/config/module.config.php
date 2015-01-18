@@ -1,8 +1,8 @@
 <?php
 return array(
-    'zf-collection-query' => array(
+    'zf-apigility-doctrine-query-provider' => array(
         'invokables' => array(
-            'data-point' => 'Db\\Query\\Provider\\DataPointQueryProvider',
+            'data-point-fetch-all' => 'Db\\Query\\Provider\\DataPoint\\FetchAll',
         ),
     ),
     'router' => array(
@@ -90,7 +90,9 @@ return array(
             'DatabaseApi\\V1\\Rest\\DataPoint\\DataPointResource' => array(
                 'object_manager' => 'doctrine.entitymanager.orm_default',
                 'hydrator' => 'DatabaseApi\\V1\\Rest\\DataPoint\\DataPointHydrator',
-                'query_provider' => 'data-point',
+                'query_providers' => array(
+                    'fetch_all' => 'data-point-fetch-all',
+                ),
             ),
         ),
     ),

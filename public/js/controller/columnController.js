@@ -29,6 +29,7 @@ angular.module('utf8convert')
             update: function(dataPoint, data)
             {
 				url = this.dataPointUrl + '/' + dataPoint.id;
+				comment = data.comment;
 
                 $scope.columnPromise = $http({
                     method: 'patch',
@@ -36,6 +37,8 @@ angular.module('utf8convert')
                     url: url,
                     data: data,
                 }).success(function(data) {
+					if (comment) data.showComment = true;
+
 					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
 						if (value.id == data.id) {
 							$scope.dataPoint._embedded.data_point[key] = data;
@@ -45,6 +48,22 @@ angular.module('utf8convert')
                 });
 
                 return $scope.columnPromise;
+			},
+
+			showAllComments: function()
+			{
+				angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
+					if (value.comment) {
+						value.showComment = true;
+					}
+				});
+			},
+
+			hideAllComments: function()
+			{
+				angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
+					value.showComment = false;
+				});
 			}
         }
     }

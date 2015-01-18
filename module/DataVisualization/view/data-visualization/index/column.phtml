@@ -11,13 +11,7 @@
 </h1>
 
 <h2>
-    Table
-    <?= $this->escapeHtml($this->column->getTableDef()->getName()); ?>
-</h2>
-
-<h2>
-    Column
-    <?= $this->escapeHtml($this->column->getName()); ?>
+    <?= $this->escapeHtml($this->column->getTableDef()->getName()); ?>.<?= $this->escapeHtml($this->column->getName()); ?>
 </h2>
 
 <div class="container">
@@ -47,6 +41,13 @@
             <li ng-repeat="(name, link) in dataPoint._links">
                 <a href="#" ng-click="columnModel.load(link.href)">{{ name }}</a>
             </li>
+
+            <li>
+                <a href="#" ng-click="columnModel.showAllComments()">Show All Comments</a>
+            </li>
+            <li>
+                <a href="#" ng-click="columnModel.hideAllComments()">Hide All Comments</a>
+            </li>
         </ul>
     </caption>
     <thead>
@@ -61,15 +62,11 @@
                 New Value
             </th>
             <th>
-                Flagged
-            </th>
-            <th>
-                Approved
+
             </th>
         </tr>
     </thead>
     <tbody>
-
         <tr ng-repeat="dataPoint in dataPoint._embedded.data_point" ng-class-odd="'odd'" ng-class-even="'even'">
             <td>
                 {{ dataPoint.primaryKey }}
@@ -81,23 +78,28 @@
                 <span onbeforesave="columnModel.update(dataPoint, {'newValue': $data})" editable-textarea="dataPoint.newValue" e-rows="8" e-cols="120">{{ dataPoint.newValue }}</span>
             </td>
             <td>
-                <a class="btn" ng-class="(dataPoint.flagged) ? 'btn-danger': 'btn-default'"
-                    ng-click="
-                        columnModel.update(dataPoint, {'flagged': !dataPoint.flagged, 'approved': false});
-                    ">
-                    Flagged
-                </a>
-            </td>
-            <td>
-                <a class="btn btn-default" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
-                    ng-click="
-                        columnModel.update(dataPoint, {'approved': !dataPoint.approved, 'flagged': false});
-                    ">
-                    Approved
-                </a>
+                <span class="btn-group pull-right">
+                    <a class="btn" ng-class="(dataPoint.flagged) ? 'btn-danger': 'btn-default'"
+                        ng-click="
+                            columnModel.update(dataPoint, {'flagged': !dataPoint.flagged, 'approved': false});
+                        ">
+                        Flagged
+                    </a>
+                    <a class="btn btn-default" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
+                        ng-click="
+                            columnModel.update(dataPoint, {'approved': !dataPoint.approved, 'flagged': false});
+                        ">
+                        Approved
+                    </a>
+
+                    <a class="btn" ng-class="(dataPoint.comment) ? 'btn-info': 'btn-default'" ng-click="dataPoint.showComment = !dataPoint.showComment">
+                        <i class="glyphicon glyphicon-comment"></i>
+                    </a>
+                </span>
+
+                <span ng-hide="!dataPoint.showComment" class="ng-hide" onbeforesave="columnModel.update(dataPoint, {'comment': $data})" editable-textarea="dataPoint.comment" e-rows="8" e-cols="120">{{ dataPoint.comment || 'no comment' }}</span>
             </td>
         </tr>
-
     </tbody>
 </table>
 

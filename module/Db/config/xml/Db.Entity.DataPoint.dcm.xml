@@ -7,6 +7,7 @@
     <field name="primaryKey" type="string" nullable="true"/>
     <field name="oldValue" type="text" nullable="true"/>
     <field name="newValue" type="text" nullable="true"/>
+    <field name="comment" type="text" nullable="true"/>
     <field name="flagged" type="boolean" nullable="true"/>
     <field name="approved" type="boolean" nullable="true"/>
     <many-to-one field="user" target-entity="Db\Entity\User" inversed-by="dataPoint">

@@ -36,6 +36,7 @@
       <field name="primaryKey" type="string" uuid="56ae70a3-e7e1-4fb6-9b8b-25171d254711"/>
       <field name="oldValue" type="text" uuid="cb6a71d0-9dee-4e81-925c-f43299819d15"/>
       <field name="newValue" type="text" uuid="151c3737-cc94-409d-85a8-e0a557af44e6"/>
+      <field name="comment" type="text" uuid="8769f560-a94b-42a6-ad50-efb346a15339"/>
       <field name="flagged" type="boolean" uuid="00d48034-17d9-41d1-8a01-1ca25a408e12"/>
       <field name="approved" type="boolean" uuid="73153845-3ccc-4ac5-8019-1dcff4e624ec"/>
       <field name="user_id" type="integer" uuid="bb0adc08-383f-4c15-b3dc-f48d90899ba4"/>

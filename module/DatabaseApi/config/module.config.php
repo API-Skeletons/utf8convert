@@ -167,10 +167,27 @@ return array(
             4 => array(
                 'name' => 'newValue',
                 'required' => false,
-                'filters' => array(),
+                'filters' => array(
+                    0 => array(
+                        'name' => 'Zend\\Filter\\StringTrim',
+                        'options' => array(),
+                    ),
+                ),
                 'validators' => array(),
                 'allow_empty' => true,
                 'continue_if_empty' => false,
+            ),
+            5 => array(
+                'name' => 'comment',
+                'required' => false,
+                'filters' => array(
+                    0 => array(
+                        'name' => 'Zend\\Filter\\StringTrim',
+                        'options' => array(),
+                    ),
+                ),
+                'validators' => array(),
+                'allow_empty' => true,
             ),
         ),
     ),

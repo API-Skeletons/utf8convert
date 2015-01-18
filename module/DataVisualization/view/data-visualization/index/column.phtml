@@ -3,99 +3,134 @@
     $this->headScript()->appendFile($this->basePath() . '/js/controller/columnController.js');
 
 ?>
-<h1>
-    Conversion
-    <a href="<?= $this->url('visualization/conversion', array('conversion_id' => $conversion->getId())); ?>">
-        <?= $this->escapeHtml($conversion->getName()); ?>
-    </a>
-</h1>
 
-<h2>
+<style>
+    .odd {
+        background-color: #eee;
+        border-top: 1px solid;
+        padding: 5px;
+    }
+
+    .even {
+        background-color: #fff;
+        border-top: 1px solid;
+        padding: 5px;
+    }
+</style>
+
+<div class="pull-right">
+    Data Type: <?= $this->escapeHtml($this->column->getDataType()); ?>
+    <br>
+    Length: <?= $this->escapeHtml($this->column->getLength()); ?>
+    <br>
+    Default Value: <?= $this->escapeHtml($this->column->getDefaultValue()); ?>
+    <br>
+    Is Nullable: <?= ($this->column->getIsNullable()) ? 'YES': 'NO'; ?>
+    <br>
+    Extra: <?= $this->escapeHtml($this->column->getExtra()); ?>
+</div>
+
+Conversion
+<a href="<?= $this->url('visualization/conversion', array('conversion_id' => $conversion->getId())); ?>">
+    <?= $this->escapeHtml($conversion->getName()); ?>
+</a>
+
+<h3>
     <?= $this->escapeHtml($this->column->getTableDef()->getName()); ?>.<?= $this->escapeHtml($this->column->getName()); ?>
-</h2>
+</h3>
 
-<div class="container">
-    <div class="col-md-2">
-        Data Type: <?= $this->escapeHtml($this->column->getDataType()); ?>
+<div ng-controller="columnController" ng-init="columnModel.init('<?= $this->basePath(); ?>', <?= $conversion->getId(); ?>, <?= $column->getId(); ?>)">
+<div cg-busy="columnPromise"></div>
+
+Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
+<ul class="pagination center-block">
+    <li ng-repeat="(name, link) in dataPoint._links">
+        <a href="#" ng-click="columnModel.load(link.href)">{{ name }}</a>
+    </li>
+</ul>
+
+<span class="pull-right btn-group">
+    <a href="#" class="btn btn-default" ng-click="columnModel.showAllComments()">Show <i class="glyphicon glyphicon-comment"></i>
+</a>
+    <a href="#" class="btn btn-default" ng-click="columnModel.hideAllComments()">Hide <i class="glyphicon glyphicon-comment"></i>
+</a>
+</span>
+
+<div class="container text-left" style="clear: both;">
+    <div class="col-md-1">
+        <strong>#</strong>
     </div>
-    <div class="col-md-2">
-        Length: <?= $this->escapeHtml($this->column->getLength()); ?>
+
+    <div class="col-md-4">
+        <strong>Old Value</strong>
     </div>
-    <div class="col-md-2">
-        Default Value: <?= $this->escapeHtml($this->column->getDefaultValue()); ?>
+
+    <div class="col-md-4">
+        <strong>New Value</strong>
     </div>
-    <div class="col-md-2">
-        Is Nullable: <?= ($this->column->getIsNullable()) ? 'YES': 'NO'; ?>
-    </div>
-    <div class="col-md-2">
-        Extra: <?= $this->escapeHtml($this->column->getExtra()); ?>
+
+    <div class="col-md-3 text-right">
+        <strong>Actions & Comment</strong>
     </div>
 </div>
 
-<div ng-controller="columnController" ng-init="columnModel.init('<?= $this->url('database-api.rest.doctrine.data-point'); ?>', <?= $conversion->getId(); ?>, <?= $column->getId(); ?>)">
-<div cg-busy="columnPromise"></div>
+<div class="container" ng-repeat="dataPoint in dataPoint._embedded.data_point" ng-class-odd="'odd'" ng-class-even="'even'">
 
-<table class="table table-striped table-hover">
-    <caption>
-        <b>Page {{ dataPoint.page }} of {{ dataPoint.page_count }}</b>
+    <div class="col-md-1">
+        {{ dataPoint.primaryKey }}
+    </div>
 
-        <ul class="pagination center-block">
-            <li ng-repeat="(name, link) in dataPoint._links">
-                <a href="#" ng-click="columnModel.load(link.href)">{{ name }}</a>
-            </li>
-        </ul>
+    <div class="col-md-4">
+        {{ dataPoint.oldValue }}
+    </div>
 
+    <div class="col-md-4">
+        <span onbeforesave="columnModel.update(dataPoint, {'newValue': $data})" editable-textarea="dataPoint.newValue">{{ dataPoint.newValue }}</span>
+    </div>
 
-        <span class="pull-right btn-group">
-            <a href="#" class="btn btn-default" ng-click="columnModel.showAllComments()">Show <i class="glyphicon glyphicon-comment"></i>
-</a>
-            <a href="#" class="btn btn-default" ng-click="columnModel.hideAllComments()">Hide <i class="glyphicon glyphicon-comment"></i>
-</a>
-        </span>
-    </caption>
-    <thead>
-        <tr>
-            <th>
-                Primary Key string
-            </th>
-            <th>
-                Old Value
-            </th>
-            <th>
-                New Value
-            </th>
-            <th>
-
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr ng-repeat="dataPoint in dataPoint._embedded.data_point" ng-class-odd="'odd'" ng-class-even="'even'">
-            <td>
-                {{ dataPoint.primaryKey }}
-            </td>
-            <td>
-                {{ dataPoint.oldValue }}
-            </td>
-            <td>
-                <span onbeforesave="columnModel.update(dataPoint, {'newValue': $data})" editable-textarea="dataPoint.newValue" e-rows="8" e-cols="80">{{ dataPoint.newValue }}</span>
-            </td>
-            <td>
+    <div class="col-md-3 text-right">
                 <span class="btn-group pull-right">
-                    <a class="btn" ng-class="(dataPoint.flagged) ? 'btn-danger': 'btn-default'"
+                    <a class="btn" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
                         ng-click="
-                            columnModel.update(dataPoint, {'flagged': !dataPoint.flagged, 'approved': false});
-                        ">
-                        <i class="glyphicon glyphicon-flag"></i>
-                    </a>
-                    <a class="btn btn-default" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
-                        ng-click="
-                            columnModel.update(dataPoint, {'approved': !dataPoint.approved, 'flagged': false});
+                            columnModel.update(dataPoint, {'approved': !dataPoint.approved, 'flagged': false, 'denied': false});
                         ">
                         <i class="glyphicon glyphicon-ok"></i>
                     </a>
 
-                    <a class="btn" ng-class="(dataPoint.comment) ? 'btn-info': 'btn-default'" ng-click="dataPoint._showComment = !dataPoint._showComment">
+                    <a class="btn" ng-class="(dataPoint.flagged) ? 'btn-warning': 'btn-default'"
+                        ng-click="
+                            columnModel.update(dataPoint, {'flagged': !dataPoint.flagged, 'approved': false, 'denied': false});
+                        ">
+                        <i class="glyphicon glyphicon-flag"></i>
+                    </a>
+
+                    <a class="btn" ng-class="(dataPoint.denied) ? 'btn-danger': 'btn-default'"
+                        ng-click="
+                            columnModel.update(dataPoint, {'denied': !dataPoint.denied, 'flagged': false, 'approved': false});
+                        ">
+                        <i class="glyphicon glyphicon-remove"></i>
+                    </a>
+
+                    <a class="btn" ng-class="
+                        {
+                            'btn-default': !dataPoint.data,
+                            'btn-info': dataPoint.data && !dataPoint._showData,
+                            'btn-primary': dataPoint.data && dataPoint._showData
+                        }
+                        "
+                        ng-click="
+                            columnModel.data(dataPoint);
+                        ">
+                        <i class="glyphicon glyphicon-list-alt"></i>
+                    </a>
+
+                    <a class="btn" ng-class="
+                        {
+                            'btn-default': !dataPoint.comment,
+                            'btn-info': dataPoint.comment && !dataPoint._showComment,
+                            'btn-primary': dataPoint.comment && dataPoint._showComment
+                        }
+                    " ng-click="dataPoint._showComment = !dataPoint._showComment">
                         <i class="glyphicon glyphicon-comment"></i>
                     </a>
                 </span>
@@ -103,9 +138,11 @@
                 <br style="clear: both;">
 
                 <span ng-hide="!dataPoint._showComment" class="ng-hide pull-right" onbeforesave="columnModel.update(dataPoint, {'comment': $data})" editable-textarea="dataPoint.comment" e-rows="4" e-cols="40">{{ dataPoint.comment || 'no comment' }}</span>
-            </td>
-        </tr>
-    </tbody>
-</table>
+    </div>
+
+    <div class="col-md-12" ng-hide="!dataPoint._showData">
+        {{ dataPoint.data }}
+    </div>
+</div>
 
 </div>

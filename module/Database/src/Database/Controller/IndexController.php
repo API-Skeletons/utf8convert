@@ -131,7 +131,7 @@ class IndexController extends AbstractActionController
         $refactorDataTypes = $this->getServiceLocator()->get('Config');
         $refactorDataTypes = $refactorDataTypes['utf8-convert']['refactor']['data-types'];
 
-		$informationSchema->query("SET session wait_timeout=86400")->execute();
+        $informationSchema->query("SET session wait_timeout=86400")->execute();
 
         if (!$refactorDataTypes) {
             echo "\nNo data types to refactor have been defined\n";
@@ -242,7 +242,7 @@ class IndexController extends AbstractActionController
 
         $config = $this->getServiceLocator()->get('Config');
 
-		$informationSchema->query("SET session wait_timeout=86400")->execute();
+        $informationSchema->query("SET session wait_timeout=86400")->execute();
 
         $blacklistTables = '';
         if ($consoleBlacklist) {
@@ -283,9 +283,6 @@ class IndexController extends AbstractActionController
         if ($clearLog) {
             $this->deleteUtf8ConvertTable();
         }
-
-        $this->createUtf8ConvertTable();
-
 
         foreach ($convertColumns as $row) {
             $primaryKeys = $informationSchema->query("
@@ -409,35 +406,6 @@ class IndexController extends AbstractActionController
         }
 
         return true;
-    }
-
-    /**
-     * Create the Utf8Convert table for comparing converted data
-     */
-    private function createUtf8ConvertTable()
-    {
-        $database = $this->getServiceLocator()->get('database');
-
-        $sql = "
-            CREATE TABLE Utf8Convert (
-                id int NOT NULL PRIMARY KEY auto_increment,
-                entity varchar(255),
-                field varchar(255),
-                primaryKey longtext,
-                iteration int,
-                oldValue longtext,
-                newValue longtext,
-                corrected tinyint(1) DEFAULT 0
-            );
-        ";
-
-        try {
-            $database->query($sql)->execute();
-        } catch (RuntimeException $e) {
-            // table already exists
-        }
-
-        return $sql;
     }
 
     /**

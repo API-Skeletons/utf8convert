@@ -39,6 +39,8 @@
       <field name="comment" type="text" uuid="8769f560-a94b-42a6-ad50-efb346a15339"/>
       <field name="flagged" type="boolean" uuid="00d48034-17d9-41d1-8a01-1ca25a408e12"/>
       <field name="approved" type="boolean" uuid="73153845-3ccc-4ac5-8019-1dcff4e624ec"/>
+      <field name="denied" type="boolean" uuid="53a2b42c-43ff-4fe4-a9de-b7eb2716ba28"/>
+      <field name="importedAt" type="datetime" uuid="a9993f1b-fce6-42d3-ba6d-9cb875948a3a"/>
       <field name="user_id" type="integer" uuid="bb0adc08-383f-4c15-b3dc-f48d90899ba4"/>
     </entity>
     <association from="DataPoint" to="User" owner-alias="dataPoint" inverse-alias="user" uuid="de1e9a1b-7384-44ea-928a-a478eb26a18d">
@@ -146,7 +148,7 @@
     <many-to-many-association uuid="18c91ef1-3c05-4d4d-bc69-96706e41e0f6" color="4288059030"/>
     <many-to-many-association uuid="23cb8b11-23eb-4f58-a6c1-317dda96ede5" color="4288059030"/>
     <module uuid="2492e6cc-ebbf-4021-b0da-9b8a264a678a" bg-color="4287552497" position-x="50" position-y="49" size-x="0" size-x2="674" size-y="0" size-y2="758"/>
-    <entity uuid="34c62268-3f13-4e57-97ba-8ee0e7e54ad9" bg-color="4294967295" hdr-color="4292006610" position-x="33" position-y="333" size-x="0" size-x2="122" size-y="0" size-y2="129"/>
+    <entity uuid="34c62268-3f13-4e57-97ba-8ee0e7e54ad9" bg-color="4294967295" hdr-color="4292006610" position-x="31" position-y="299" size-x="0" size-x2="118" size-y="0" size-y2="157"/>
     <entity uuid="51b89a76-be62-4924-89a6-34f29b523c7f" bg-color="4294967295" hdr-color="4292006610" position-x="426" position-y="257" size-x="0" size-x2="77" size-y="0" size-y2="45"/>
     <association uuid="5aec0bae-a98f-42cb-9b86-2ad3348bc04a" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
     <entity uuid="5b71554e-4c20-4b72-85fd-fbb05c04beb5" bg-color="4294967295" hdr-color="4292006610" position-x="155" position-y="134" size-x="0" size-x2="138" size-y="0" size-y2="73"/>

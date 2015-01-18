@@ -453,4 +453,60 @@ class DataPoint
     {
         return $this->comment;
     }
+    /**
+     * @var boolean
+     */
+    private $denied;
+
+    /**
+     * @var \DateTime
+     */
+    private $importedAt;
+
+
+    /**
+     * Set denied
+     *
+     * @param boolean $denied
+     * @return DataPoint
+     */
+    public function setDenied($denied)
+    {
+        $this->denied = $denied;
+
+        return $this;
+    }
+
+    /**
+     * Get denied
+     *
+     * @return boolean 
+     */
+    public function getDenied()
+    {
+        return $this->denied;
+    }
+
+    /**
+     * Set importedAt
+     *
+     * @param \DateTime $importedAt
+     * @return DataPoint
+     */
+    public function setImportedAt($importedAt)
+    {
+        $this->importedAt = $importedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get importedAt
+     *
+     * @return \DateTime 
+     */
+    public function getImportedAt()
+    {
+        return $this->importedAt;
+    }
 }

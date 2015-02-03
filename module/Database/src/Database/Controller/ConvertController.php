@@ -57,8 +57,8 @@ class ConvertController extends AbstractActionController
         }
 
         $objectManager->getConnection()->exec("
-            INSERT INTO DataPoint (conversion_id, column_def_id, primaryKey, oldValue, newValue, flagForReview, user_id)
-                SELECT " . $conversion->getId() . ", column_def_id, primaryKey, oldValue, newValue, flagForReview, user_id
+            INSERT INTO DataPoint (conversion_id, column_def_id, primaryKey, oldValue, newValue, comment, flagged, approved, denied, importedAt, user_id)
+                SELECT " . $conversion->getId() . ", column_def_id, primaryKey, oldValue, newValue, comment, flagged, approved, denied, importedAt, user_id
                 FROM DataPoint
                 WHERE conversion_id = " . $fromConversion->getId() . "
         ");

@@ -46,6 +46,9 @@ return array(
             ),
             'collection_http_methods' => array(
                 0 => 'GET',
+                1 => 'PATCH',
+                2 => 'PUT',
+                3 => 'DELETE',
             ),
             'collection_query_whitelist' => array(
                 0 => 'query',
@@ -67,8 +70,7 @@ return array(
                 0 => 'GET',
                 1 => 'PATCH',
             ),
-            'collection_http_methods' => array(
-            ),
+            'collection_http_methods' => array(),
             'collection_query_whitelist' => array(),
             'page_size' => 25,
             'page_size_param' => null,
@@ -101,11 +103,18 @@ return array(
                 1 => 'application/hal+json',
                 2 => 'application/json',
             ),
+            'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => array(
+                0 => 'application/json',
+                1 => 'application/*+json',
+            ),
         ),
         'content_type_whitelist' => array(
             'DatabaseApi\\V1\\Rest\\DataPointData\\Controller' => array(
                 0 => 'application/vnd.database-api.v1+json',
                 1 => 'application/json',
+            ),
+            'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => array(
+                0 => 'application/json',
             ),
         ),
     ),
@@ -250,6 +259,43 @@ return array(
                         'options' => array(),
                     ),
                 ),
+                'validators' => array(),
+                'allow_empty' => true,
+                'continue_if_empty' => false,
+            ),
+            7 => array(
+                'name' => 'primaryKey',
+                'required' => false,
+                'filters' => array(
+                    0 => array(
+                        'name' => 'Zend\\Filter\\StringTrim',
+                        'options' => array(),
+                    ),
+                ),
+                'validators' => array(),
+                'continue_if_empty' => true,
+                'allow_empty' => false,
+            ),
+            8 => array(
+                'name' => 'oldValue',
+                'required' => false,
+                'filters' => array(),
+                'validators' => array(),
+                'allow_empty' => true,
+                'continue_if_empty' => false,
+            ),
+            9 => array(
+                'name' => 'importedAt',
+                'required' => false,
+                'filters' => array(),
+                'validators' => array(),
+                'allow_empty' => true,
+                'continue_if_empty' => false,
+            ),
+            10 => array(
+                'name' => 'id',
+                'required' => false,
+                'filters' => array(),
                 'validators' => array(),
                 'allow_empty' => true,
             ),

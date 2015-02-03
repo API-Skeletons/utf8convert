@@ -210,15 +210,25 @@ class AliasPathStackResolverTest extends PHPUnit_Framework_TestCase
     {
         $resolver = new AliasPathStackResolver(array('my/alias/' => __DIR__));
         $this->assertTrue($resolver instanceof AliasPathStackResolver);
-
         $mimeResolver = new MimeResolver;
         $resolver->setMimeResolver($mimeResolver);
-
         $fileAsset = new Asset\FileAsset(__FILE__);
         $fileAsset->mimetype = $mimeResolver->getMimeType(__FILE__);
-
         $this->assertEquals($fileAsset, $resolver->resolve('my/alias/'.basename(__FILE__)));
         $this->assertNull($resolver->resolve('i-do-not-exist.php'));
+    }
+
+    /**
+     * @covers \AssetManager\Resolver\AliasPathStackResolver::resolve
+     */
+    public function testResolveWhenAliasExistsInPath()
+    {
+        $resolver = new AliasPathStackResolver(array('AliasPathStackResolverTest/' => __DIR__));
+        $mimeResolver = new MimeResolver;
+        $resolver->setMimeResolver($mimeResolver);
+        $fileAsset = new Asset\FileAsset(__FILE__);
+        $fileAsset->mimetype = $mimeResolver->getMimeType(__FILE__);
+        $this->assertEquals($fileAsset, $resolver->resolve('AliasPathStackResolverTest/'.basename(__FILE__)));
     }
 
     /**
@@ -258,5 +268,34 @@ class AliasPathStackResolverTest extends PHPUnit_Framework_TestCase
                 'my/alias/..' . DIRECTORY_SEPARATOR . basename(__DIR__) . DIRECTORY_SEPARATOR . basename(__FILE__)
             )->dump()
         );
+    }
+
+    /**
+     * Test Collect returns valid list of assets
+     *
+     * @covers \AssetManager\Resolver\AliasPathStackResolver::collect
+     */
+    public function testCollect()
+    {
+        $alias = 'my/alias/';
+        $resolver = new AliasPathStackResolver(array($alias => __DIR__));
+
+        $this->assertContains($alias . basename(__FILE__), $resolver->collect());
+        $this->assertNotContains($alias . 'i-do-not-exist.php', $resolver->collect());
+    }
+
+    /**
+     * Test Collect returns valid list of assets
+     *
+     * @covers \AssetManager\Resolver\AliasPathStackResolver::collect
+     */
+    public function testCollectDirectory()
+    {
+        $alias = 'my/alias/';
+        $resolver = new AliasPathStackResolver(array($alias => realpath(__DIR__ . '/../')));
+        $dir = substr(__DIR__, strrpos(__DIR__, '/', 0) + 1);
+
+        $this->assertContains($alias . $dir . DIRECTORY_SEPARATOR . basename(__FILE__), $resolver->collect());
+        $this->assertNotContains($alias . $dir . DIRECTORY_SEPARATOR . 'i-do-not-exist.php', $resolver->collect());
     }
 }

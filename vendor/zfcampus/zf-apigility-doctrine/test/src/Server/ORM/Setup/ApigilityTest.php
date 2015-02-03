@@ -37,6 +37,23 @@ class ApigilityTest extends \Zend\Test\PHPUnit\Controller\AbstractHttpController
             "routeIdentifierName" => "artist_id",
             "entityIdentifierName" => "id",
             "routeMatch" => "/test/artist",
+            "collectionHttpMethods" => array(
+                0 => 'GET',
+                1 => 'POST',
+                2 => 'PATCH',
+            ),
+        );
+
+        $artistResourceDefinitionWithNonKeyIdentifer = array(
+            "objectManager"=> "doctrine.entitymanager.orm_default",
+            "serviceName" => "ArtistByName",
+            "entityClass" => "ZFTestApigilityDb\\Entity\\Artist",
+            "routeIdentifierName" => "artist_name",
+            "entityIdentifierName" => "name",
+            "routeMatch" => "/test/artist-by-name",
+            "collectionHttpMethods" => array(
+                0 => 'GET',
+            ),
         );
 
         $albumResourceDefinition = array(
@@ -46,10 +63,16 @@ class ApigilityTest extends \Zend\Test\PHPUnit\Controller\AbstractHttpController
             "routeIdentifierName" => "album_id",
             "entityIdentifierName" => "id",
             "routeMatch" => "/test/album",
+            "collectionHttpMethods" => array(
+                0 => 'GET',
+                1 => 'POST',
+                2 => 'PATCH',
+            ),
         );
 
         $resource->setModuleName('ZFTestApigilityDbApi');
         $artistEntity = $resource->create($artistResourceDefinition);
+        $artistEntity = $resource->create($artistResourceDefinitionWithNonKeyIdentifer);
         $albumEntity = $resource->create($albumResourceDefinition);
 
         $this->assertInstanceOf('ZF\Apigility\Doctrine\Admin\Model\DoctrineRestServiceEntity', $artistEntity);

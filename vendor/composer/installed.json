@@ -1191,17 +1191,17 @@
     },
     {
         "name": "zendframework/zenddiagnostics",
-        "version": "v1.0.3",
-        "version_normalized": "1.0.3.0",
+        "version": "v1.0.4",
+        "version_normalized": "1.0.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/zendframework/ZendDiagnostics.git",
-            "reference": "2ae657df8ffafff26fe2963ebb47e677946b0263"
+            "reference": "b855b48f6539038270a3c0935b6bd2c51fa43f7c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zendframework/ZendDiagnostics/zipball/2ae657df8ffafff26fe2963ebb47e677946b0263",
-            "reference": "2ae657df8ffafff26fe2963ebb47e677946b0263",
+            "url": "https://api.github.com/repos/zendframework/ZendDiagnostics/zipball/b855b48f6539038270a3c0935b6bd2c51fa43f7c",
+            "reference": "b855b48f6539038270a3c0935b6bd2c51fa43f7c",
             "shasum": ""
         },
         "require": {
@@ -1224,7 +1224,7 @@
             "symfony/yaml": "Required by Check\\YamlFile",
             "videlalvaro/php-amqplib": "Required by Check\\RabbitMQ"
         },
-        "time": "2014-08-11 16:12:58",
+        "time": "2014-12-07 18:10:07",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -1670,6 +1670,783 @@
             "documentation",
             "module",
             "zend",
+            "zf2"
+        ]
+    },
+    {
+        "name": "doctrine/doctrine-module",
+        "version": "0.8.0",
+        "version_normalized": "0.8.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/doctrine/DoctrineModule.git",
+            "reference": "a1be11c78d62b880f4e21ff9a107d6e37bed3133"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/doctrine/DoctrineModule/zipball/a1be11c78d62b880f4e21ff9a107d6e37bed3133",
+            "reference": "a1be11c78d62b880f4e21ff9a107d6e37bed3133",
+            "shasum": ""
+        },
+        "require": {
+            "doctrine/common": ">=2.4,<2.6-dev",
+            "php": ">=5.3.3",
+            "symfony/console": "~2.2",
+            "zendframework/zend-authentication": "~2.2",
+            "zendframework/zend-cache": "~2.2",
+            "zendframework/zend-mvc": "~2.2",
+            "zendframework/zend-paginator": "~2.2",
+            "zendframework/zend-servicemanager": "~2.2",
+            "zendframework/zend-stdlib": "~2.2",
+            "zendframework/zend-validator": "~2.2"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~3.7",
+            "squizlabs/php_codesniffer": "1.4.*",
+            "zendframework/zendframework": "~2.2"
+        },
+        "suggest": {
+            "doctrine/data-fixtures": "Data Fixtures if you want to generate test data or bootstrap data for your deployments"
+        },
+        "time": "2014-01-24 17:30:36",
+        "bin": [
+            "bin/doctrine-module"
+        ],
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.8.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "DoctrineModule\\": "src/",
+                "DoctrineModuleTest\\": "tests/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Kyle Spraggs",
+                "email": "theman@spiffyjr.me",
+                "homepage": "http://www.spiffyjr.me/"
+            },
+            {
+                "name": "Marco Pivetta",
+                "email": "ocramius@gmail.com",
+                "homepage": "http://ocramius.github.com/",
+                "role": "Developer"
+            },
+            {
+                "name": "Guilherme Blanco",
+                "email": "guilhermeblanco@hotmail.com"
+            },
+            {
+                "name": "Michaël Gallego",
+                "email": "mic.gallego@gmail.com",
+                "homepage": "http://michaelgallego.fr"
+            }
+        ],
+        "description": "Zend Framework 2 Module that provides Doctrine basic functionality required for ORM and ODM modules",
+        "homepage": "http://www.doctrine-project.org/",
+        "keywords": [
+            "doctrine",
+            "module",
+            "zf2"
+        ]
+    },
+    {
+        "name": "doctrine/doctrine-orm-module",
+        "version": "0.8.0",
+        "version_normalized": "0.8.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/doctrine/DoctrineORMModule.git",
+            "reference": "31a0a0aefd424ca2eaecc0303c4bb0d959b1f2c0"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/doctrine/DoctrineORMModule/zipball/31a0a0aefd424ca2eaecc0303c4bb0d959b1f2c0",
+            "reference": "31a0a0aefd424ca2eaecc0303c4bb0d959b1f2c0",
+            "shasum": ""
+        },
+        "require": {
+            "doctrine/dbal": ">=2.4,<2.6-dev",
+            "doctrine/doctrine-module": "0.8.*",
+            "doctrine/orm": ">=2.4,<2.6-dev",
+            "php": ">=5.3.3",
+            "zendframework/zend-mvc": ">=2.2",
+            "zendframework/zend-servicemanager": ">=2.2",
+            "zendframework/zend-stdlib": ">=2.2"
+        },
+        "require-dev": {
+            "doctrine/data-fixtures": "1.0.*",
+            "doctrine/migrations": "1.*",
+            "phpunit/phpunit": ">=3.7",
+            "squizlabs/php_codesniffer": "1.4.*",
+            "zendframework/zend-developer-tools": "*",
+            "zendframework/zendframework": "2.*"
+        },
+        "suggest": {
+            "doctrine/migrations": "doctrine migrations if you want to keep your schema definitions versioned",
+            "zendframework/zend-developer-tools": "zend-developer-tools if you want to profile operations executed by the ORM during development",
+            "zendframework/zend-form": "if you want to use form elements backed by Doctrine"
+        },
+        "time": "2014-01-24 18:13:09",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.8.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "DoctrineORMModule\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Kyle Spraggs",
+                "email": "theman@spiffyjr.me",
+                "homepage": "http://www.spiffyjr.me/"
+            },
+            {
+                "name": "Marco Pivetta",
+                "email": "ocramius@gmail.com",
+                "homepage": "http://ocramius.github.com/",
+                "role": "Developer"
+            },
+            {
+                "name": "Evan Coury",
+                "email": "me@evancoury.com",
+                "homepage": "http://blog.evan.pro/"
+            },
+            {
+                "name": "Guilherme Blanco",
+                "email": "guilhermeblanco@hotmail.com"
+            }
+        ],
+        "description": "Zend Framework 2 Module that provides Doctrine ORM functionality",
+        "homepage": "http://www.doctrine-project.org/",
+        "keywords": [
+            "doctrine",
+            "module",
+            "orm",
+            "zf2"
+        ]
+    },
+    {
+        "name": "doctrine/data-fixtures",
+        "version": "v1.0.0",
+        "version_normalized": "1.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/doctrine/data-fixtures.git",
+            "reference": "b4a135c7db56ecc4602b54a2184368f440cac33e"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/doctrine/data-fixtures/zipball/b4a135c7db56ecc4602b54a2184368f440cac33e",
+            "reference": "b4a135c7db56ecc4602b54a2184368f440cac33e",
+            "shasum": ""
+        },
+        "require": {
+            "doctrine/common": ">=2.2,<2.5-dev",
+            "php": ">=5.3.2"
+        },
+        "require-dev": {
+            "doctrine/orm": ">=2.2,<2.5-dev"
+        },
+        "suggest": {
+            "doctrine/mongodb-odm": "For loading MongoDB ODM fixtures",
+            "doctrine/orm": "For loading ORM fixtures",
+            "doctrine/phpcr-odm": "For loading PHPCR ODM fixtures"
+        },
+        "time": "2013-07-10 17:04:07",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Doctrine\\Common\\DataFixtures": "lib/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Jonathan Wage",
+                "email": "jonwage@gmail.com",
+                "homepage": "http://www.jwage.com/",
+                "role": "Creator"
+            }
+        ],
+        "description": "Data Fixtures for all Doctrine Object Managers",
+        "homepage": "http://www.doctrine-project.org",
+        "keywords": [
+            "database"
+        ]
+    },
+    {
+        "name": "zf-commons/zfc-user-doctrine-orm",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/ZF-Commons/ZfcUserDoctrineORM.git",
+            "reference": "9a2e148c9a5a03ca8592b93ea28a21e37b06e053"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/ZF-Commons/ZfcUserDoctrineORM/zipball/9a2e148c9a5a03ca8592b93ea28a21e37b06e053",
+            "reference": "9a2e148c9a5a03ca8592b93ea28a21e37b06e053",
+            "shasum": ""
+        },
+        "require": {
+            "doctrine/doctrine-orm-module": "0.*",
+            "php": ">=5.3.3",
+            "zf-commons/zfc-user": "1.*"
+        },
+        "time": "2014-04-18 10:21:19",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.1.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "ZfcUserDoctrineORM": "src/"
+            },
+            "classmap": [
+                "./"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Kyle Spraggs",
+                "email": "theman@spiffyjr.me",
+                "homepage": "http://www.spiffyjr.me/"
+            },
+            {
+                "name": "Evan Coury",
+                "email": "me@evancoury.com",
+                "homepage": "http://blog.evan.pro/"
+            }
+        ],
+        "description": "Doctrine2 ORM storage adapter for ZfcUser.",
+        "homepage": "https://github.com/ZF-Commons/ZfcUserDoctrineORM",
+        "keywords": [
+            "zf2"
+        ]
+    },
+    {
+        "name": "hounddog/doctrine-data-fixture-module",
+        "version": "0.0.4",
+        "version_normalized": "0.0.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Hounddog/DoctrineDataFixtureModule.git",
+            "reference": "4f09fd948dfaf5003acccba4533d52291cd76d2b"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Hounddog/DoctrineDataFixtureModule/zipball/4f09fd948dfaf5003acccba4533d52291cd76d2b",
+            "reference": "4f09fd948dfaf5003acccba4533d52291cd76d2b",
+            "shasum": ""
+        },
+        "require": {
+            "doctrine/data-fixtures": "1.0.*",
+            "doctrine/doctrine-orm-module": "~0.7",
+            "php": ">=5.3.3",
+            "zendframework/zend-eventmanager": "2.*",
+            "zendframework/zend-modulemanager": "2.*",
+            "zendframework/zend-servicemanager": "2.*"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "3.7.*",
+            "satooshi/php-coveralls": ">=0.6.0",
+            "squizlabs/php_codesniffer": "1.4.*"
+        },
+        "time": "2013-12-12 15:42:53",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "DoctrineDataFixtureModule": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Martin Shwalbe",
+                "email": "martin.shwalbe@gmail.com",
+                "homepage": "http://hounddog.github.com"
+            }
+        ],
+        "description": "Zend Framework 2 Module that provides Doctrine Data-Fixture functionality",
+        "homepage": "http://www.doctrine-project.org/",
+        "keywords": [
+            "data-fixture",
+            "doctrine",
+            "module",
+            "zf2"
+        ]
+    },
+    {
+        "name": "san/san-session-toolbar",
+        "version": "0.0.4",
+        "version_normalized": "0.0.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/samsonasik/SanSessionToolbar.git",
+            "reference": "eeb419e7a313eb4424ba94bd3efc7da2f1fc150f"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/samsonasik/SanSessionToolbar/zipball/eeb419e7a313eb4424ba94bd3efc7da2f1fc150f",
+            "reference": "eeb419e7a313eb4424ba94bd3efc7da2f1fc150f",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.23"
+        },
+        "time": "2014-12-04 19:04:56",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "./"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Abdul Malik Ikhsan",
+                "email": "samsonasik@gmail.com",
+                "homepage": "http://samsonasik.wordpress.com",
+                "role": "Developer"
+            }
+        ],
+        "description": "ZF2 Session Toolbar for ZendDeveloperTools ",
+        "homepage": "https://github.com/samsonasik/SanSessionToolbar",
+        "keywords": [
+            "session",
+            "zf2"
+        ]
+    },
+    {
+        "name": "pear-pear.horde.org/Horde_Util",
+        "version": "2.5.2",
+        "version_normalized": "2.5.2.0",
+        "dist": {
+            "type": "file",
+            "url": "http://pear.horde.org/get/Horde_Util-2.5.2.tgz",
+            "reference": null,
+            "shasum": null
+        },
+        "require": {
+            "ext-dom": "*",
+            "php": "<6.0.0.0"
+        },
+        "replace": {
+            "pear-horde/horde_util": "== 2.5.2.0"
+        },
+        "type": "pear-library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                ""
+            ]
+        },
+        "include-path": [
+            "/"
+        ],
+        "license": [
+            "LGPL-2.1"
+        ],
+        "description": "These classes provide functionality useful for all kind of applications."
+    },
+    {
+        "name": "pear-pear.horde.org/Horde_Translation",
+        "version": "2.2.0",
+        "version_normalized": "2.2.0.0",
+        "dist": {
+            "type": "file",
+            "url": "http://pear.horde.org/get/Horde_Translation-2.2.0.tgz",
+            "reference": null,
+            "shasum": null
+        },
+        "require": {
+            "php": "<6.0.0.0"
+        },
+        "replace": {
+            "pear-horde/horde_translation": "== 2.2.0.0"
+        },
+        "type": "pear-library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                ""
+            ]
+        },
+        "include-path": [
+            "/"
+        ],
+        "license": [
+            "LGPL-2.1"
+        ],
+        "description": "Translation wrappers."
+    },
+    {
+        "name": "pear-pear.horde.org/Horde_Exception",
+        "version": "2.0.5",
+        "version_normalized": "2.0.5.0",
+        "dist": {
+            "type": "file",
+            "url": "http://pear.horde.org/get/Horde_Exception-2.0.5.tgz",
+            "reference": null,
+            "shasum": null
+        },
+        "require": {
+            "pear-pear.horde.org/horde_translation": "<3.0.0.0",
+            "php": "<6.0.0.0"
+        },
+        "replace": {
+            "pear-horde/horde_exception": "== 2.0.5.0"
+        },
+        "type": "pear-library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                ""
+            ]
+        },
+        "include-path": [
+            "/"
+        ],
+        "license": [
+            "LGPL-2.1"
+        ],
+        "description": "This class provides the default exception handlers for the Horde Application Framework."
+    },
+    {
+        "name": "pear-pear.horde.org/Horde_Text_Diff",
+        "version": "2.1.1",
+        "version_normalized": "2.1.1.0",
+        "dist": {
+            "type": "file",
+            "url": "http://pear.horde.org/get/Horde_Text_Diff-2.1.1.tgz",
+            "reference": null,
+            "shasum": null
+        },
+        "require": {
+            "pear-pear.horde.org/horde_exception": "<3.0.0.0",
+            "pear-pear.horde.org/horde_util": "<3.0.0.0",
+            "php": "<6.0.0.0"
+        },
+        "replace": {
+            "pear-horde/horde_text_diff": "== 2.1.1.0"
+        },
+        "type": "pear-library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                ""
+            ]
+        },
+        "include-path": [
+            "/"
+        ],
+        "license": [
+            "LGPL-2.1"
+        ],
+        "description": "A text-based diff engine and renderers for multiple diff output formats."
+    },
+    {
+        "name": "league/commonmark",
+        "version": "0.6.1",
+        "version_normalized": "0.6.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/thephpleague/commonmark.git",
+            "reference": "ad1b89403026158529620e0f6096be0eae96817c"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/ad1b89403026158529620e0f6096be0eae96817c",
+            "reference": "ad1b89403026158529620e0f6096be0eae96817c",
+            "shasum": ""
+        },
+        "require": {
+            "ext-mbstring": "*",
+            "php": ">=5.3.3"
+        },
+        "replace": {
+            "colinodell/commonmark-php": "*"
+        },
+        "require-dev": {
+            "erusev/parsedown": "~1.0",
+            "jgm/commonmark": "0.17",
+            "michelf/php-markdown": "~1.4",
+            "phpunit/phpunit": "~4.3"
+        },
+        "time": "2015-01-25 16:08:20",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.6-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "League\\CommonMark\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Colin O'Dell",
+                "email": "colinodell@gmail.com",
+                "homepage": "http://www.colinodell.com",
+                "role": "Lead Developer"
+            }
+        ],
+        "description": "Markdown parser for PHP based on the CommonMark spec",
+        "homepage": "https://github.com/thephpleague/commonmark",
+        "keywords": [
+            "commonmark",
+            "markdown",
+            "parser"
+        ]
+    },
+    {
+        "name": "erusev/parsedown",
+        "version": "1.5.1",
+        "version_normalized": "1.5.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/erusev/parsedown.git",
+            "reference": "9da19c1108c39df9b42adc42e39b8371070652d0"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/erusev/parsedown/zipball/9da19c1108c39df9b42adc42e39b8371070652d0",
+            "reference": "9da19c1108c39df9b42adc42e39b8371070652d0",
+            "shasum": ""
+        },
+        "time": "2015-01-24 13:01:47",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Parsedown": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Emanuil Rusev",
+                "email": "hello@erusev.com",
+                "homepage": "http://erusev.com"
+            }
+        ],
+        "description": "Parser for Markdown.",
+        "homepage": "http://parsedown.org",
+        "keywords": [
+            "markdown",
+            "parser"
+        ]
+    },
+    {
+        "name": "erusev/parsedown-extra",
+        "version": "0.2.6",
+        "version_normalized": "0.2.6.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/erusev/parsedown-extra.git",
+            "reference": "77f604b65b08550f229c2e79c0427c84c0c0979e"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/erusev/parsedown-extra/zipball/77f604b65b08550f229c2e79c0427c84c0c0979e",
+            "reference": "77f604b65b08550f229c2e79c0427c84c0c0979e",
+            "shasum": ""
+        },
+        "require": {
+            "erusev/parsedown": "~1.1"
+        },
+        "time": "2014-11-20 20:21:03",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "ParsedownExtra": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Emanuil Rusev",
+                "email": "hello@erusev.com",
+                "homepage": "http://erusev.com"
+            }
+        ],
+        "description": "An extension of Parsedown that adds support for Markdown Extra.",
+        "homepage": "https://github.com/erusev/parsedown-extra",
+        "keywords": [
+            "markdown",
+            "markdown extra",
+            "parsedown",
+            "parser"
+        ]
+    },
+    {
+        "name": "michelf/php-markdown",
+        "version": "1.4.1",
+        "version_normalized": "1.4.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/michelf/php-markdown.git",
+            "reference": "de9a19c7bf352d41cc99ed86c3c0ef17e87394b6"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/michelf/php-markdown/zipball/de9a19c7bf352d41cc99ed86c3c0ef17e87394b6",
+            "reference": "de9a19c7bf352d41cc99ed86c3c0ef17e87394b6",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "time": "2014-05-05 02:43:50",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-lib": "1.4.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Michelf": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Michel Fortin",
+                "email": "michel.fortin@michelf.ca",
+                "homepage": "http://michelf.ca/",
+                "role": "Developer"
+            },
+            {
+                "name": "John Gruber",
+                "homepage": "http://daringfireball.net/"
+            }
+        ],
+        "description": "PHP Markdown",
+        "homepage": "http://michelf.ca/projects/php-markdown/",
+        "keywords": [
+            "markdown"
+        ]
+    },
+    {
+        "name": "maglnet/magl-markdown",
+        "version": "1.3.0",
+        "version_normalized": "1.3.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/maglnet/MaglMarkdown.git",
+            "reference": "014b5fee1685465032800f5527a281c0ddadb2c6"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/maglnet/MaglMarkdown/zipball/014b5fee1685465032800f5527a281c0ddadb2c6",
+            "reference": "014b5fee1685465032800f5527a281c0ddadb2c6",
+            "shasum": ""
+        },
+        "require": {
+            "erusev/parsedown": "~1.0",
+            "erusev/parsedown-extra": "~0.2.6",
+            "ext-curl": "*",
+            "league/commonmark": "~0.5",
+            "michelf/php-markdown": "~1.4",
+            "php": ">=5.3.0",
+            "zendframework/zendframework": "~2.0"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~4.0"
+        },
+        "time": "2015-01-09 00:14:10",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "src"
+            ],
+            "psr-4": {
+                "MaglMarkdown\\": "src/MaglMarkdown/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Matthias Glaub",
+                "email": "magl@magl.net",
+                "role": "Developer"
+            }
+        ],
+        "description": "Provides a ZF2 View Helper to render markdown syntax. It uses third-party libraries for the rendering and you can switch between different renderers.",
+        "homepage": "https://github.com/maglnet/MaglMarkdown",
+        "keywords": [
+            "Zend Framework",
+            "gfm",
+            "github flavoured markdown",
+            "markdown",
+            "parsedown",
             "zf2"
         ]
     },
@@ -2298,17 +3075,17 @@
     },
     {
         "name": "rwoverdijk/assetmanager",
-        "version": "1.4.1",
-        "version_normalized": "1.4.1.0",
+        "version": "1.4.2",
+        "version_normalized": "1.4.2.0",
         "source": {
             "type": "git",
             "url": "https://github.com/RWOverdijk/AssetManager.git",
-            "reference": "47d29f56fc7935833adba9e18e17f777b9e8a2d6"
+            "reference": "68043e51160ab36f8eb12afbb875c7585590569f"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/RWOverdijk/AssetManager/zipball/47d29f56fc7935833adba9e18e17f777b9e8a2d6",
-            "reference": "47d29f56fc7935833adba9e18e17f777b9e8a2d6",
+            "url": "https://api.github.com/repos/RWOverdijk/AssetManager/zipball/68043e51160ab36f8eb12afbb875c7585590569f",
+            "reference": "68043e51160ab36f8eb12afbb875c7585590569f",
             "shasum": ""
         },
         "require": {
@@ -2326,7 +3103,7 @@
             "squizlabs/php_codesniffer": "1.5.*",
             "zendframework/zendframework": "2.*"
         },
-        "time": "2014-05-29 15:34:41",
+        "time": "2015-01-20 13:16:43",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -2340,15 +3117,14 @@
         ],
         "authors": [
             {
-                "name": "Marco Pivetta",
-                "email": "ocramius@gmail.com",
-                "homepage": "http://ocramius.github.com/",
-                "role": "Developer"
-            },
-            {
                 "name": "Wesley Overdijk",
                 "email": "r.w.overdijk@gmail.com",
                 "homepage": "http://blog.spoonx.nl/"
+            },
+            {
+                "name": "Marco Pivetta",
+                "email": "ocramius@gmail.com",
+                "homepage": "http://ocramius.github.com/"
             }
         ],
         "description": "An assetmanager module for Zend Framework 2.",
@@ -2488,92 +3264,6 @@
         ]
     },
     {
-        "name": "doctrine/doctrine-module",
-        "version": "0.8.0",
-        "version_normalized": "0.8.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/doctrine/DoctrineModule.git",
-            "reference": "a1be11c78d62b880f4e21ff9a107d6e37bed3133"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/doctrine/DoctrineModule/zipball/a1be11c78d62b880f4e21ff9a107d6e37bed3133",
-            "reference": "a1be11c78d62b880f4e21ff9a107d6e37bed3133",
-            "shasum": ""
-        },
-        "require": {
-            "doctrine/common": ">=2.4,<2.6-dev",
-            "php": ">=5.3.3",
-            "symfony/console": "~2.2",
-            "zendframework/zend-authentication": "~2.2",
-            "zendframework/zend-cache": "~2.2",
-            "zendframework/zend-mvc": "~2.2",
-            "zendframework/zend-paginator": "~2.2",
-            "zendframework/zend-servicemanager": "~2.2",
-            "zendframework/zend-stdlib": "~2.2",
-            "zendframework/zend-validator": "~2.2"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "~3.7",
-            "squizlabs/php_codesniffer": "1.4.*",
-            "zendframework/zendframework": "~2.2"
-        },
-        "suggest": {
-            "doctrine/data-fixtures": "Data Fixtures if you want to generate test data or bootstrap data for your deployments"
-        },
-        "time": "2014-01-24 17:30:36",
-        "bin": [
-            "bin/doctrine-module"
-        ],
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "0.8.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "DoctrineModule\\": "src/",
-                "DoctrineModuleTest\\": "tests/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Kyle Spraggs",
-                "email": "theman@spiffyjr.me",
-                "homepage": "http://www.spiffyjr.me/"
-            },
-            {
-                "name": "Marco Pivetta",
-                "email": "ocramius@gmail.com",
-                "homepage": "http://ocramius.github.com/",
-                "role": "Developer"
-            },
-            {
-                "name": "Guilherme Blanco",
-                "email": "guilhermeblanco@hotmail.com"
-            },
-            {
-                "name": "Michaël Gallego",
-                "email": "mic.gallego@gmail.com",
-                "homepage": "http://michaelgallego.fr"
-            }
-        ],
-        "description": "Zend Framework 2 Module that provides Doctrine basic functionality required for ORM and ODM modules",
-        "homepage": "http://www.doctrine-project.org/",
-        "keywords": [
-            "doctrine",
-            "module",
-            "zf2"
-        ]
-    },
-    {
         "name": "phpro/zf-doctrine-hydration-module",
         "version": "0.1.5",
         "version_normalized": "0.1.5.0",
@@ -2632,22 +3322,22 @@
     },
     {
         "name": "zfcampus/zf-apigility-doctrine",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "0.3.3",
+        "version_normalized": "0.3.3.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/TomHAnderson/zf-apigility-doctrine.git",
-            "reference": "07d533e8d5d533fd3d55a9f7ccd611a939ab2467"
+            "url": "https://github.com/zfcampus/zf-apigility-doctrine.git",
+            "reference": "632bdc16156b338e824691630776e17969507b6c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/TomHAnderson/zf-apigility-doctrine/zipball/333473cf5af181962984b548523c3fbaf80d6fd2",
-            "reference": "07d533e8d5d533fd3d55a9f7ccd611a939ab2467",
+            "url": "https://api.github.com/repos/zfcampus/zf-apigility-doctrine/zipball/632bdc16156b338e824691630776e17969507b6c",
+            "reference": "632bdc16156b338e824691630776e17969507b6c",
             "shasum": ""
         },
         "require": {
-            "php": ">=5.4",
-            "phpro/zf-doctrine-hydration-module": ">=0.1@dev",
+            "php": ">=5.3",
+            "phpro/zf-doctrine-hydration-module": ">=0.1.5",
             "zfcampus/zf-apigility": "~1.0"
         },
         "require-dev": {
@@ -2662,14 +3352,15 @@
             "zendframework/zend-test": ">=2.3",
             "zfcampus/zf-apigility-admin": "~1.0"
         },
-        "time": "2015-01-14 22:10:03",
+        "time": "2015-01-27 22:46:19",
         "type": "library",
-        "installation-source": "source",
+        "installation-source": "dist",
         "autoload": {
             "psr-4": {
                 "ZF\\Apigility\\Doctrine\\": "src/"
             }
         },
+        "notification-url": "https://packagist.org/downloads/",
         "license": [
             "Apache-2.0"
         ],
@@ -2685,700 +3376,6 @@
             "api",
             "apigility",
             "doctrine"
-        ],
-        "support": {
-            "source": "https://github.com/TomHAnderson/zf-apigility-doctrine/tree/master"
-        }
-    },
-    {
-        "name": "doctrine/doctrine-orm-module",
-        "version": "0.8.0",
-        "version_normalized": "0.8.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/doctrine/DoctrineORMModule.git",
-            "reference": "31a0a0aefd424ca2eaecc0303c4bb0d959b1f2c0"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/doctrine/DoctrineORMModule/zipball/31a0a0aefd424ca2eaecc0303c4bb0d959b1f2c0",
-            "reference": "31a0a0aefd424ca2eaecc0303c4bb0d959b1f2c0",
-            "shasum": ""
-        },
-        "require": {
-            "doctrine/dbal": ">=2.4,<2.6-dev",
-            "doctrine/doctrine-module": "0.8.*",
-            "doctrine/orm": ">=2.4,<2.6-dev",
-            "php": ">=5.3.3",
-            "zendframework/zend-mvc": ">=2.2",
-            "zendframework/zend-servicemanager": ">=2.2",
-            "zendframework/zend-stdlib": ">=2.2"
-        },
-        "require-dev": {
-            "doctrine/data-fixtures": "1.0.*",
-            "doctrine/migrations": "1.*",
-            "phpunit/phpunit": ">=3.7",
-            "squizlabs/php_codesniffer": "1.4.*",
-            "zendframework/zend-developer-tools": "*",
-            "zendframework/zendframework": "2.*"
-        },
-        "suggest": {
-            "doctrine/migrations": "doctrine migrations if you want to keep your schema definitions versioned",
-            "zendframework/zend-developer-tools": "zend-developer-tools if you want to profile operations executed by the ORM during development",
-            "zendframework/zend-form": "if you want to use form elements backed by Doctrine"
-        },
-        "time": "2014-01-24 18:13:09",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "0.8.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "DoctrineORMModule\\": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Kyle Spraggs",
-                "email": "theman@spiffyjr.me",
-                "homepage": "http://www.spiffyjr.me/"
-            },
-            {
-                "name": "Marco Pivetta",
-                "email": "ocramius@gmail.com",
-                "homepage": "http://ocramius.github.com/",
-                "role": "Developer"
-            },
-            {
-                "name": "Evan Coury",
-                "email": "me@evancoury.com",
-                "homepage": "http://blog.evan.pro/"
-            },
-            {
-                "name": "Guilherme Blanco",
-                "email": "guilhermeblanco@hotmail.com"
-            }
-        ],
-        "description": "Zend Framework 2 Module that provides Doctrine ORM functionality",
-        "homepage": "http://www.doctrine-project.org/",
-        "keywords": [
-            "doctrine",
-            "module",
-            "orm",
-            "zf2"
-        ]
-    },
-    {
-        "name": "doctrine/data-fixtures",
-        "version": "v1.0.0",
-        "version_normalized": "1.0.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/doctrine/data-fixtures.git",
-            "reference": "b4a135c7db56ecc4602b54a2184368f440cac33e"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/doctrine/data-fixtures/zipball/b4a135c7db56ecc4602b54a2184368f440cac33e",
-            "reference": "b4a135c7db56ecc4602b54a2184368f440cac33e",
-            "shasum": ""
-        },
-        "require": {
-            "doctrine/common": ">=2.2,<2.5-dev",
-            "php": ">=5.3.2"
-        },
-        "require-dev": {
-            "doctrine/orm": ">=2.2,<2.5-dev"
-        },
-        "suggest": {
-            "doctrine/mongodb-odm": "For loading MongoDB ODM fixtures",
-            "doctrine/orm": "For loading ORM fixtures",
-            "doctrine/phpcr-odm": "For loading PHPCR ODM fixtures"
-        },
-        "time": "2013-07-10 17:04:07",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.0.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Doctrine\\Common\\DataFixtures": "lib/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Jonathan Wage",
-                "email": "jonwage@gmail.com",
-                "homepage": "http://www.jwage.com/",
-                "role": "Creator"
-            }
-        ],
-        "description": "Data Fixtures for all Doctrine Object Managers",
-        "homepage": "http://www.doctrine-project.org",
-        "keywords": [
-            "database"
-        ]
-    },
-    {
-        "name": "zf-commons/zfc-user-doctrine-orm",
-        "version": "1.0.0",
-        "version_normalized": "1.0.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/ZF-Commons/ZfcUserDoctrineORM.git",
-            "reference": "9a2e148c9a5a03ca8592b93ea28a21e37b06e053"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/ZF-Commons/ZfcUserDoctrineORM/zipball/9a2e148c9a5a03ca8592b93ea28a21e37b06e053",
-            "reference": "9a2e148c9a5a03ca8592b93ea28a21e37b06e053",
-            "shasum": ""
-        },
-        "require": {
-            "doctrine/doctrine-orm-module": "0.*",
-            "php": ">=5.3.3",
-            "zf-commons/zfc-user": "1.*"
-        },
-        "time": "2014-04-18 10:21:19",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "0.1.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "ZfcUserDoctrineORM": "src/"
-            },
-            "classmap": [
-                "./"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Kyle Spraggs",
-                "email": "theman@spiffyjr.me",
-                "homepage": "http://www.spiffyjr.me/"
-            },
-            {
-                "name": "Evan Coury",
-                "email": "me@evancoury.com",
-                "homepage": "http://blog.evan.pro/"
-            }
-        ],
-        "description": "Doctrine2 ORM storage adapter for ZfcUser.",
-        "homepage": "https://github.com/ZF-Commons/ZfcUserDoctrineORM",
-        "keywords": [
-            "zf2"
-        ]
-    },
-    {
-        "name": "hounddog/doctrine-data-fixture-module",
-        "version": "0.0.4",
-        "version_normalized": "0.0.4.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/Hounddog/DoctrineDataFixtureModule.git",
-            "reference": "4f09fd948dfaf5003acccba4533d52291cd76d2b"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/Hounddog/DoctrineDataFixtureModule/zipball/4f09fd948dfaf5003acccba4533d52291cd76d2b",
-            "reference": "4f09fd948dfaf5003acccba4533d52291cd76d2b",
-            "shasum": ""
-        },
-        "require": {
-            "doctrine/data-fixtures": "1.0.*",
-            "doctrine/doctrine-orm-module": "~0.7",
-            "php": ">=5.3.3",
-            "zendframework/zend-eventmanager": "2.*",
-            "zendframework/zend-modulemanager": "2.*",
-            "zendframework/zend-servicemanager": "2.*"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "3.7.*",
-            "satooshi/php-coveralls": ">=0.6.0",
-            "squizlabs/php_codesniffer": "1.4.*"
-        },
-        "time": "2013-12-12 15:42:53",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "DoctrineDataFixtureModule": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Martin Shwalbe",
-                "email": "martin.shwalbe@gmail.com",
-                "homepage": "http://hounddog.github.com"
-            }
-        ],
-        "description": "Zend Framework 2 Module that provides Doctrine Data-Fixture functionality",
-        "homepage": "http://www.doctrine-project.org/",
-        "keywords": [
-            "data-fixture",
-            "doctrine",
-            "module",
-            "zf2"
-        ]
-    },
-    {
-        "name": "san/san-session-toolbar",
-        "version": "0.0.4",
-        "version_normalized": "0.0.4.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/samsonasik/SanSessionToolbar.git",
-            "reference": "eeb419e7a313eb4424ba94bd3efc7da2f1fc150f"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/samsonasik/SanSessionToolbar/zipball/eeb419e7a313eb4424ba94bd3efc7da2f1fc150f",
-            "reference": "eeb419e7a313eb4424ba94bd3efc7da2f1fc150f",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.23"
-        },
-        "time": "2014-12-04 19:04:56",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                "./"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Abdul Malik Ikhsan",
-                "email": "samsonasik@gmail.com",
-                "homepage": "http://samsonasik.wordpress.com",
-                "role": "Developer"
-            }
-        ],
-        "description": "ZF2 Session Toolbar for ZendDeveloperTools ",
-        "homepage": "https://github.com/samsonasik/SanSessionToolbar",
-        "keywords": [
-            "session",
-            "zf2"
-        ]
-    },
-    {
-        "name": "pear-pear.horde.org/Horde_Util",
-        "version": "2.5.2",
-        "version_normalized": "2.5.2.0",
-        "dist": {
-            "type": "file",
-            "url": "http://pear.horde.org/get/Horde_Util-2.5.2.tgz",
-            "reference": null,
-            "shasum": null
-        },
-        "require": {
-            "ext-dom": "*",
-            "php": "<6.0.0.0"
-        },
-        "replace": {
-            "pear-horde/horde_util": "== 2.5.2.0"
-        },
-        "type": "pear-library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                ""
-            ]
-        },
-        "include-path": [
-            "/"
-        ],
-        "license": [
-            "LGPL-2.1"
-        ],
-        "description": "These classes provide functionality useful for all kind of applications."
-    },
-    {
-        "name": "pear-pear.horde.org/Horde_Translation",
-        "version": "2.2.0",
-        "version_normalized": "2.2.0.0",
-        "dist": {
-            "type": "file",
-            "url": "http://pear.horde.org/get/Horde_Translation-2.2.0.tgz",
-            "reference": null,
-            "shasum": null
-        },
-        "require": {
-            "php": "<6.0.0.0"
-        },
-        "replace": {
-            "pear-horde/horde_translation": "== 2.2.0.0"
-        },
-        "type": "pear-library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                ""
-            ]
-        },
-        "include-path": [
-            "/"
-        ],
-        "license": [
-            "LGPL-2.1"
-        ],
-        "description": "Translation wrappers."
-    },
-    {
-        "name": "pear-pear.horde.org/Horde_Exception",
-        "version": "2.0.5",
-        "version_normalized": "2.0.5.0",
-        "dist": {
-            "type": "file",
-            "url": "http://pear.horde.org/get/Horde_Exception-2.0.5.tgz",
-            "reference": null,
-            "shasum": null
-        },
-        "require": {
-            "pear-pear.horde.org/horde_translation": "<3.0.0.0",
-            "php": "<6.0.0.0"
-        },
-        "replace": {
-            "pear-horde/horde_exception": "== 2.0.5.0"
-        },
-        "type": "pear-library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                ""
-            ]
-        },
-        "include-path": [
-            "/"
-        ],
-        "license": [
-            "LGPL-2.1"
-        ],
-        "description": "This class provides the default exception handlers for the Horde Application Framework."
-    },
-    {
-        "name": "pear-pear.horde.org/Horde_Text_Diff",
-        "version": "2.1.1",
-        "version_normalized": "2.1.1.0",
-        "dist": {
-            "type": "file",
-            "url": "http://pear.horde.org/get/Horde_Text_Diff-2.1.1.tgz",
-            "reference": null,
-            "shasum": null
-        },
-        "require": {
-            "pear-pear.horde.org/horde_exception": "<3.0.0.0",
-            "pear-pear.horde.org/horde_util": "<3.0.0.0",
-            "php": "<6.0.0.0"
-        },
-        "replace": {
-            "pear-horde/horde_text_diff": "== 2.1.1.0"
-        },
-        "type": "pear-library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                ""
-            ]
-        },
-        "include-path": [
-            "/"
-        ],
-        "license": [
-            "LGPL-2.1"
-        ],
-        "description": "A text-based diff engine and renderers for multiple diff output formats."
-    },
-    {
-        "name": "league/commonmark",
-        "version": "0.6.0",
-        "version_normalized": "0.6.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/thephpleague/commonmark.git",
-            "reference": "c352207aab15706a1ca9c25e5bd30c847899a0c9"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/c352207aab15706a1ca9c25e5bd30c847899a0c9",
-            "reference": "c352207aab15706a1ca9c25e5bd30c847899a0c9",
-            "shasum": ""
-        },
-        "require": {
-            "ext-mbstring": "*",
-            "php": ">=5.3.3"
-        },
-        "replace": {
-            "colinodell/commonmark-php": "*"
-        },
-        "require-dev": {
-            "erusev/parsedown": "~1.0",
-            "jgm/commonmark": "0.15",
-            "michelf/php-markdown": "~1.4",
-            "phpunit/phpunit": "~4.3"
-        },
-        "time": "2015-01-09 19:27:30",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "0.6-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "League\\CommonMark\\": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Colin O'Dell",
-                "email": "colinodell@gmail.com",
-                "homepage": "http://www.colinodell.com",
-                "role": "Lead Developer"
-            }
-        ],
-        "description": "Markdown parser for PHP based on the CommonMark spec",
-        "homepage": "https://github.com/thephpleague/commonmark",
-        "keywords": [
-            "commonmark",
-            "markdown",
-            "parser"
-        ]
-    },
-    {
-        "name": "erusev/parsedown",
-        "version": "1.4.5",
-        "version_normalized": "1.4.5.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/erusev/parsedown.git",
-            "reference": "ada39109e46659d9e8f0ef4539264a7582797093"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/erusev/parsedown/zipball/ada39109e46659d9e8f0ef4539264a7582797093",
-            "reference": "ada39109e46659d9e8f0ef4539264a7582797093",
-            "shasum": ""
-        },
-        "time": "2015-01-15 20:04:02",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Parsedown": ""
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Emanuil Rusev",
-                "email": "hello@erusev.com",
-                "homepage": "http://erusev.com"
-            }
-        ],
-        "description": "Parser for Markdown.",
-        "homepage": "http://parsedown.org",
-        "keywords": [
-            "markdown",
-            "parser"
-        ]
-    },
-    {
-        "name": "erusev/parsedown-extra",
-        "version": "0.2.6",
-        "version_normalized": "0.2.6.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/erusev/parsedown-extra.git",
-            "reference": "77f604b65b08550f229c2e79c0427c84c0c0979e"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/erusev/parsedown-extra/zipball/77f604b65b08550f229c2e79c0427c84c0c0979e",
-            "reference": "77f604b65b08550f229c2e79c0427c84c0c0979e",
-            "shasum": ""
-        },
-        "require": {
-            "erusev/parsedown": "~1.1"
-        },
-        "time": "2014-11-20 20:21:03",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "ParsedownExtra": ""
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Emanuil Rusev",
-                "email": "hello@erusev.com",
-                "homepage": "http://erusev.com"
-            }
-        ],
-        "description": "An extension of Parsedown that adds support for Markdown Extra.",
-        "homepage": "https://github.com/erusev/parsedown-extra",
-        "keywords": [
-            "markdown",
-            "markdown extra",
-            "parsedown",
-            "parser"
-        ]
-    },
-    {
-        "name": "michelf/php-markdown",
-        "version": "1.4.1",
-        "version_normalized": "1.4.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/michelf/php-markdown.git",
-            "reference": "de9a19c7bf352d41cc99ed86c3c0ef17e87394b6"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/michelf/php-markdown/zipball/de9a19c7bf352d41cc99ed86c3c0ef17e87394b6",
-            "reference": "de9a19c7bf352d41cc99ed86c3c0ef17e87394b6",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0"
-        },
-        "time": "2014-05-05 02:43:50",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-lib": "1.4.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Michelf": ""
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Michel Fortin",
-                "email": "michel.fortin@michelf.ca",
-                "homepage": "http://michelf.ca/",
-                "role": "Developer"
-            },
-            {
-                "name": "John Gruber",
-                "homepage": "http://daringfireball.net/"
-            }
-        ],
-        "description": "PHP Markdown",
-        "homepage": "http://michelf.ca/projects/php-markdown/",
-        "keywords": [
-            "markdown"
-        ]
-    },
-    {
-        "name": "maglnet/magl-markdown",
-        "version": "1.3.0",
-        "version_normalized": "1.3.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/maglnet/MaglMarkdown.git",
-            "reference": "014b5fee1685465032800f5527a281c0ddadb2c6"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/maglnet/MaglMarkdown/zipball/014b5fee1685465032800f5527a281c0ddadb2c6",
-            "reference": "014b5fee1685465032800f5527a281c0ddadb2c6",
-            "shasum": ""
-        },
-        "require": {
-            "erusev/parsedown": "~1.0",
-            "erusev/parsedown-extra": "~0.2.6",
-            "ext-curl": "*",
-            "league/commonmark": "~0.5",
-            "michelf/php-markdown": "~1.4",
-            "php": ">=5.3.0",
-            "zendframework/zendframework": "~2.0"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "~4.0"
-        },
-        "time": "2015-01-09 00:14:10",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                "src"
-            ],
-            "psr-4": {
-                "MaglMarkdown\\": "src/MaglMarkdown/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Matthias Glaub",
-                "email": "magl@magl.net",
-                "role": "Developer"
-            }
-        ],
-        "description": "Provides a ZF2 View Helper to render markdown syntax. It uses third-party libraries for the rendering and you can switch between different renderers.",
-        "homepage": "https://github.com/maglnet/MaglMarkdown",
-        "keywords": [
-            "Zend Framework",
-            "gfm",
-            "github flavoured markdown",
-            "markdown",
-            "parsedown",
-            "zf2"
         ]
     },
     {

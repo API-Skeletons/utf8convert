@@ -42,11 +42,15 @@ ini_set('display_errors', true);
             <th>
                 <?php
                 foreach ($conversion->getTableDef() as $table) {
+                    $totalDataPoint = 0;
+                    foreach ($table->getColumnDef() as $column) {
+                        $totalDataPoint += $this->countDataPoint($conversion, $column);
+                    }
+                    if (!$totalDataPoint) {
+                        continue;
+                    }
                 ?>
-                    <a class="btn btn-default" href="<?= $this->url('visualization/conversion/table', array(
-                        'table_id' => $table->getId(),
-                        'conversion_id' => $conversion->getId()));
-                    ?>">
+                    <a class="btn btn-default" href="">
                         <?= $this->escapeHtml($table->getName()); ?>
                     </a>
                 <?php
@@ -54,9 +58,9 @@ ini_set('display_errors', true);
                 ?>
             </th>
             <th>
-				<?php
-                	echo $conversion->getDataPointCount();
-				?>
+                <?php
+                    echo $conversion->getDataPointCount();
+                ?>
             </th>
             <th>
                 <?= $conversion->getCreatedAt()->format('Y-m-d H:i:s'); ?>

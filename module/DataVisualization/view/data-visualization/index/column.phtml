@@ -16,6 +16,18 @@
         border-top: 1px solid;
         padding: 5px;
     }
+
+    .data-odd {
+        background-color: #eef;
+        border-top: 1px solid;
+        padding: 5px;
+    }
+
+    .data-even {
+        background-color: #ddf;
+        border-top: 1px solid;
+        padding: 5px;
+    }
 </style>
 
 <div class="pull-right">
@@ -50,10 +62,17 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 </ul>
 
 <span class="pull-right btn-group">
-    <a href="#" class="btn btn-default" ng-click="columnModel.showAllComments()">Show <i class="glyphicon glyphicon-comment"></i>
-</a>
-    <a href="#" class="btn btn-default" ng-click="columnModel.hideAllComments()">Hide <i class="glyphicon glyphicon-comment"></i>
-</a>
+    <a href="#" class="btn btn-default" ng-click="columnModel.approveAll()">
+        <i class="glyphicon glyphicon-ok"></i> All
+    </a>
+
+    <a href="#" class="btn btn-default" ng-click="columnModel.showAllComments()">
+        <i class="glyphicon glyphicon-comment"></i> Show
+    </a>
+
+    <a href="#" class="btn btn-default" ng-click="columnModel.hideAllComments()">
+        <i class="glyphicon glyphicon-comment"></i> Hide
+    </a>
 </span>
 
 <div class="container text-left" style="clear: both;">
@@ -140,8 +159,19 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                 <span ng-hide="!dataPoint._showComment" class="ng-hide pull-right" onbeforesave="columnModel.update(dataPoint, {'comment': $data})" editable-textarea="dataPoint.comment" e-rows="4" e-cols="40">{{ dataPoint.comment || 'no comment' }}</span>
     </div>
 
-    <div class="col-md-12" ng-hide="!dataPoint._showData">
-        {{ dataPoint.data }}
+    <div class="col-md-12 ng-hide"
+        ng-hide="!dataPoint._showData"
+        ng-repeat="(column, value) in dataPoint.data"
+        ng-class-odd="'data-odd'" ng-class-even="'data-even'"
+    >
+        <div class="col-md-1"></div>
+        <div class="col-md-2">
+            {{ column }}
+        </div>
+        <div class="col-md-8">
+            <span onbeforesave="columnModel.updateData(dataPoint, column, $data)" editable-textarea="value" e-rows="4" e-cols="40">{{ value || 'no data' }}</span>
+        </div>
+        <div class="col-md-1"></div>
     </div>
 </div>
 

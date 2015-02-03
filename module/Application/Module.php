@@ -11,9 +11,20 @@ namespace Application;
 
 use Zend\Mvc\ModuleRouteListener;
 use Zend\Mvc\MvcEvent;
+use Zend\Session\Config\StandardConfig;
+use Zend\Session\SessionManager;
 
 class Module
 {
+    public function init()
+    {
+        $config = new StandardConfig();
+        $config->setOptions(array(
+            'name' => 'utf8config',
+        ));
+        $manager = new SessionManager($config);
+    }
+
     public function onBootstrap(MvcEvent $e)
     {
         $eventManager        = $e->getApplication()->getEventManager();

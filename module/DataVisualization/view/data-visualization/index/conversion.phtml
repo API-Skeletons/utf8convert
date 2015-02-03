@@ -7,6 +7,13 @@
 
 <?php
 foreach ($conversion->getTableDef() as $table) {
+    $totalDataPoint = 0;
+    foreach ($table->getColumnDef() as $column) {
+        $totalDataPoint += $this->countDataPoint($conversion, $column);
+    }
+    if (!$totalDataPoint) {
+        continue;
+    }
 ?>
 <table class="table table-striped table-hover">
     <caption>Table <?= $this->escapeHtml($table->getName()); ?></caption>
@@ -35,6 +42,10 @@ foreach ($conversion->getTableDef() as $table) {
     <tbody>
     <?php
     foreach ($table->getColumnDef() as $column) {
+        $totalDataPoint = $this->countDataPoint($conversion, $column);
+        if (!$totalDataPoint) {
+            continue;
+        }
     ?>
         <tr>
             <td>

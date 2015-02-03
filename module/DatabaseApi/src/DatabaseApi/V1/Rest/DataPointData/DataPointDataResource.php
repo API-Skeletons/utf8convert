@@ -91,7 +91,30 @@ class DataPointDataResource extends AbstractResourceListener
      */
     public function patch($id, $data)
     {
-        return new ApiProblem(405, 'The PATCH method has not been defined for individual resources');
+        $objectManager = $this->getServiceManager()->get('doctrine.entitymanager.orm_default');
+        $database = $this->getServiceManager()->get('database');
+
+        $dataPoint = $objectManager->getRepository('Db\Entity\DataPoint')->find($id);
+
+        $keys = array();
+        foreach ($dataPoint->getDataPointPrimaryKey() as $dataPointPrimaryKey) {
+            $keys[] = $database->getPlatform()->quoteIdentifier($dataPointPrimaryKey->getPrimaryKeyDef()->getName()) . ' = ' .
+                $database->getPlatform()->quoteValue($dataPointPrimaryKey->getValue());
+        }
+
+         $sql = "UPDATE "
+            . $database->getPlatform()->quoteIdentifier($dataPoint->getColumnDef()->getTableDef()->getName())
+            . " SET "
+            . $database->getPlatform()->quoteIdentifier($data->column)
+            . ' = '
+            . $database->getPlatform()->quoteValue($data->value)
+            . " WHERE "
+            . implode(',', $keys)
+            ;
+
+        $database->query($sql)->execute();
+
+        return $this->fetch($id);
     }
 
     /**

@@ -3,13 +3,14 @@
 namespace Db\Query\Provider\DataPoint;
 
 use ZF\Apigility\Doctrine\Server\Query\Provider\DefaultOrm;
+use ZF\Rest\ResourceEvent;
 
 class FetchAll extends DefaultOrm
 {
     /**
      * Create a filtered query with required parameters
      */
-    public function createQuery($entityClass, $parameters)
+    public function createQuery(ResourceEvent $event, $entityClass, $parameters)
     {
         $queryBuilder = $this->getObjectManager()->createQueryBuilder();
 

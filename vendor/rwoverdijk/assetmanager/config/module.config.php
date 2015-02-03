@@ -22,6 +22,7 @@ return array(
         ),
     ),
     'asset_manager' => array(
+        'clear_output_buffer' => true,
         'resolvers' => array(
             'AssetManager\Resolver\MapResolver'                 => 3000,
             'AssetManager\Resolver\ConcatResolver'              => 2500,
@@ -31,4 +32,25 @@ return array(
             'AssetManager\Resolver\PathStackResolver'           => 500,
         ),
     ),
+    'controllers'     => array(
+        'factories' => array(
+            'AssetManager\Controller\Console' => 'AssetManager\Controller\ConsoleControllerFactory',
+        ),
+    ),
+    'console'         => array(
+        'router' => array(
+            'routes' => array(
+                'AssetManager-warmup' => array(
+                    'options' => array(
+                        'route'    => 'assetmanager warmup [--purge] [--verbose|-v]',
+                        'defaults' => array(
+                            'controller' => 'AssetManager\Controller\Console',
+                            'action'     => 'warmup',
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    ),
+
 );

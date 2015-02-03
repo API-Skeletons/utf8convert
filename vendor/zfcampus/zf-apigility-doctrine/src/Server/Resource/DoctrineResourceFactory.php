@@ -10,6 +10,7 @@ use Zend\ServiceManager\Exception\ServiceNotFoundException;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 use ZF\Apigility\Doctrine\Server\Collection\Query;
+use Exception;
 
 /**
  * Class AbstractDoctrineResourceFactory
@@ -105,22 +106,32 @@ class DoctrineResourceFactory implements AbstractFactoryInterface
      */
     public function createServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
-        $config   = $serviceLocator->get('Config');
-        $config   = $config['zf-apigility']['doctrine-connected'][$requestedName];
+        $config = $serviceLocator->get('Config');
+        $doctrineConnectedConfig = $config['zf-apigility']['doctrine-connected'][$requestedName];
 
-        $className = isset($config['class']) ? $config['class'] : $requestedName;
+        foreach ($config['zf-rest'] as $restControllerConfig) {
+            if ($restControllerConfig['listener'] == $requestedName) {
+                $restConfig = $restControllerConfig;
+                break;
+            }
+        }
+
+        $className = isset($doctrineConnectedConfig['class']) ? $doctrineConnectedConfig['class'] : $requestedName;
         $className = $this->normalizeClassname($className);
 
-        $objectManager = $this->loadObjectManager($serviceLocator, $config);
-        $hydrator = $this->loadHydrator($serviceLocator, $config, $objectManager);
-        $queryProviders = $this->loadQueryProviders($serviceLocator, $config, $objectManager);
-        $configuredListeners = $this->loadConfiguredListeners($serviceLocator, $config);
+        $objectManager = $this->loadObjectManager($serviceLocator, $doctrineConnectedConfig);
+        $hydrator = $this->loadHydrator($serviceLocator, $doctrineConnectedConfig, $objectManager);
+        $queryProviders = $this->loadQueryProviders($serviceLocator, $doctrineConnectedConfig, $objectManager);
+        $queryCreateFilter = $this->loadQueryCreateFilter($serviceLocator, $doctrineConnectedConfig, $objectManager);
+        $configuredListeners = $this->loadConfiguredListeners($serviceLocator, $doctrineConnectedConfig);
 
         $listener = new $className();
         $listener->setObjectManager($objectManager);
         $listener->setHydrator($hydrator);
         $listener->setQueryProviders($queryProviders);
+        $listener->setQueryCreateFilter($queryCreateFilter);
         $listener->setServiceManager($serviceLocator);
+        $listener->setEntityIdentifierName($restConfig['entity_identifier_name']);
         if (count($configuredListeners)) {
             foreach ($configuredListeners as $configuredListener) {
                 $listener->getEventManager()->attach($configuredListener);
@@ -192,6 +203,37 @@ class DoctrineResourceFactory implements AbstractFactoryInterface
      * @return ZF\Apigility\Doctrine\Query\Provider\FetchAll\FetchAllQueryProviderInterface
      * @throws \Zend\ServiceManager\Exception\ServiceNotCreatedException
      */
+    protected function loadQueryCreateFilter(ServiceLocatorInterface $serviceLocator, $config, $objectManager)
+    {
+        $createFilterManager = $serviceLocator->get('ZfApigilityDoctrineQueryCreateFilterManager');
+        $filterManagerAlias = (isset($config['query_create_filter'])) ? $config['query_create_filter']: 'default';
+
+        $queryCreateFilter = $createFilterManager->get($filterManagerAlias);
+
+        // Load the oAuth2 server
+        $oAuth2Server = false;
+        try {
+            $oAuth2Server = $serviceLocator->get('ZF\OAuth2\Service\OAuth2Server');
+            $queryCreateFilter->setOAuth2Server($oAuth2Server);
+        } catch (Exception $e) {
+            // If no oAuth2 server that's just fine.
+        }
+
+        // Set object manager for all query providers
+        $queryCreateFilter ->setObjectManager($objectManager);
+
+        return $queryCreateFilter;
+    }
+
+
+    /**
+     * @param ServiceLocatorInterface $serviceLocator
+     * @param                         $config
+     * @param                         $objectManager
+     *
+     * @return ZF\Apigility\Doctrine\Query\Provider\FetchAll\FetchAllQueryProviderInterface
+     * @throws \Zend\ServiceManager\Exception\ServiceNotCreatedException
+     */
     protected function loadQueryProviders(ServiceLocatorInterface $serviceLocator, $config, $objectManager)
     {
         $queryProviders = array();
@@ -219,9 +261,20 @@ class DoctrineResourceFactory implements AbstractFactoryInterface
             }
         }
 
+        // Load the oAuth2 server
+        $oAuth2Server = false;
+        try {
+            $oAuth2Server = $serviceLocator->get('ZF\OAuth2\Service\OAuth2Server');
+        } catch (Exception $e) {
+            // If no oAuth2 server that's just fine.
+        }
+
         // Set object manager for all query providers
         foreach ($queryProviders as $provider) {
             $provider->setObjectManager($objectManager);
+            if ($oAuth2Server) {
+                $provider->setOAuth2Server($oAuth2Server);
+            }
         }
 
         return $queryProviders;

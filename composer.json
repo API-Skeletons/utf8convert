@@ -27,10 +27,6 @@
         {
             "type": "pear",
             "url": "http://pear.horde.org"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/TomHAnderson/zf-apigility-doctrine"
         }
     ],
     "require": {
@@ -40,7 +36,6 @@
         "zfcampus/zf-development-mode": "~2.0",
         "zfcampus/zf-apigility": "~1.0",
         "zfcampus/zf-apigility-documentation": "~1.0",
-        "zfcampus/zf-apigility-doctrine": "dev-master#07d533e8d5d533fd3d55a9f7ccd611a939ab2467",
         "zf-commons/zfc-user-doctrine-orm": "*",
         "bjyoungblood/bjy-authorize": "1.4.*",
         "hounddog/doctrine-data-fixture-module": "0.0.*",
@@ -48,7 +43,8 @@
         "pear-pear.horde.org/horde_text_diff": "2.*",
         "danielss89/zfc-user-admin": "dev-master",
         "beberlei/DoctrineExtensions": "dev-master",
-        "maglnet/magl-markdown": "~1.1"
+        "maglnet/magl-markdown": "~1.1",
+        "zfcampus/zf-apigility-doctrine": "~0.3"
     },
     "require-dev": {
         "zendframework/zftool": "dev-master",

@@ -25,6 +25,38 @@ angular.module('utf8convert')
                 return $scope.columnPromise;
             },
 
+			updateData: function(dataPoint, column, value)
+			{
+                $scope.columnPromise = $http({
+                    method: 'patch',
+                    timeout: 180000,
+                    url: this.baseUrl + '/api/data-point-data/' + dataPoint.id,
+                    data: {
+						column: column,
+						value: value
+					}
+                }).success(function(data) {
+					angular.forEach(data, function(value, key) {
+						if (key.charAt(0) == '_') {
+							delete data[key];
+						}
+					});
+
+					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
+
+						if (parseInt(value.id) == parseInt(dataPoint.id)) {
+							$scope.dataPoint._embedded.data_point[key].data = data;
+							return;
+						}
+					});
+
+//console.log(dataPoint);
+//console.log(data);
+                });
+
+                return $scope.columnPromise;
+			},
+
 			// Show the raw table data
 			data: function(dataPoint)
 			{
@@ -42,6 +74,7 @@ angular.module('utf8convert')
 				}).success(function(data) {
 					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
 						if (value.id == dataPoint.id) {
+							delete data._links;
 							$scope.dataPoint._embedded.data_point[key].data = data;
 							return;
 						}
@@ -77,6 +110,39 @@ angular.module('utf8convert')
                 });
 
                 return $scope.columnPromise;
+			},
+
+			approveAll: function()
+			{
+				var newData = angular.copy($scope.dataPoint._embedded.data_point);
+
+				angular.forEach(newData, function(value, key) {
+					delete newData[key].dataPointPrimaryKey;
+					delete newData[key].convertWorker;
+					delete newData[key].dataPointIteration;
+					delete newData[key].user;
+					delete newData[key].columnDef;
+					delete newData[key].conversion;
+
+					angular.forEach(value, function(fieldValue, fieldKey) {
+						if (fieldKey.charAt(0) == '_') {
+							delete newData[key][fieldKey];
+						}
+					});
+
+					newData[key].approved = true;
+					newData[key].flagged = false;
+					newData[key].denied = false;
+				});
+
+                $scope.columnPromise = $http({
+                    method: 'patch',
+                    timeout: 180000,
+                    url: this.baseUrl + '/api/data-point',
+                    data: newData
+                }).success(function(data) {
+					$scope.dataPoint._embedded.data_point = data._embedded.data_point;
+				});
 			},
 
 			showAllComments: function()

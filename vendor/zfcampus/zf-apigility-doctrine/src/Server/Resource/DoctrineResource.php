@@ -20,6 +20,8 @@ use Zend\EventManager\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
 use Traversable;
 use Doctrine\ORM\NoResultException;
+use Doctrine\Common\Collections\ArrayCollection;
+use ZF\Apigility\Doctrine\Server\Query\CreateFilter\QueryCreateFilterInterface;
 
 /**
  * Class DoctrineResource
@@ -174,6 +176,47 @@ class DoctrineResource extends AbstractResourceListener implements
     }
 
     /**
+     * @var entityIdentifierName string
+     */
+    protected $entityIdentifierName;
+
+    /**
+     * @return string
+     */
+    public function getEntityIdentifierName()
+    {
+        return $this->entityIdentifierName;
+    }
+
+    /**
+     * @param ZF\Apigility\Doctrine\Server\Query\Provider\QueryProviderInterface
+     */
+    public function setEntityIdentifierName($value)
+    {
+        $this->entityIdentifierName = $value;
+
+        return $this;
+    }
+
+    /**
+     * @var QueryCreateFilterInterface
+     */
+    protected $queryCreateFilter;
+
+    public function setQueryCreateFilter(QueryCreateFilterInterface $value)
+    {
+        $this->queryCreateFilter = $value;
+
+        return $this;
+    }
+
+    public function getQueryCreateFilter()
+    {
+        return $this->queryCreateFilter;
+    }
+
+
+    /**
      * @var string
      */
     protected $multiKeyDelimiter = '.';
@@ -254,6 +297,12 @@ class DoctrineResource extends AbstractResourceListener implements
     public function create($data)
     {
         $entityClass = $this->getEntityClass();
+
+        $data = $this->getQueryCreateFilter()->filter($this->getEvent(), $entityClass, $data);
+        if ($data instanceof ApiProblem) {
+            return $data;
+        }
+
         $entity = new $entityClass;
         $hydrator = $this->getHydrator();
         $hydrator->hydrate((array) $data, $entity);
@@ -302,6 +351,43 @@ class DoctrineResource extends AbstractResourceListener implements
         }
 
         return true;
+    }
+
+    /**
+     * Respond to the PATCH method (partial update of existing entity) on
+     * a collection, i.e. update multiple entities in a collection.
+     *
+     * @param array $data
+     * @return array
+     */
+    public function patchList($data)
+    {
+        $return = new ArrayCollection();
+
+        $results = $this->triggerDoctrineEvent(DoctrineResourceEvent::EVENT_PATCH_LIST_PRE, $data);
+        if ($results->last() instanceof ApiProblem) {
+            return $results->last();
+        }
+
+        $this->getObjectManager()->getConnection()->beginTransaction();
+        foreach ($data as $row) {
+            $result = $this->patch($row[$this->getEntityIdentifierName()], $row);
+            if ($result instanceof ApiProblem) {
+                $this->getObjectManager()->getConnection()->rollback();
+
+                return $result;
+            }
+
+            $return->add($result);
+        }
+        $this->getObjectManager()->getConnection()->commit();
+
+        $results = $this->triggerDoctrineEvent(DoctrineResourceEvent::EVENT_PATCH_LIST_POST, $return);
+        if ($results->last() instanceof ApiProblem) {
+            return $results->last();
+        }
+
+        return $return;
     }
 
     /**
@@ -354,7 +440,7 @@ class DoctrineResource extends AbstractResourceListener implements
     {
         // Build query
         $queryProvider = $this->getQueryProvider('fetch_all');
-        $queryBuilder = $queryProvider->createQuery($this->getEntityClass(), $data);
+        $queryBuilder = $queryProvider->createQuery($this->getEvent(), $this->getEntityClass(), $data);
 
         if ($queryBuilder instanceof ApiProblem) {
             // @codeCoverageIgnoreStart
@@ -524,32 +610,26 @@ class DoctrineResource extends AbstractResourceListener implements
      */
     protected function findEntity($id, $method)
     {
-        $classMetaData = $this->getObjectManager()->getClassMetadata($this->getEntityClass());
-        $identifierFieldNames = $classMetaData->getIdentifierFieldNames();
-
+        // Match identiy identifier name(s) with id(s)
+        $ids = explode($this->getMultiKeyDelimiter(), $id);
+        $keys = explode($this->getMultiKeyDelimiter(), $this->getEntityIdentifierName());
         $criteria = array();
 
-        // Check if ID is a composite ID
-        if (strpos($id, $this->getMultiKeyDelimiter()) !== false) {
-            $compositeIdParts = explode($this->getMultiKeyDelimiter(), $id);
-
-            if (sizeof($compositeIdParts) != sizeof($identifierFieldNames)) {
-                return new ApiProblem(
-                    500,
-                    'Invalid multi identifier count.  '
-                    . sizeof($compositeIdParts)
-                    . ' must equal '
-                    . sizeof($identifierFieldNames)
-                );
-            }
-
-            foreach ($compositeIdParts as $index => $compositeIdPart) {
-                $criteria[$identifierFieldNames[$index]] = $compositeIdPart;
-            }
-        } else {
-            $criteria[$identifierFieldNames[0]] = $id;
+        if (sizeof($ids) != sizeof($keys)) {
+            return new ApiProblem(
+                500,
+                'Invalid multi identifier count.  '
+                . sizeof($ids)
+                . ' must equal '
+                . sizeof($keys)
+            );
         }
 
+        foreach ($keys as $index => $identifier) {
+            $criteria[$identifier] = $ids[$index];
+        }
+
+        $classMetaData = $this->getObjectManager()->getClassMetadata($this->getEntityClass());
         $routeMatch = $this->getEvent()->getRouteMatch();
         $associationMappings = $classMetaData->getAssociationNames();
         $fieldNames = $classMetaData->getFieldNames();
@@ -575,7 +655,7 @@ class DoctrineResource extends AbstractResourceListener implements
 
         // Build query
         $queryProvider = $this->getQueryProvider($method);
-        $queryBuilder = $queryProvider->createQuery($this->getEntityClass(), null);
+        $queryBuilder = $queryProvider->createQuery($this->getEvent(), $this->getEntityClass(), null);
 
         if ($queryBuilder instanceof ApiProblem) {
             // @codeCoverageIgnoreStart
@@ -588,7 +668,9 @@ class DoctrineResource extends AbstractResourceListener implements
             if ($queryBuilder instanceof \Doctrine\ODM\MongoDB\Query\Builder) {
                 $queryBuilder->field($key)->equals($value);
             } else {
-                $queryBuilder->andwhere($queryBuilder->expr()->eq('row.' . $key, $value));
+                $parameterName = 'a' . md5(rand());
+                $queryBuilder->andwhere($queryBuilder->expr()->eq('row.' . $key, ":$parameterName"));
+                $queryBuilder->setParameter($parameterName, $value);
             }
         }
 

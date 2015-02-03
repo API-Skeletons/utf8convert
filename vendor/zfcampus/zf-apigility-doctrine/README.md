@@ -12,7 +12,7 @@ Installation of this module uses composer. For composer documentation, please re
 [getcomposer.org](http://getcomposer.org/).
 
 ```sh
-$ php composer.phar require zfcampus/zf-apigility-doctrine:dev-master
+$ php composer.phar require zfcampus/zf-apigility-doctrine "~0.3"
 ```
 
 This library provides two modules.  The first, ZF\Apigility\Doctrine\Server provides
@@ -63,9 +63,8 @@ Custom Events
 
 It is possible to hook in on specific doctrine events of the type `DoctrineResourceEvent`.
 This way, it is possible to alter the doctrine entities or collections before or after a specific action is performed.
-The EVENT_FETCH_ALL_PRE works on the Query Builder from the fetch all query.  This allows you to modify the Query Builder before a fetch is performed.
 
-A list of all supported events:
+Supported events:
 ```
 EVENT_FETCH_POST = 'fetch.post';
 EVENT_FETCH_ALL_PRE = 'fetch-all.pre';
@@ -76,6 +75,10 @@ EVENT_UPDATE_PRE = 'update.pre';
 EVENT_UPDATE_POST = 'update.post';
 EVENT_PATCH_PRE = 'patch.pre';
 EVENT_PATCH_POST = 'patch.post';
+EVENT_PATCH_PRE = 'patch.pre';
+EVENT_PATCH_POST = 'patch.post';
+EVENT_PATCH_LIST_PRE = 'patch-all.pre';
+EVENT_PATCH_LIST_POST = 'patch-all.post';
 EVENT_DELETE_PRE = 'delete.pre';
 EVENT_DELETE_POST = 'delete.post';
 ```
@@ -118,7 +121,7 @@ Multi-keyed entities
 --------------------
 
 You may delimit multi keys through the route parameter.  The default
-delimter is a period . (e.g. 1.2.3).  You may change the delimiter by
+delimiter is a period . (e.g. 1.2.3).  You may change the delimiter by
 setting the DoctrineResource::setMultiKeyDelimiter($value)
 
 
@@ -149,9 +152,9 @@ Query Providers
 
 Query Providers are available for all find operations.  The find query provider is used to fetch an entity before it is acted upon for all DoctrineResource methods except create.
 
-A query provider returns a QueryBuilder object.  By using a custom query provider you may inject conditions specific to the resource or user without modifying the resource.  For instance, you may add a ```$queryBuilder->andWhere('user = 1');``` in your query provider before returning the QueryBuilder created therein.  Other uses include soft deletes so the end user can only see the active records.
+A query provider returns a QueryBuilder object.  By using a custom query provider you may inject conditions specific to the resource or user without modifying the resource.  For instance, you may add a ```$queryBuilder->andWhere('user = ' . $event->getIdentity());``` in your query provider before returning the QueryBuilder created therein.  Other uses include soft deletes so the end user can only see the active records.
 
-A custom plugin manager is available to register your own query providers.  This can be done through following configuration:
+A custom plugin manager is available to register your own query providers.  This can be done through this configuration:
 
 ```php
 'zf-apigility-doctrine-query-provider' => array(
@@ -170,15 +173,46 @@ When the query provider is registered attach it to the doctrine-connected resour
 * patch
 * delete
 
+* patch_all delegates to patch
+
 ```php
 'zf-apigility' => array(
     'doctrine-connected' => array(
         'Api\\V1\\Rest\\....' => array(
             'query_providers' => array(
-                'default' => 'default-orm',
+                'default' => 'default_orm',
                 'fetch_all' => 'entity_name_fetch_all',
                 // or fetch, update, patch, delete
             ),
+        ),
+    ),
+),
+```
+
+Query Create Filters
+==============
+
+In order to filter or change data sent to a create statement before it is used to hydrate the entity you may use a query create filter.  Create filters are very similar to Query Providers in their implementation.  
+
+Create filters take the data as a parameter and return the data, modified or filtered.
+
+A custom plugin manager is available to register your own create filters.  This can be done through following configuration:
+
+```php
+'zf-apigility-doctrine-query-create-filter' => array(
+    'invokables' => array(
+        'entity_name' => 'Application\Query\CreateFilter\EntityName',
+    )
+),
+```
+
+Register your Query Create Filter as:
+```php
+'zf-apigility' => array(
+    'doctrine-connected' => array(
+        'Api\\V1\\Rest\\....' => array(
+            'query_create_filter' => 'entity_name',
+            ...
         ),
     ),
 ),

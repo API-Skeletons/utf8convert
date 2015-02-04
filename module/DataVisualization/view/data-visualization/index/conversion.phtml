@@ -32,10 +32,16 @@ foreach ($conversion->getTableDef() as $table) {
                 Data Points
             </th>
             <th>
-                Flagged
+                Not Reviewed
             </th>
             <th>
                 Approved
+            </th>
+            <th>
+                Flagged
+            </th>
+            <th>
+                Denied
             </th>
         </tr>
     </thead>
@@ -65,10 +71,16 @@ foreach ($conversion->getTableDef() as $table) {
                 <?= $this->countDataPoint($conversion, $column); ?>
             </td>
             <td>
-                <?= $this->countDataPointFlagged($conversion, $column); ?>
+                <?= $this->countDataPointNotReviewed($conversion, $column); ?>
             </td>
             <td>
                 <?= $this->countDataPointApproved($conversion, $column); ?>
+            </td>
+            <td>
+                <?= $this->countDataPointFlagged($conversion, $column); ?>
+            </td>
+            <td>
+                <?= $this->countDataPointDenied($conversion, $column); ?>
             </td>
         </tr>
     <?php

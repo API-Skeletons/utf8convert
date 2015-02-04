@@ -109,28 +109,40 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 
     <div class="col-md-3 text-right">
                 <span class="btn-group pull-right">
-                    <a class="btn" ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
+                    <a 
+                        class="btn" 
+                        title="Mark as Approved"
+                        ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
                         ng-click="
                             columnModel.update(dataPoint, {'approved': !dataPoint.approved, 'flagged': false, 'denied': false});
                         ">
                         <i class="glyphicon glyphicon-ok"></i>
                     </a>
 
-                    <a class="btn" ng-class="(dataPoint.flagged) ? 'btn-warning': 'btn-default'"
+                    <a 
+                        class="btn" 
+                        title="Mark as Flagged"
+                        ng-class="(dataPoint.flagged) ? 'btn-warning': 'btn-default'"
                         ng-click="
                             columnModel.update(dataPoint, {'flagged': !dataPoint.flagged, 'approved': false, 'denied': false});
                         ">
                         <i class="glyphicon glyphicon-flag"></i>
                     </a>
 
-                    <a class="btn" ng-class="(dataPoint.denied) ? 'btn-danger': 'btn-default'"
+                    <a 
+                        class="btn" 
+                        title="Mark as Denied"
+                        ng-class="(dataPoint.denied) ? 'btn-danger': 'btn-default'"
                         ng-click="
                             columnModel.update(dataPoint, {'denied': !dataPoint.denied, 'flagged': false, 'approved': false});
                         ">
                         <i class="glyphicon glyphicon-remove"></i>
                     </a>
 
-                    <a class="btn" ng-class="
+                    <a 
+                        class="btn" 
+                        title="Toggle live data view"
+                        ng-class="
                         {
                             'btn-default': !dataPoint.data,
                             'btn-info': dataPoint.data && !dataPoint._showData,
@@ -143,7 +155,10 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                         <i class="glyphicon glyphicon-list-alt"></i>
                     </a>
 
-                    <a class="btn" ng-class="
+                    <a 
+                        class="btn" 
+                        class="Edit comment"
+                        ng-class="
                         {
                             'btn-default': !dataPoint.comment,
                             'btn-info': dataPoint.comment && !dataPoint._showComment,

@@ -16,6 +16,8 @@ return array(
             'countDataPoint' => 'DataVisualization\View\Helper\CountDataPoint',
             'countDataPointApproved' => 'DataVisualization\View\Helper\CountDataPointApproved',
             'countDataPointFlagged' => 'DataVisualization\View\Helper\CountDataPointFlagged',
+            'countDataPointDenied' => 'DataVisualization\View\Helper\CountDataPointDenied',
+            'countDataPointNotReviewed' => 'DataVisualization\View\Helper\CountDataPointNotReviewed',
         ),
     ),
     'router' => array(

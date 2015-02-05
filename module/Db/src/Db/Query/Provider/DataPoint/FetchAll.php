@@ -20,6 +20,7 @@ class FetchAll extends DefaultOrm
             ->andwhere('row.columnDef = :column')
             ->setParameter('conversion', $parameters['conversion'])
             ->setParameter('column', $parameters['column'])
+            ->orderby('row.oldValue')
             ;
 
         return $queryBuilder;

@@ -59,6 +59,7 @@ return array(
                 1 => 'PATCH',
                 2 => 'PUT',
                 3 => 'DELETE',
+                4 => 'POST',
             ),
             'collection_query_whitelist' => array(
                 0 => 'query',

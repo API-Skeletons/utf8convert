@@ -25,38 +25,6 @@ angular.module('utf8convert')
                 return $scope.columnPromise;
             },
 
-			updateData: function(dataPoint, column, value)
-			{
-                $scope.columnPromise = $http({
-                    method: 'patch',
-                    timeout: 180000,
-                    url: this.baseUrl + '/api/data-point-data/' + dataPoint.id,
-                    data: {
-						column: column,
-						value: value
-					}
-                }).success(function(data) {
-					angular.forEach(data, function(value, key) {
-						if (key.charAt(0) == '_') {
-							delete data[key];
-						}
-					});
-
-					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
-
-						if (parseInt(value.id) == parseInt(dataPoint.id)) {
-							$scope.dataPoint._embedded.data_point[key].data = data;
-							return;
-						}
-					});
-
-//console.log(dataPoint);
-//console.log(data);
-                });
-
-                return $scope.columnPromise;
-			},
-
 			// Show the raw table data
 			data: function(dataPoint)
 			{
@@ -80,6 +48,26 @@ angular.module('utf8convert')
 						}
 					});
 				});
+			},
+
+			create: function(fromDataPoint, column, oldValue, newValue)
+			{
+				$scope.columnPromise = $http({
+					method: 'post',
+					timeout: 180000,
+					url: this.baseUrl + '/api/data-point',
+					data: {
+						fromDataPointId: fromDataPoint.id,
+						column: column,
+						oldValue: oldValue,
+						newValue: newValue
+					}
+				}).success(function(data) {
+					fromDataPoint._showData = false;
+					$scope.columnModel.data(fromDataPoint);
+				});
+
+				return $scope.columnPromise;
 			},
 
             update: function(dataPoint, data)

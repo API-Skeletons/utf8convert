@@ -219,7 +219,7 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
             {{ column }}
         </div>
         <div class="col-md-8">
-            <span onbeforesave="columnModel.updateData(dataPoint, column, $data)" editable-textarea="value" e-rows="4" e-cols="40">{{ value || 'no data' }}</span>
+            <span onbeforesave="columnModel.create(dataPoint, column, value, $data)" editable-textarea="value" e-rows="4" e-cols="40">{{ value || 'no data' }}</span>
         </div>
         <div class="col-md-1"></div>
     </div>

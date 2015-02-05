@@ -123,6 +123,7 @@ class DataPointDataResource extends AbstractResourceListener
      */
     public function patch($id, $data)
     {
+        die('no patch for datapoint data');
         $objectManager = $this->getServiceManager()->get('doctrine.entitymanager.orm_default');
         $database = $this->getServiceManager()->get('database');
 

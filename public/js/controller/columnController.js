@@ -89,10 +89,12 @@ angular.module('utf8convert')
 						data._showComment = false;
 					}
 
+					data._showData = !data._showData;
+
 					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
 						if (value.id == data.id) {
 							$scope.dataPoint._embedded.data_point[key] = data;
-							return;
+							return $scope.columnModel.data($scope.dataPoint._embedded.data_point[key]);
 						}
 					});
                 });

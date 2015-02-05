@@ -70,16 +70,36 @@ foreach ($conversion->getTableDef() as $table) {
             <td>
                 <?= $this->countDataPoint($conversion, $column); ?>
             </td>
-            <td>
+            <td 
+                class="<?=
+                ($this->countDataPointNotReviewed($conversion, $column)) 
+                    ? 'info': '';
+                ?>"
+            >
                 <?= $this->countDataPointNotReviewed($conversion, $column); ?>
             </td>
-            <td>
+            <td 
+                class="<?=
+                ($this->countDataPointApproved($conversion, $column)) 
+                    ? 'success': '';
+                ?>"
+            >
                 <?= $this->countDataPointApproved($conversion, $column); ?>
             </td>
-            <td>
+            <td 
+                class="<?=
+                ($this->countDataPointFlagged($conversion, $column)) 
+                    ? 'warning': '';
+                ?>"
+            >
                 <?= $this->countDataPointFlagged($conversion, $column); ?>
             </td>
-            <td>
+            <td 
+                class="<?=
+                ($this->countDataPointDenied($conversion, $column)) 
+                    ? 'danger': '';
+                ?>"
+            >
                 <?= $this->countDataPointDenied($conversion, $column); ?>
             </td>
         </tr>

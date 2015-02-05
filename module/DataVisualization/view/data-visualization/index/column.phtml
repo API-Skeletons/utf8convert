@@ -109,8 +109,8 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 
     <div class="col-md-3 text-right">
                 <span class="btn-group pull-right">
-                    <a 
-                        class="btn" 
+                    <a
+                        class="btn"
                         title="Mark as Approved"
                         ng-class="(dataPoint.approved) ? 'btn-success': 'btn-default'"
                         ng-click="
@@ -119,8 +119,8 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                         <i class="glyphicon glyphicon-ok"></i>
                     </a>
 
-                    <a 
-                        class="btn" 
+                    <a
+                        class="btn"
                         title="Mark as Flagged"
                         ng-class="(dataPoint.flagged) ? 'btn-warning': 'btn-default'"
                         ng-click="
@@ -129,8 +129,8 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                         <i class="glyphicon glyphicon-flag"></i>
                     </a>
 
-                    <a 
-                        class="btn" 
+                    <a
+                        class="btn"
                         title="Mark as Denied"
                         ng-class="(dataPoint.denied) ? 'btn-danger': 'btn-default'"
                         ng-click="
@@ -139,8 +139,8 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                         <i class="glyphicon glyphicon-remove"></i>
                     </a>
 
-                    <a 
-                        class="btn" 
+                    <a
+                        class="btn"
                         title="Toggle live data view"
                         ng-class="
                         {
@@ -155,8 +155,8 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                         <i class="glyphicon glyphicon-list-alt"></i>
                     </a>
 
-                    <a 
-                        class="btn" 
+                    <a
+                        class="btn"
                         class="Edit comment"
                         ng-class="
                         {
@@ -176,7 +176,42 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 
     <div class="col-md-12 ng-hide"
         ng-hide="!dataPoint._showData"
+    >
+        <div class="col-md-1"></div>
+        <div class="col-md-2">
+            <strong>Column Name</strong>
+        </div>
+        <div class="col-md-4">
+            <strong>Value</strong>
+        </div>
+        <div class="col-md-4">
+            <strong>New Value</strong>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+
+    <div class="col-md-12 ng-hide"
+        ng-hide="!dataPoint._showData"
+        ng-repeat="row in dataPoint.data._embedded"
+        ng-class-odd="'data-odd'" ng-class-even="'data-even'"
+    >
+        <div class="col-md-1"></div>
+        <div class="col-md-2">
+            {{ row._embedded.columnDef.name }}
+        </div>
+        <div class="col-md-4">
+            {{ row.oldValue }}
+        </div>
+        <div class="col-md-4">
+            <span onbeforesave="columnModel.update(row, {'newValue': $data})" editable-textarea="row.newValue">{{ row.newValue }}</span>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+
+    <div class="col-md-12 ng-hide"
+        ng-hide="!dataPoint._showData"
         ng-repeat="(column, value) in dataPoint.data"
+        ng-if="column != '_embedded'"
         ng-class-odd="'data-odd'" ng-class-even="'data-even'"
     >
         <div class="col-md-1"></div>

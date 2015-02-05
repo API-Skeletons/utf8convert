@@ -58,6 +58,29 @@ class DataPointDataResource extends AbstractResourceListener
                 $database->getPlatform()->quoteValue($dataPointPrimaryKey->getValue());
         }
 
+
+        // Fetch all datapoints for the target row
+        $lastDataPointPrimaryKey = null;
+        foreach ($dataPoint->getDataPointPrimaryKey() as $dataPointPrimaryKey) {
+            $allDataPointPrimaryKey = $objectManager
+                ->getRepository('Db\Entity\DataPointPrimaryKeyDef')
+                ->findBy(array(
+                    'primaryKeyDef' => $dataPointPrimaryKey->getPrimaryKeyDef(),
+                    'value' => $dataPointPrimaryKey->getValue(),
+                ));
+
+            if ($lastDataPointPrimaryKey) {
+                foreach ($allDataPointPrimaryKey as $entity) {
+                    if (!$lastDataPointPrimaryKey->contains($entity)) {
+                        $allDataPointPrimaryKey->remove($entity);
+                    }
+                }
+            }
+
+            $lastDataPointPrimaryKey = $allDataPointPrimaryKey;
+        }
+
+
         $sql = "SELECT * FROM "
             . $dataPoint->getColumnDef()->getTableDef()->getName()
             . " WHERE "
@@ -67,6 +90,15 @@ class DataPointDataResource extends AbstractResourceListener
         $result = $database->query($sql)->execute();
 
         foreach ($result as $row) {
+
+            foreach ($row as $key => $value) {
+                foreach ($lastDataPointPrimaryKey as $entity) {
+                    if ($entity->getDataPoint()->getColumnDef()->getName() == $key) {
+                        $row[$key] = $entity->getDataPoint();
+                    }
+                }
+            }
+
             return $row;
         }
     }

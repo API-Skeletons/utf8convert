@@ -25,12 +25,22 @@ return array(
                     ),
                 ),
             ),
+            'database-api.rest.doctrine.column-def' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route' => '/api/column[/:column_id]',
+                    'defaults' => array(
+                        'controller' => 'DatabaseApi\\V1\\Rest\\ColumnDef\\Controller',
+                    ),
+                ),
+            ),
         ),
     ),
     'zf-versioning' => array(
         'uri' => array(
             0 => 'database-api.rest.doctrine.data-point',
             1 => 'database-api.rest.data-point-data',
+            2 => 'database-api.rest.doctrine.column-def',
         ),
     ),
     'zf-rest' => array(
@@ -78,11 +88,34 @@ return array(
             'collection_class' => 'DatabaseApi\\V1\\Rest\\DataPointData\\DataPointDataCollection',
             'service_name' => 'DataPointData',
         ),
+        'DatabaseApi\\V1\\Rest\\ColumnDef\\Controller' => array(
+            'listener' => 'DatabaseApi\\V1\\Rest\\ColumnDef\\ColumnDefResource',
+            'route_name' => 'database-api.rest.doctrine.column-def',
+            'route_identifier_name' => 'column_id',
+            'entity_identifier_name' => 'id',
+            'collection_name' => 'column_def',
+            'entity_http_methods' => array(
+                0 => 'GET',
+                1 => 'PATCH',
+                2 => 'PUT',
+                3 => 'DELETE',
+            ),
+            'collection_http_methods' => array(
+                0 => 'GET',
+                1 => 'POST',
+            ),
+            'collection_query_whitelist' => array(),
+            'page_size' => 25,
+            'page_size_param' => null,
+            'entity_class' => 'Db\\Entity\\ColumnDef',
+            'collection_class' => 'DatabaseApi\\V1\\Rest\\ColumnDef\\ColumnDefCollection',
+        ),
     ),
     'zf-content-negotiation' => array(
         'controllers' => array(
             'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => 'HalJson',
             'DatabaseApi\\V1\\Rest\\DataPointData\\Controller' => 'HalJson',
+            'DatabaseApi\\V1\\Rest\\ColumnDef\\Controller' => 'HalJson',
         ),
         'accept-whitelist' => array(
             'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => array(
@@ -90,9 +123,18 @@ return array(
                 1 => 'application/hal+json',
                 2 => 'application/json',
             ),
+            'DatabaseApi\\V1\\Rest\\ColumnDef\\Controller' => array(
+                0 => 'application/vnd.database-api.v1+json',
+                1 => 'application/hal+json',
+                2 => 'application/json',
+            ),
         ),
         'content-type-whitelist' => array(
             'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => array(
+                0 => 'application/vnd.database-api.v1+json',
+                1 => 'application/json',
+            ),
+            'DatabaseApi\\V1\\Rest\\ColumnDef\\Controller' => array(
                 0 => 'application/vnd.database-api.v1+json',
                 1 => 'application/json',
             ),
@@ -143,6 +185,17 @@ return array(
                 'route_identifier_name' => 'data_point_data_id',
                 'is_collection' => true,
             ),
+            'Db\\Entity\\ColumnDef' => array(
+                'route_identifier_name' => 'column_id',
+                'entity_identifier_name' => 'id',
+                'route_name' => 'database-api.rest.doctrine.column-def',
+                'hydrator' => 'DatabaseApi\\V1\\Rest\\ColumnDef\\ColumnDefHydrator',
+            ),
+            'DatabaseApi\\V1\\Rest\\ColumnDef\\ColumnDefCollection' => array(
+                'entity_identifier_name' => 'id',
+                'route_name' => 'database-api.rest.doctrine.column-def',
+                'is_collection' => true,
+            ),
         ),
     ),
     'zf-apigility' => array(
@@ -154,11 +207,22 @@ return array(
                     'fetch_all' => 'data-point-fetch-all',
                 ),
             ),
+            'DatabaseApi\\V1\\Rest\\ColumnDef\\ColumnDefResource' => array(
+                'object_manager' => 'doctrine.entitymanager.orm_default',
+                'hydrator' => 'DatabaseApi\\V1\\Rest\\ColumnDef\\ColumnDefHydrator',
+            ),
         ),
     ),
     'doctrine-hydrator' => array(
         'DatabaseApi\\V1\\Rest\\DataPoint\\DataPointHydrator' => array(
             'entity_class' => 'Db\\Entity\\DataPoint',
+            'object_manager' => 'doctrine.entitymanager.orm_default',
+            'by_value' => true,
+            'strategies' => array(),
+            'use_generated_hydrator' => true,
+        ),
+        'DatabaseApi\\V1\\Rest\\ColumnDef\\ColumnDefHydrator' => array(
+            'entity_class' => 'Db\\Entity\\ColumnDef',
             'object_manager' => 'doctrine.entitymanager.orm_default',
             'by_value' => true,
             'strategies' => array(),

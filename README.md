@@ -20,26 +20,79 @@ cp config/autoload/local.php.dist config/autoload/local.php
 php public/index orm:schema-tool:create
 php public/index data-fixture:import
 php public/index create-administrator --email=email@net --displayName=administrator
-; the admin login information is returned from create-administrator
 ```
+The admin login information is returned from create-administrator
 
 Use
 ---
-Run ```php public/index.php``` to see all command line functions and options.
 
-```php public/index.php validate```  
+Validation
+----------
 
-This will tell you if you have any tables or columns which are not set to utf8.  If you have tables which are not utf8 you will be prompted to run ```php public/index.php generate table conversion``` which will output the command line commands to change your tables to utf8.  You may pipe this directly to shell to run the commands: ```php public/index.php generate table conversion | sh```
+Validation occurs before a conversion may be ran.
 
-If you have a supplement.sql script run it now.
+Step 1: Validate the database.  This command will verify all database settings, table data types, and column data types are utf8.
 
-```php public/index refactor```
-Next is table refactoring.  This will change all char, enum, and varchar fields to varchar(255).  This step is included because if you're bothering to fix all your utf8 data you should probably fix your tables to Doctrine 2 standards while you're at it.  To refactor run ```php public/indx.php refactor```  For this writing you may not skip this step.  There may be sql errors raised.  This often happens when there is a multi-column index for strings and the new index size is out of bounds.  Create a supplement.sql script with sql to fix this problem the next time you run the refactoring.  If a sql error is encountered you may safely re-run this command after fixing it.
+```sh
+php public/index.php validate
+```
 
+Step 2: If the validate command failed you my create a SQL script with the commands to fix the database.
 
-Tracking Changes
+```sh
+php public/index.php generate table conversion
+```
+
+Create a Conversion
+-------------------
+
+You can create multiple conversions in order to break up the sections of your data.  This isn't necessary and one
+large conversion will work too.  At any rate, you need to create a conversion.  Each conversion requires a name.
+
+whitelist and blacklist are comma delimited lists of table names.
+
+```sh
+php public/index.php create conversion [--name=conversionName] [--whitelist=] [--blacklist=]
+```
+
+Run a Conversion
 ----------------
 
-In the conversion process a new table is created called Utf8Changes with the old and new values for each datapoint changed in the conversion.  You will want to review all the data in this table to find any anomolies after the conversion is complete.
+This step is not a part of creating a conversion.  After you conversion has been created you must run it.  This can
+be a very slow process because you may be scanning the whole database for incorrect values.
 
+```sh
+php public/index.php run conversion --name=conversionName
+```
+
+Copy a Conversion
+-----------------
+
+To copy a conversion which has already been ran to a new name.
+
+```sh
+php public/index.php copy conversion --from=conversionName --to=conversionName
+```
+
+Refactor
+--------
+
+You may choose to refactor your database.  With this tool you can create a script to convert all varchar, char, and enum
+fields to varchar(255) and all text, mediumtext to longtext.  This is a *strong* command which will change your database
+structure permenantly.  Because of this a supplement.sql script is necessary to setup the database usually to adjust
+table keys and indexes.
+
+whitelist and blacklist are comma delimited lists of table names.
+
+```sh
+php public/index.php refactor --supplement-has-been-ran [--whitelist=] [--blacklist=]
+```
+
+Troubleshooting
+---------------
+
+Delete all the conversion data for all conversions from the conversion database
+```sh
+php public/index.php truncate conversion data
+```
 

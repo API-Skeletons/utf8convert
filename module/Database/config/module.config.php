@@ -111,16 +111,6 @@ return array(
                         ),
                     ),
                 ),
-                'convert' => array(
-                    'type'    => 'simple',
-                    'options' => array(
-                        'route'    => 'convert [--whitelist=] [--blacklist=] [--clear-log]',
-                        'defaults' => array(
-                            'controller'    => 'Database\Controller\Convert',
-                            'action'        => 'convert',
-                        ),
-                    ),
-                ),
                 'createConversion' => array(
                     'type'    => 'simple',
                     'options' => array(
@@ -134,7 +124,7 @@ return array(
                 'runConversion' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'run conversion [--name=]',
+                        'route'    => 'run conversion --name=',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Convert',
                             'action'        => 'runConversion',

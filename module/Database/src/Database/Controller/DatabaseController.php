@@ -46,7 +46,7 @@ class DatabaseController extends AbstractActionController
             return;
         }
 
-        echo "\nThe database has passed initial validation.\n";
+        echo "\nThe database has passed utf8 validation.\n";
     }
 
     /**

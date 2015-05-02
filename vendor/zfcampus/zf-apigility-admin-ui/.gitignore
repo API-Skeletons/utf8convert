@@ -1,9 +1,0 @@
-composer.lock
-node_modules/
-src/vendor/
-vendor/
-.project
-.buildpath
-.settings
-.tmp/
-.idea/

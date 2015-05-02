@@ -9,6 +9,7 @@ namespace ZF\Console;
 use InvalidArgumentException;
 use Traversable;
 use Zend\Console\Adapter\AdapterInterface as Console;
+use Zend\Console\Console as DefaultConsole;
 use Zend\Console\ColorInterface as Color;
 
 /**
@@ -84,7 +85,7 @@ class Application
         $name,
         $version,
         $routes,
-        Console $console,
+        Console $console = null,
         Dispatcher $dispatcher = null
     ) {
         if (! is_array($routes) && ! $routes instanceof Traversable) {
@@ -93,6 +94,11 @@ class Application
 
         $this->name       = $name;
         $this->version    = $version;
+
+        if (null === $console) {
+            $console = DefaultConsole::getInstance();
+        }
+
         $this->console    = $console;
 
         if (null === $dispatcher) {
@@ -154,10 +160,32 @@ class Application
             $args = array_slice($argv, 1);
         }
 
+        $this->showMessage($this->banner);
+
+        $result = $this->processRun($args);
+
+        $this->showMessage($this->footer);
+
+        return $result;
+    }
+
+    /**
+     * Process run
+     * If the argument list is empty, displays a usage message.
+     *
+     * If arguments are provided, but no routes match, displays a usage message
+     * and returns a status of 1.
+     *
+     * Otherwise, attempts to dispatch the matched command, returning the
+     * execution status.
+     *
+     * @param array $args
+     * @return int
+     */
+    protected function processRun(array $args)
+    {
         if (empty($args)) {
-            $this->showMessage($this->banner);
             $this->showUsageMessage();
-            $this->showMessage($this->footer);
             return 0;
         }
 
@@ -203,7 +231,7 @@ class Application
      * If the message is a callable, calls it with the composed console
      * instance as an argument.
      *
-     * @param string|callable $message
+     * @param string|callable $messageOrCallable
      */
     public function showMessage($messageOrCallable)
     {
@@ -234,6 +262,8 @@ class Application
             $console->writeLine('');
         }
 
+        $maxSpaces = $this->calcMaxString($this->routeCollection->getRouteNames()) +  2;
+
         foreach ($this->routeCollection as $route) {
             if ($name === $route->getName()) {
                 $this->showUsageMessageForRoute($route);
@@ -245,9 +275,9 @@ class Application
             }
 
             $routeName = $route->getName();
-            $tabs = ceil(( 15 - strlen($routeName) ) / 8);
+            $spaces = $maxSpaces - strlen($routeName);
             $console->write(' ' . $routeName, Color::GREEN);
-            $console->writeLine(str_repeat("\t", $tabs) . $route->getShortDescription());
+            $console->writeLine(str_repeat(' ', $spaces) . $route->getShortDescription());
         }
 
         if ($name) {
@@ -298,7 +328,10 @@ class Application
 
     /**
      * Sets the debug flag of the application
+     *
      * @param boolean $flag
+     *
+     * @return $this
      */
     public function setDebug($flag)
     {
@@ -339,6 +372,26 @@ class Application
     }
 
     /**
+     * Calculate the maximum string length for an array
+     *
+     * @param array $data
+     *
+     * @return int
+     */
+    protected function calcMaxString(array $data = array())
+    {
+        $maxLength = 0;
+
+        foreach ($data as $name) {
+            if (strlen($name) > $maxLength) {
+                $maxLength = strlen($name);
+            }
+        }
+
+        return $maxLength;
+    }
+
+    /**
      * Set routes to use
      *
      * Allows specifying an array of routes, which may be mixed Route instances or array
@@ -366,6 +419,18 @@ class Application
     }
 
     /**
+     * Remove a route by name
+     *
+     * @param String $name
+     * @return self
+     */
+    public function removeRoute($name)
+    {
+        $this->routeCollection->removeRoute($name);
+        return $this;
+    }
+
+    /**
      * Sets up the default help command
      *
      * Creates the route, and maps the command.
@@ -379,7 +444,9 @@ class Application
         $routeCollection->addRouteSpec(array(
             'name'                 => 'help',
             'route'                => '[<command>]',
-            'description'          => "Display the help message for a given command.\n\nTo display the list of available commands, call the script or help with no arguments.",
+            'description'          => "Display the help message for a given command.\n\n"
+                                   . 'To display the list of available commands, '
+                                   . 'call the script or help with no arguments.',
             'short_description'    => 'Get help for individual commands',
             'options_descriptions' => array(
                 'command' => 'Name of a command for which to get help',
@@ -396,9 +463,7 @@ class Application
         $banner = $this->banner; // PHP < 5.4 compat
         $footer = $this->footer; // PHP < 5.4 compat
         $dispatcher->map('help', function ($route, $console) use ($help, $self, $banner, $footer) {
-            $self->showMessage($banner);
             $help($route, $console);
-            $self->showMessage($footer);
             return 0;
         });
     }
@@ -497,10 +562,13 @@ class Application
         $options = $route->getOptionsDescription();
         if (! empty($options)) {
             $console->writeLine('Arguments:', Color::GREEN);
+
+            $maxSpaces = $this->calcMaxString(array_keys($options)) + 2;
+
             foreach ($options as $name => $description) {
-                $tabs = ceil(( 15 - strlen($name) ) / 8);
+                $spaces = $maxSpaces - strlen($name);
                 $console->write(' ' . $name, Color::GREEN);
-                $console->writeLine(str_repeat("\t", $tabs) . $description);
+                $console->writeLine(str_repeat(' ', $spaces) . $description);
             }
             $console->writeLine('');
         }

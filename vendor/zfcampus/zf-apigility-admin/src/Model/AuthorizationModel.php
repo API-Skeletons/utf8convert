@@ -6,6 +6,7 @@
 
 namespace ZF\Apigility\Admin\Model;
 
+use ZF\Apigility\Admin\Model\ModulePathSpec;
 use ZF\Configuration\ConfigResource;
 use ZF\Configuration\ModuleUtils;
 
@@ -41,7 +42,7 @@ class AuthorizationModel
      * @param  ModuleUtils $modules
      * @param  ConfigResource $config
      */
-    public function __construct(ModuleEntity $moduleEntity, ModuleUtils $modules, ConfigResource $config)
+    public function __construct(ModuleEntity $moduleEntity, ModulePathSpec $modules, ConfigResource $config)
     {
         $this->module         = $moduleEntity->getName();
         $this->moduleEntity   = $moduleEntity;
@@ -151,8 +152,12 @@ class AuthorizationModel
      * @param array $config Used to determine action associated with RPC service (via route config)
      * @param int $version
      */
-    protected function createDefaultPrivilegesForRpcServices(array $services, AuthorizationEntity $entity, array $config, $version)
-    {
+    protected function createDefaultPrivilegesForRpcServices(
+        array $services,
+        AuthorizationEntity $entity,
+        array $config,
+        $version
+    ) {
         foreach ($services as $serviceName => $serviceConfig) {
             if (!preg_match('/' . preg_quote('\\') . 'V' . $version . preg_quote('\\') . '/', $serviceName)) {
                 continue;

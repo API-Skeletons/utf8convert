@@ -33,6 +33,16 @@ return array(
                 ),
                 'may_terminate' => true,
                 'child_routes' => array(
+                    'table' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => '/conversion/table/:table_id',
+                            'defaults' => array(
+                                'controller'    => 'DataVisualization\Controller\Index',
+                                'action'     => 'table',
+                            ),
+                        ),
+                    ),
                     'conversion' => array(
                         'type'    => 'Segment',
                         'options' => array(
@@ -44,6 +54,16 @@ return array(
                         ),
                         'may_terminate' => true,
                         'child_routes' => array(
+                            'import' => array(
+                                'type'    => 'Segment',
+                                'options' => array(
+                                    'route'    => '/import',
+                                    'defaults' => array(
+                                        'controller'    => 'DataVisualization\Controller\Index',
+                                        'action'     => 'import',
+                                    ),
+                                ),
+                            ),
                             'table' => array(
                                 'type'    => 'Segment',
                                 'options' => array(

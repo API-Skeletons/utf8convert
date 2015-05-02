@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -31,7 +31,7 @@ class FencedCodeParser extends AbstractBlockParser
         $previousState = $cursor->saveState();
         $indent = $cursor->advanceToFirstNonSpace();
         $fence = $cursor->match('/^`{3,}(?!.*`)|^~{3,}(?!.*~)/');
-        if (!$fence) {
+        if (is_null($fence)) {
             $cursor->restoreState($previousState);
 
             return false;

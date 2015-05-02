@@ -39,9 +39,14 @@ while (!file_exists('config/application.config.php')) {
     chdir($dir);
 }
 
+
 if (is_readable('init_autoloader.php')) {
     include_once 'init_autoloader.php';
-} elseif (!(@include_once __DIR__ . '/../vendor/autoload.php') && !(@include_once __DIR__ . '/../../../autoload.php')) {
+} elseif (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    include_once __DIR__ . '/../vendor/autoload.php';
+} elseif (file_exists(__DIR__ . '/../../../autoload.php')) {
+    include_once __DIR__ . '/../../../autoload.php'; 
+} else {
     throw new RuntimeException('Error: vendor/autoload.php could not be found. Did you run php composer.phar install?');
 }
 
@@ -49,4 +54,4 @@ $application = Application::init(include 'config/application.config.php');
 
 /* @var $cli \Symfony\Component\Console\Application */
 $cli = $application->getServiceManager()->get('doctrine.cli');
-$cli->run();
+exit($cli->run());

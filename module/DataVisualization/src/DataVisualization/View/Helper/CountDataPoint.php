@@ -42,7 +42,7 @@ class CountDataPoint extends AbstractHelper implements ServiceLocatorAwareInterf
 
     /**
      */
-    public function __invoke(Entity\Conversion $conversion, Entity\ColumnDef $column)
+    public function __invoke(Entity\Conversion $conversion, Entity\ColumnDef $column, $imported = false)
     {
         $objectManager = $this->getServiceLocator()->getServiceLocator()->get('doctrine.entitymanager.orm_default');
 
@@ -57,7 +57,11 @@ class CountDataPoint extends AbstractHelper implements ServiceLocatorAwareInterf
             ->setParameter('columnDef', $column)
             ;
 
-#            die($qb->getQuery()->getDql());
+        if ($imported) {
+            $qb->andwhere('dp.importedAt IS NOT NULL');
+        } else {
+            $qb->andwhere('dp.importedAt IS NULL');
+        }
 
         return $qb->getQuery()->getSingleScalarResult();
     }

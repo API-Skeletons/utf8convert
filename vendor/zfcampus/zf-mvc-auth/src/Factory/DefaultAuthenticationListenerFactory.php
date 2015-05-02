@@ -6,14 +6,19 @@
 
 namespace ZF\MvcAuth\Factory;
 
-use Zend\Authentication\Adapter\Http as HttpAuth;
-use Zend\ServiceManager\Exception\ServiceNotCreatedException;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use ZF\MvcAuth\Authentication\DefaultAuthenticationListener;
 use OAuth2\Server as OAuth2Server;
 use OAuth2\GrantType\ClientCredentials;
 use OAuth2\GrantType\AuthorizationCode;
+use RuntimeException;
+use Zend\Authentication\Adapter\Http as HttpAuth;
+use Zend\ServiceManager\Exception\ServiceNotCreatedException;
+use Zend\ServiceManager\Exception\ServiceNotFoundException;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use ZF\MvcAuth\Authentication\DefaultAuthenticationListener;
+use ZF\MvcAuth\Authentication\HttpAdapter;
+use ZF\MvcAuth\Authentication\OAuth2Adapter;
+use ZF\OAuth2\Factory\OAuth2ServerFactory as ZFOAuth2ServerFactory;
 
 /**
  * Factory for creating the DefaultAuthenticationListener from configuration
@@ -30,13 +35,20 @@ class DefaultAuthenticationListenerFactory implements FactoryInterface
 
         $httpAdapter = $this->retrieveHttpAdapter($services);
         if ($httpAdapter) {
-            $listener->setHttpAdapter($httpAdapter);
+            $listener->attach($httpAdapter);
         }
 
         $oauth2Server = $this->createOAuth2Server($services);
         if ($oauth2Server) {
-            $listener->setOauth2Server($oauth2Server);
+            $listener->attach($oauth2Server);
         }
+
+        $authenticationTypes = $this->getAuthenticationTypes($services);
+        if ($authenticationTypes) {
+            $listener->addAuthenticationTypes($authenticationTypes);
+        }
+
+        $listener->setAuthMap($this->getAuthenticationMap($services));
 
         return $listener;
     }
@@ -44,7 +56,7 @@ class DefaultAuthenticationListenerFactory implements FactoryInterface
     /**
      * @param  ServiceLocatorInterface $services
      * @throws ServiceNotCreatedException
-     * @return false|HttpAuth
+     * @return false|HttpAdapter
      */
     protected function retrieveHttpAdapter(ServiceLocatorInterface $services)
     {
@@ -56,13 +68,14 @@ class DefaultAuthenticationListenerFactory implements FactoryInterface
         }
 
         // We must abort if no resolver was provided
-        if (!$httpAdapter->getBasicResolver()
-            && !$httpAdapter->getDigestResolver()
+        if (! $httpAdapter->getBasicResolver()
+            && ! $httpAdapter->getDigestResolver()
         ) {
             return false;
         }
 
-        return $httpAdapter;
+        $authService = $services->get('authentication');
+        return new HttpAdapter($httpAdapter, $authService);
     }
 
     /**
@@ -70,33 +83,86 @@ class DefaultAuthenticationListenerFactory implements FactoryInterface
      *
      * @param  ServiceLocatorInterface $services
      * @throws \Zend\ServiceManager\Exception\ServiceNotCreatedException
-     * @return false|OAuth2Server
+     * @return false|OAuth2Adapter
      */
     protected function createOAuth2Server(ServiceLocatorInterface $services)
     {
-        if (!$services->has('config')) {
+        if (! $services->has('Config')) {
+            // If we don't have configuration, we cannot create an OAuth2 server.
             return false;
         }
 
         $config = $services->get('config');
         if (!isset($config['zf-oauth2']['storage'])
             || !is_string($config['zf-oauth2']['storage'])
-            || !$services->has($config['zf-oauth2']['storage'])
+            || !$services->has($config['zf-oauth2']['storage'])) {
+              return false;
+        }
+
+        if ($services->has('ZF\OAuth2\Service\OAuth2Server')) {
+            // If the service locator already has a pre-configured OAuth2 server, use it.
+            $factory = $services->get('ZF\OAuth2\Service\OAuth2Server');
+            return new OAuth2Adapter($factory());
+        }
+
+        $factory = new ZFOAuth2ServerFactory();
+
+        try {
+            $serverFactory = $factory->createService($services);
+        } catch (RuntimeException $e) {
+            // These are exceptions specifically thrown from the
+            // ZF\OAuth2\Factory\OAuth2ServerFactory when essential
+            // configuration is missing.
+            switch (true) {
+                case strpos($e->getMessage(), 'missing'):
+                    return false;
+                case strpos($e->getMessage(), 'string or array'):
+                    return false;
+                default:
+                    // Any other RuntimeException at this point we don't know
+                    // about and need to re-throw.
+                    throw $e;
+            }
+        }
+
+        return new OAuth2Adapter($serverFactory(null));
+    }
+
+    /**
+     * Retrieve custom authentication types
+     *
+     * @param ServiceLocatorInterface $services
+     * @return false|array
+     */
+    protected function getAuthenticationTypes(ServiceLocatorInterface $services)
+    {
+        if (! $services->has('config')) {
+            return false;
+        }
+
+        $config = $services->get('config');
+        if (! isset($config['zf-mvc-auth']['authentication']['types'])
+            || ! is_array($config['zf-mvc-auth']['authentication']['types'])
         ) {
             return false;
         }
 
-        $storage = $services->get($config['zf-oauth2']['storage']);
+        return $config['zf-mvc-auth']['authentication']['types'];
+    }
 
-        // Pass a storage object or array of storage objects to the OAuth2 server class
-        $oauth2Server = new OAuth2Server($storage);
+    protected function getAuthenticationMap(ServiceLocatorInterface $services)
+    {
+        if (! $services->has('config')) {
+            return array();
+        }
 
-        // Add the "Client Credentials" grant type (it is the simplest of the grant types)
-        $oauth2Server->addGrantType(new ClientCredentials($storage));
+        $config = $services->get('config');
+        if (! isset($config['zf-mvc-auth']['authentication']['map'])
+            || ! is_array($config['zf-mvc-auth']['authentication']['map'])
+        ) {
+            return array();
+        }
 
-        // Add the "Authorization Code" grant type
-        $oauth2Server->addGrantType(new AuthorizationCode($storage));
-
-        return $oauth2Server;
+        return $config['zf-mvc-auth']['authentication']['map'];
     }
 }

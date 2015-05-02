@@ -2,7 +2,7 @@
 /**
  * The Horde_Util:: class provides generally useful methods.
  *
- * Copyright 1999-2014 Horde LLC (http://www.horde.org/)
+ * Copyright 1999-2015 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file COPYING for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -437,17 +437,17 @@ class Horde_Util
             while ($it->valid()) {
                 if (!$it->isDot()) {
                     if ($it->isDir()) {
-                        rmdir($it->key());
+                        @rmdir($it->key());
                     } elseif ($it->isFile()) {
                         self::_secureDelete($it->key());
                     } else {
-                        unlink($it->key());
+                        @unlink($it->key());
                     }
                 }
                 $it->next();
             }
 
-            rmdir($val);
+            @rmdir($val);
         }
     }
 

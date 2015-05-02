@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -89,6 +89,10 @@ class MiscExtension implements ExtensionInterface
      */
     public function addBlockRenderer($blockClass, BlockRendererInterface $blockRenderer)
     {
+        if (class_exists('League\CommonMark\Block\Element\\' . $blockClass)) {
+            $blockClass = 'League\CommonMark\Block\Element\\' . $blockClass;
+        }
+
         $this->blockRenderers[$blockClass] = $blockRenderer;
     }
 
@@ -154,6 +158,10 @@ class MiscExtension implements ExtensionInterface
      */
     public function addInlineRenderer($inlineClass, InlineRendererInterface $inlineRenderer)
     {
+        if (class_exists('League\CommonMark\Inline\Element\\' . $inlineClass)) {
+            $inlineClass = 'League\CommonMark\Inline\Element\\' . $inlineClass;
+        }
+
         $this->inlineRenderers[$inlineClass] = $inlineRenderer;
 
         return $this;

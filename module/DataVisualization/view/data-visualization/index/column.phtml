@@ -42,10 +42,12 @@
     Extra: <?= $this->escapeHtml($this->column->getExtra()); ?>
 </div>
 
-Conversion
-<a href="<?= $this->url('visualization/conversion', array('conversion_id' => $conversion->getId())); ?>">
-    <?= $this->escapeHtml($conversion->getName()); ?>
-</a>
+<h1>
+    Conversion
+    <a href="<?= $this->url('visualization/conversion', array('conversion_id' => $conversion->getId())); ?>">
+        <?= $this->escapeHtml($conversion->getName()); ?>
+    </a>
+</h1>
 
 <h3>
     <?= $this->escapeHtml($this->column->getTableDef()->getName()); ?>.<?= $this->escapeHtml($this->column->getName()); ?>
@@ -97,14 +99,32 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 
     <div class="col-md-1">
         {{ dataPoint.primaryKey }}
+        <br>
+        <b
+            ng-hide="!dataPoint._showComment"
+        >Comment</b>
     </div>
 
     <div class="col-md-4">
         {{ dataPoint.oldValue }}
+        <br style="clear: both">
+        <span
+            ng-hide="!dataPoint._showComment"
+            class="ng-hide"
+            onbeforesave="columnModel.update(dataPoint, {'comment': $data})"
+            editable-textarea="dataPoint.comment"
+            e-rows="4"
+            e-cols="40"
+        >{{ dataPoint.comment || 'no comment' }}</span>
+
     </div>
 
     <div class="col-md-4">
-        <span onbeforesave="columnModel.update(dataPoint, {'newValue': $data})" editable-textarea="dataPoint.newValue">{{ dataPoint.newValue }}</span>
+        <span
+            onbeforesave="columnModel.update(dataPoint, {'newValue': $data})"
+            editable-textarea="dataPoint.newValue"
+            onshow="columnModel.addConvertButton()"
+        >{{ dataPoint.newValue }}</span>
     </div>
 
     <div class="col-md-3 text-right">
@@ -156,8 +176,16 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                     </a>
 
                     <a
+                        class="btn btn-default"
+                        title="View URL"
+                        href=""
+                        >
+                        <i class="glyphicon glyphicon-link"></i>
+                    </a>
+
+                    <a
                         class="btn"
-                        class="Edit comment"
+                        title="Edit comment"
                         ng-class="
                         {
                             'btn-default': !dataPoint.comment,
@@ -168,10 +196,6 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                         <i class="glyphicon glyphicon-comment"></i>
                     </a>
                 </span>
-
-                <br style="clear: both;">
-
-                <span ng-hide="!dataPoint._showComment" class="ng-hide pull-right" onbeforesave="columnModel.update(dataPoint, {'comment': $data})" editable-textarea="dataPoint.comment" e-rows="4" e-cols="40">{{ dataPoint.comment || 'no comment' }}</span>
     </div>
 
     <div class="col-md-12 ng-hide"

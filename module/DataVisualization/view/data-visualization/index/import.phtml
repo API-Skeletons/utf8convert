@@ -1,0 +1,23 @@
+<h1>Import
+    Conversion Complete
+    <a href="<?= $this->url('visualization/conversion', array('conversion_id' => $conversion->getId())); ?>">
+        <?= $this->escapeHtml($conversion->getName()); ?>
+    </a>
+</h1>
+
+<?php
+if ($errors) {
+?>
+<div class="container">
+<?php
+    foreach ($errors as $error) {
+?>
+        <div class="col-md-6 danger"><?= $error['message']; ?></div>
+        <div class="col-md-6 danger"><?= $error['sql']; ?></div>
+<?php
+    }
+?>
+</div>
+<?php
+}
+?>

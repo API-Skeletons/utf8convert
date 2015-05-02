@@ -5,7 +5,6 @@ namespace ZF\Apigility\Doctrine\Server\Resource;
 use DoctrineModule\Persistence\ObjectManagerAwareInterface;
 use DoctrineModule\Stdlib\Hydrator;
 use Zend\EventManager\EventManagerAwareInterface;
-use Zend\EventManager\EventManagerAwareTrait;
 use ZF\Apigility\Doctrine\Server\Collection\Query;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 use ZF\Apigility\Doctrine\Server\Event\DoctrineResourceEvent;
@@ -240,10 +239,10 @@ class DoctrineResource extends AbstractResourceListener implements
      *
      * Example
      * $objectManager->getRepository(...)->findOneBy(
-         'multi' => 1,
-         'keyed' => 2,
-         'routes' => 3
-      );
+     *   'multi' => 1,
+     *   'keyed' => 2,
+     *   'routes' => 3
+     * );
      *
      * @var string
      */
@@ -345,6 +344,7 @@ class DoctrineResource extends AbstractResourceListener implements
 
         $this->getObjectManager()->remove($entity);
         $this->getObjectManager()->flush();
+
         $results = $this->triggerDoctrineEvent(DoctrineResourceEvent::EVENT_DELETE_POST, $entity);
         if ($results->last() instanceof ApiProblem) {
             return $results->last();
@@ -391,15 +391,42 @@ class DoctrineResource extends AbstractResourceListener implements
     }
 
     /**
-     * Delete a collection, or members of a collection
+     * Delete a list of entities
      *
-     * @param              mixed $data
-     * @return             ApiProblem|mixed
-     *                               @codeCoverageIgnore
+     * @param mixed $data
+     * @return ApiProblem|mixed
      */
     public function deleteList($data)
     {
-        return new ApiProblem(405, 'The DELETE method has not been defined for collections');
+        $results = $this->triggerDoctrineEvent(DoctrineResourceEvent::EVENT_DELETE_LIST_PRE, $data);
+        if ($results->last() instanceof ApiProblem) {
+            // @codeCoverageIgnoreStart
+            return $results->last();
+        }
+            // @codeCoverageIgnoreEnd
+
+        $this->getObjectManager()->getConnection()->beginTransaction();
+        foreach ($data as $row) {
+            $result = $this->delete($row[$this->getEntityIdentifierName()]);
+
+            if ($result instanceof ApiProblem) {
+                // @codeCoverageIgnoreStart
+                $this->getObjectManager()->getConnection()->rollback();
+
+                return $result;
+                // @codeCoverageIgnoreEnd
+            }
+        }
+        $this->getObjectManager()->getConnection()->commit();
+
+        $results = $this->triggerDoctrineEvent(DoctrineResourceEvent::EVENT_DELETE_LIST_POST, true);
+        if ($results->last() instanceof ApiProblem) {
+            // @codeCoverageIgnoreStart
+            return $results->last();
+        }
+            // @codeCoverageIgnoreEnd
+
+        return true;
     }
 
     /**

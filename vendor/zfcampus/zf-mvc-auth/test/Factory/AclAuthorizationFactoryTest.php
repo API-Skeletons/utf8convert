@@ -64,6 +64,7 @@ class AclAuthorizationFactoryTest extends TestCase
                         $assertion = 'assert' . ($expected ? 'False' : 'True');
                         $this->$assertion($acl->isAllowed('guest', $resource . '::entity', $method));
                     }
+                    break;
                 case (array_key_exists('collection', $rules)):
                     foreach ($rules['collection'] as $method => $expected) {
                         $assertion = 'assert' . ($expected ? 'False' : 'True');
@@ -130,6 +131,7 @@ class AclAuthorizationFactoryTest extends TestCase
                         $assertion = 'assert' . ($expected ? 'False' : 'True');
                         $this->$assertion($acl->isAllowed('guest', $resource . '::entity', $method));
                     }
+                    break;
                 case (array_key_exists('collection', $rules)):
                     foreach ($rules['collection'] as $method => $expected) {
                         $assertion = 'assert' . ($expected ? 'False' : 'True');
@@ -201,5 +203,27 @@ class AclAuthorizationFactoryTest extends TestCase
         $this->assertTrue($acl->isAllowed('guest', 'Foo\Bar\RpcController::do', 'PUT'));
         $this->assertTrue($acl->isAllowed('guest', 'Foo\Bar\RpcController::do', 'PATCH'));
         $this->assertTrue($acl->isAllowed('guest', 'Foo\Bar\RpcController::do', 'DELETE'));
+    }
+
+    public function testRpcActionsAreNormalizedWhenCreatingAcl()
+    {
+        $config = array('zf-mvc-auth' => array('authorization' => array(
+            'Foo\Bar\RpcController' => array(
+                'actions' => array(
+                    'Do' => array(
+                        'GET'    => false,
+                        'POST'   => true,
+                        'PUT'    => false,
+                        'PATCH'  => false,
+                        'DELETE' => false,
+                    ),
+                ),
+            ),
+        )));
+        $this->services->setService('config', $config);
+
+        $acl = $this->factory->createService($this->services);
+        $this->assertInstanceOf('ZF\MvcAuth\Authorization\AclAuthorization', $acl);
+        $this->assertFalse($acl->isAllowed('guest', 'Foo\Bar\RpcController::do', 'POST'));
     }
 }

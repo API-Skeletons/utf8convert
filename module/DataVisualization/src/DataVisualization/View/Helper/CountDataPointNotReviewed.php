@@ -42,7 +42,7 @@ class CountDataPointNotReviewed extends AbstractHelper implements ServiceLocator
 
     /**
      */
-    public function __invoke(Entity\Conversion $conversion, Entity\ColumnDef $column)
+    public function __invoke(Entity\Conversion $conversion, Entity\ColumnDef $column, $imported = false)
     {
         $objectManager = $this->getServiceLocator()->getServiceLocator()->get('doctrine.entitymanager.orm_default');
 
@@ -55,19 +55,19 @@ class CountDataPointNotReviewed extends AbstractHelper implements ServiceLocator
             ->andwhere('cd = :columnDef')
             ->andwhere(
                 $qb->expr()->orX(
-                    $qb->expr()->eq('dp.approved', ':approved'), 
+                    $qb->expr()->eq('dp.approved', ':approved'),
                     $qb->expr()->isNull('dp.approved')
                 )
             )
             ->andwhere(
                 $qb->expr()->orX(
-                    $qb->expr()->eq('dp.flagged', ':flagged'), 
+                    $qb->expr()->eq('dp.flagged', ':flagged'),
                     $qb->expr()->isNull('dp.flagged')
                 )
             )
             ->andwhere(
                 $qb->expr()->orX(
-                    $qb->expr()->eq('dp.denied', ':denied'), 
+                    $qb->expr()->eq('dp.denied', ':denied'),
                     $qb->expr()->isNull('dp.denied')
                 )
             )
@@ -77,6 +77,12 @@ class CountDataPointNotReviewed extends AbstractHelper implements ServiceLocator
             ->setParameter('flagged', false)
             ->setParameter('denied', false)
             ;
+
+        if ($imported) {
+            $qb->andwhere('dp.importedAt IS NOT NULL');
+        } else {
+            $qb->andwhere('dp.importedAt IS NULL');
+        }
 
         return $qb->getQuery()->getSingleScalarResult();
     }

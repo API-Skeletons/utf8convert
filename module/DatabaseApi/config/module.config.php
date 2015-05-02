@@ -34,6 +34,16 @@ return array(
                     ),
                 ),
             ),
+            'database-api.rpc.convert' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route' => '/api/convert',
+                    'defaults' => array(
+                        'controller' => 'DatabaseApi\\V1\\Rpc\\Convert\\Controller',
+                        'action' => 'convert',
+                    ),
+                ),
+            ),
         ),
     ),
     'zf-versioning' => array(
@@ -41,6 +51,7 @@ return array(
             0 => 'database-api.rest.doctrine.data-point',
             1 => 'database-api.rest.data-point-data',
             2 => 'database-api.rest.doctrine.column-def',
+            3 => 'database-api.rpc.convert',
         ),
     ),
     'zf-rest' => array(
@@ -117,6 +128,7 @@ return array(
             'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => 'HalJson',
             'DatabaseApi\\V1\\Rest\\DataPointData\\Controller' => 'HalJson',
             'DatabaseApi\\V1\\Rest\\ColumnDef\\Controller' => 'HalJson',
+            'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => 'Json',
         ),
         'accept-whitelist' => array(
             'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => array(
@@ -150,6 +162,11 @@ return array(
                 0 => 'application/json',
                 1 => 'application/*+json',
             ),
+            'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => array(
+                0 => 'application/vnd.database-api.v1+json',
+                1 => 'application/json',
+                2 => 'application/*+json',
+            ),
         ),
         'content_type_whitelist' => array(
             'DatabaseApi\\V1\\Rest\\DataPointData\\Controller' => array(
@@ -158,6 +175,10 @@ return array(
             ),
             'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => array(
                 0 => 'application/json',
+            ),
+            'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => array(
+                0 => 'application/vnd.database-api.v1+json',
+                1 => 'application/json',
             ),
         ),
     ),
@@ -234,6 +255,9 @@ return array(
         'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => array(
             'input_filter' => 'DatabaseApi\\V1\\Rest\\DataPoint\\Validator',
         ),
+        'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => array(
+            'input_filter' => 'DatabaseApi\\V1\\Rpc\\Convert\\Validator',
+        ),
     ),
     'input_filter_specs' => array(
         'DatabaseApi\\V1\\Rest\\DataPoint\\Validator' => array(
@@ -242,7 +266,7 @@ return array(
                 'required' => false,
                 'filters' => array(
                     0 => array(
-                        'name' => 'Zend\\Filter\\Int',
+                        'name' => 'Zend\\Filter\\ToInt',
                         'options' => array(),
                     ),
                 ),
@@ -255,7 +279,7 @@ return array(
                 'required' => false,
                 'filters' => array(
                     0 => array(
-                        'name' => 'Zend\\Filter\\Int',
+                        'name' => 'Zend\\Filter\\ToInt',
                         'options' => array(),
                     ),
                 ),
@@ -365,10 +389,26 @@ return array(
                 'allow_empty' => true,
             ),
         ),
+        'DatabaseApi\\V1\\Rpc\\Convert\\Validator' => array(
+        ),
     ),
     'service_manager' => array(
         'factories' => array(
             'DatabaseApi\\V1\\Rest\\DataPointData\\DataPointDataResource' => 'DatabaseApi\\V1\\Rest\\DataPointData\\DataPointDataResourceFactory',
+        ),
+    ),
+    'controllers' => array(
+        'factories' => array(
+            'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => 'DatabaseApi\\V1\\Rpc\\Convert\\ConvertControllerFactory',
+        ),
+    ),
+    'zf-rpc' => array(
+        'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => array(
+            'service_name' => 'Convert',
+            'http_methods' => array(
+                0 => 'POST',
+            ),
+            'route_name' => 'database-api.rpc.convert',
         ),
     ),
 );

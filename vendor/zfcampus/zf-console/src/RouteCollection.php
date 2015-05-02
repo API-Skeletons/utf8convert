@@ -88,14 +88,30 @@ class RouteCollection implements Countable, IteratorAggregate, RouteMatcherInter
             array_key_exists('prepend_command_to_route', $spec) ? $spec['prepend_command_to_route'] : true
         );
 
-        $constraints        = (isset($spec['constraints']) && is_array($spec['constraints']))                   ? $spec['constraints']          : array();
-        $defaults           = (isset($spec['defaults']) && is_array($spec['defaults']))                         ? $spec['defaults']             : array();
-        $aliases            = (isset($spec['aliases']) && is_array($spec['aliases']))                           ? $spec['aliases']              : array();
-        $filters            = (isset($spec['filters']) && is_array($spec['filters']))                           ? $spec['filters']              : null;
-        $validators         = (isset($spec['validators']) && is_array($spec['validators']))                     ? $spec['validators']           : null;
-        $description        = (isset($spec['description']) && is_string($spec['description']))                  ? $spec['description']          : '';
-        $shortDescription   = (isset($spec['short_description']) && is_string($spec['short_description']))      ? $spec['short_description']    : '';
-        $optionsDescription = (isset($spec['options_descriptions']) && is_array($spec['options_descriptions'])) ? $spec['options_descriptions'] : array();
+        $constraints        = (isset($spec['constraints']) && is_array($spec['constraints']))
+            ? $spec['constraints']
+            : array();
+        $defaults           = (isset($spec['defaults']) && is_array($spec['defaults']))
+            ? $spec['defaults']
+            : array();
+        $aliases            = (isset($spec['aliases']) && is_array($spec['aliases']))
+            ? $spec['aliases']
+            : array();
+        $filters            = (isset($spec['filters']) && is_array($spec['filters']))
+            ? $spec['filters']
+            : null;
+        $validators         = (isset($spec['validators']) && is_array($spec['validators']))
+            ? $spec['validators']
+            : null;
+        $description        = (isset($spec['description']) && is_string($spec['description']))
+            ? $spec['description']
+            : '';
+        $shortDescription   = (isset($spec['short_description']) && is_string($spec['short_description']))
+            ? $spec['short_description']
+            : '';
+        $optionsDescription = (isset($spec['options_descriptions']) && is_array($spec['options_descriptions']))
+            ? $spec['options_descriptions']
+            : array();
 
         $filters    = $this->prepareFilters($filters);
         $validators = $this->prepareValidators($validators);
@@ -106,6 +122,24 @@ class RouteCollection implements Countable, IteratorAggregate, RouteMatcherInter
         $route->setOptionsDescription($optionsDescription);
 
         $this->addRoute($route);
+        return $this;
+    }
+
+    /**
+     * @param String $name
+     * @return self
+     * @throws DomainException if the provided route does not exist
+     */
+    public function removeRoute($name)
+    {
+        if (! isset($this->routes[$name])) {
+            throw new DomainException(sprintf(
+                'Failed removing route by name %s; the route by that name has not been registered',
+                $name
+            ));
+        }
+
+        unset($this->routes[$name]);
         return $this;
     }
 
@@ -132,6 +166,16 @@ class RouteCollection implements Countable, IteratorAggregate, RouteMatcherInter
             return null;
         }
         return $this->routes[$name];
+    }
+
+    /**
+     * Retrieve all route names
+     *
+     * @return array
+     */
+    public function getRouteNames()
+    {
+        return array_keys($this->routes);
     }
 
     /**
@@ -240,7 +284,8 @@ class RouteCollection implements Countable, IteratorAggregate, RouteMatcherInter
             }
 
             throw new DomainException(sprintf(
-                'Invalid validator provided for "%s"; expected Callable or Zend\Validator\ValidatorInterface, received "%s"',
+                'Invalid validator provided for "%s"; expected Callable or '
+                . 'Zend\Validator\ValidatorInterface, received "%s"',
                 $name,
                 $this->getType($validator)
             ));

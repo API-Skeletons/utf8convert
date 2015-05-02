@@ -17,6 +17,9 @@ class DefaultResourceResolverListener
      */
     protected $restControllers;
 
+    /**
+     * @param array $restControllers
+     */
     public function __construct(array $restControllers = array())
     {
         $this->restControllers = $restControllers;
@@ -80,7 +83,7 @@ class DefaultResourceResolverListener
         }
 
         // - Is this an RPC or a REST call?
-        //   - Basically, if it's not in the zf-rest configuration, we assume REST
+        //   - Basically, if it's not in the zf-rest configuration, we assume RPC
         if (!array_key_exists($controller, $this->restControllers)) {
             $action = $routeMatch->getParam('action', 'index');
             return sprintf('%s::%s', $controller, $action);

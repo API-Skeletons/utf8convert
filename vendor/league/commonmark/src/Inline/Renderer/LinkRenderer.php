@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -15,7 +15,7 @@
 namespace League\CommonMark\Inline\Renderer;
 
 use League\CommonMark\HtmlElement;
-use League\CommonMark\HtmlRenderer;
+use League\CommonMark\HtmlRendererInterface;
 use League\CommonMark\Inline\Element\AbstractInline;
 use League\CommonMark\Inline\Element\Link;
 
@@ -23,11 +23,11 @@ class LinkRenderer implements InlineRendererInterface
 {
     /**
      * @param Link $inline
-     * @param HtmlRenderer $htmlRenderer
+     * @param HtmlRendererInterface $htmlRenderer
      *
      * @return HtmlElement
      */
-    public function render(AbstractInline $inline, HtmlRenderer $htmlRenderer)
+    public function render(AbstractInline $inline, HtmlRendererInterface $htmlRenderer)
     {
         if (!($inline instanceof Link)) {
             throw new \InvalidArgumentException('Incompatible inline type: ' . get_class($inline));
@@ -41,6 +41,6 @@ class LinkRenderer implements InlineRendererInterface
             $attrs['title'] = $htmlRenderer->escape($inline->data['title'], true);
         }
 
-        return new HtmlElement('a', $attrs, $htmlRenderer->renderInlines($inline->getLabel()->getInlines()));
+        return new HtmlElement('a', $attrs, $htmlRenderer->renderInlines($inline->getChildren()));
     }
 }

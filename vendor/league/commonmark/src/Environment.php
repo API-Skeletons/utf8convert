@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -22,6 +22,7 @@ use League\CommonMark\Extension\MiscExtension;
 use League\CommonMark\Inline\Parser\InlineParserInterface;
 use League\CommonMark\Inline\Processor\InlineProcessorInterface;
 use League\CommonMark\Inline\Renderer\InlineRendererInterface;
+use League\CommonMark\Util\Configuration;
 
 class Environment
 {
@@ -71,14 +72,19 @@ class Environment
     protected $inlineRenderersByClass = array();
 
     /**
-     * @var array
+     * @var Configuration
      */
     protected $config;
+
+    /**
+     * @var string
+     */
+    protected $inlineParserCharacterRegex;
 
     public function __construct(array $config = array())
     {
         $this->miscExtension = new MiscExtension();
-        $this->config = $config;
+        $this->config = new Configuration($config);
     }
 
     /**
@@ -86,11 +92,9 @@ class Environment
      */
     public function mergeConfig(array $config = array())
     {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException('Failed to modify configuration - extensions have already been initialized');
-        }
+        $this->assertUninitialized('Failed to modify configuration - extensions have already been initialized');
 
-        $this->config = array_replace_recursive($this->config, $config);
+        $this->config->mergeConfig($config);
     }
 
     /**
@@ -98,11 +102,9 @@ class Environment
      */
     public function setConfig(array $config = array())
     {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException('Failed to modify configuration - extensions have already been initialized');
-        }
+        $this->assertUninitialized('Failed to modify configuration - extensions have already been initialized');
 
-        $this->config = $config;
+        $this->config->setConfig($config);
     }
 
     /**
@@ -113,30 +115,7 @@ class Environment
      */
     public function getConfig($key = null, $default = null)
     {
-        // accept a/b/c as ['a']['b']['c']
-        if (strpos($key, '/')) {
-            $keyArr = explode('/', $key);
-            $data = $this->config;
-            foreach ($keyArr as $k) {
-                if (!is_array($data) || !isset($data[$k])) {
-                    return $default;
-                }
-
-                $data = $data[$k];
-            }
-
-            return $data;
-        }
-
-        if ($key === null) {
-            return $this->config;
-        }
-
-        if (!isset($this->config[$key])) {
-            return $default;
-        }
-
-        return $this->config[$key];
+        return $this->config->getConfig($key, $default);
     }
 
     /**
@@ -146,9 +125,7 @@ class Environment
      */
     public function addBlockParser(BlockParserInterface $parser)
     {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException('Failed to add block parser - extensions have already been initialized');
-        }
+        $this->assertUninitialized('Failed to add block parser - extensions have already been initialized');
 
         $this->miscExtension->addBlockParser($parser);
 
@@ -163,9 +140,7 @@ class Environment
      */
     public function addBlockRenderer($blockClass, BlockRendererInterface $blockRenderer)
     {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException('Failed to add block renderer - extensions have already been initialized');
-        }
+        $this->assertUninitialized('Failed to add block renderer - extensions have already been initialized');
 
         $this->miscExtension->addBlockRenderer($blockClass, $blockRenderer);
 
@@ -179,9 +154,7 @@ class Environment
      */
     public function addInlineParser(InlineParserInterface $parser)
     {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException('Failed to add inline parser - extensions have already been initialized');
-        }
+        $this->assertUninitialized('Failed to add inline parser - extensions have already been initialized');
 
         $this->miscExtension->addInlineParser($parser);
 
@@ -195,9 +168,7 @@ class Environment
      */
     public function addInlineProcessor(InlineProcessorInterface $processor)
     {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException('Failed to add inline processor - extensions have already been initialized');
-        }
+        $this->assertUninitialized('Failed to add inline processor - extensions have already been initialized');
 
         $this->miscExtension->addInlineProcessor($processor);
 
@@ -212,9 +183,7 @@ class Environment
      */
     public function addInlineRenderer($inlineClass, InlineRendererInterface $renderer)
     {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException('Failed to add inline renderer - extensions have already been initialized');
-        }
+        $this->assertUninitialized('Failed to add inline renderer - extensions have already been initialized');
 
         $this->miscExtension->addInlineRenderer($inlineClass, $renderer);
 
@@ -226,9 +195,7 @@ class Environment
      */
     public function getBlockParsers()
     {
-        if (!$this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
+        $this->initializeExtensions();
 
         return $this->blockParsers;
     }
@@ -240,9 +207,7 @@ class Environment
      */
     public function getBlockRendererForClass($blockClass)
     {
-        if (!$this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
+        $this->initializeExtensions();
 
         if (!isset($this->blockRenderersByClass[$blockClass])) {
             return null;
@@ -258,9 +223,7 @@ class Environment
      */
     public function getInlineParser($name)
     {
-        if (!$this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
+        $this->initializeExtensions();
 
         return $this->inlineParsers[$name];
     }
@@ -270,9 +233,7 @@ class Environment
      */
     public function getInlineParsers()
     {
-        if (!$this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
+        $this->initializeExtensions();
 
         return $this->inlineParsers;
     }
@@ -284,9 +245,7 @@ class Environment
      */
     public function getInlineParsersForCharacter($character)
     {
-        if (!$this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
+        $this->initializeExtensions();
 
         if (!isset($this->inlineParsersByCharacter[$character])) {
             return null;
@@ -300,9 +259,7 @@ class Environment
      */
     public function getInlineProcessors()
     {
-        if (!$this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
+        $this->initializeExtensions();
 
         return $this->inlineProcessors;
     }
@@ -314,9 +271,7 @@ class Environment
      */
     public function getInlineRendererForClass($inlineClass)
     {
-        if (!$this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
+        $this->initializeExtensions();
 
         if (!isset($this->inlineRenderersByClass[$inlineClass])) {
             return null;
@@ -327,9 +282,7 @@ class Environment
 
     public function createInlineParserEngine()
     {
-        if (!$this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
+        $this->initializeExtensions();
 
         return new InlineParserEngine($this);
     }
@@ -353,9 +306,7 @@ class Environment
      */
     public function addExtension(ExtensionInterface $extension)
     {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException('Failed to add extension - extensions have already been initialized');
-        }
+        $this->assertUninitialized('Failed to add extension - extensions have already been initialized');
 
         $this->extensions[$extension->getName()] = $extension;
 
@@ -378,6 +329,10 @@ class Environment
 
         // Also initialize those one-off classes
         $this->initializeExtension($this->miscExtension);
+
+        // Lastly, let's build a regex which matches all inline characters
+        // This will enable a huge performance boost with inline parsing
+        $this->buildInlineParserCharacterRegex();
     }
 
     /**
@@ -470,5 +425,34 @@ class Environment
         ));
 
         return $environment;
+    }
+
+    /**
+     * Regex which matches any character that an inline parser might be interested in
+     *
+     * @return string
+     */
+    public function getInlineParserCharacterRegex()
+    {
+        return $this->inlineParserCharacterRegex;
+    }
+
+    private function buildInlineParserCharacterRegex()
+    {
+        $chars = array_keys($this->inlineParsersByCharacter);
+
+        $this->inlineParserCharacterRegex = '/^[^' . preg_quote(implode('', $chars)) . ']+/';
+    }
+
+    /**
+     * @param string $message
+     *
+     * @throws \RuntimeException
+     */
+    private function assertUninitialized($message = 'The environment cannot be modified after initialization')
+    {
+        if ($this->extensionsInitialized) {
+            throw new \RuntimeException($message);
+        }
     }
 }

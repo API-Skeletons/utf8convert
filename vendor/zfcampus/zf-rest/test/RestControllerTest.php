@@ -11,6 +11,7 @@ use ReflectionObject;
 use stdClass;
 use Zend\EventManager\EventManager;
 use Zend\EventManager\SharedEventManager;
+use Zend\Http\Response;
 use Zend\InputFilter\InputFilter;
 use Zend\Mvc\Controller\PluginManager;
 use Zend\Mvc\MvcEvent;
@@ -70,6 +71,56 @@ class RestControllerTest extends TestCase
 
         $this->resource = $resource = new Resource();
         $controller->setResource($resource);
+    }
+
+    public function testReturnsErrorResponseWhenPageSizeExceedsMax()
+    {
+        $items = array(
+            array('id' => 'foo', 'bar' => 'baz'),
+            array('id' => 'bar', 'bar' => 'baz'),
+            array('id' => 'baz', 'bar' => 'baz'),
+        );
+        $adapter   = new ArrayPaginator($items);
+        $paginator = new Paginator($adapter);
+        $this->resource->getEventManager()->attach('fetchAll', function ($e) use ($paginator) {
+            return $paginator;
+        });
+
+        $this->controller->setPageSizeParam('page_size');
+        $this->controller->setMaxPageSize(2);
+        $request = $this->controller->getRequest();
+        $request->setQuery(new Parameters(array(
+            'page'      => 1,
+            'page_size' => 3,
+        )));
+
+        $result = $this->controller->getList();
+        $this->assertProblemApiResult(500, "Page size is out of range, maximum page size is 2", $result);
+    }
+
+    public function testReturnsErrorResponseWhenPageSizeBelowMin()
+    {
+        $items = array(
+            array('id' => 'foo', 'bar' => 'baz'),
+            array('id' => 'bar', 'bar' => 'baz'),
+            array('id' => 'baz', 'bar' => 'baz'),
+        );
+        $adapter   = new ArrayPaginator($items);
+        $paginator = new Paginator($adapter);
+        $this->resource->getEventManager()->attach('fetchAll', function ($e) use ($paginator) {
+            return $paginator;
+        });
+
+        $this->controller->setPageSizeParam('page_size');
+        $this->controller->setMinPageSize(2);
+        $request = $this->controller->getRequest();
+        $request->setQuery(new Parameters(array(
+            'page'      => 1,
+            'page_size' => 1,
+        )));
+
+        $result = $this->controller->getList();
+        $this->assertProblemApiResult(500, "Page size is out of range, minimum page size is 2", $result);
     }
 
     public function assertProblemApiResult($expectedStatus, $expectedDetail, $result)
@@ -157,7 +208,7 @@ class RestControllerTest extends TestCase
             return false;
         });
 
-        $result = $this->controller->deleteList();
+        $result = $this->controller->deleteList(null);
         $this->assertProblemApiResult(422, 'delete collection', $result);
     }
 
@@ -167,7 +218,18 @@ class RestControllerTest extends TestCase
             return true;
         });
 
-        $result = $this->controller->deleteList();
+        $result = $this->controller->deleteList(array(1, 2, 3));
+        $this->assertInstanceOf('Zend\Http\Response', $result);
+        $this->assertEquals(204, $result->getStatusCode());
+    }
+
+    public function testDeleteCollectionBackwardsCompatibleWithNoData()
+    {
+        $this->resource->getEventManager()->attach('deleteList', function ($e) {
+            return true;
+        });
+
+        $result = $this->controller->deleteList(null);
         $this->assertInstanceOf('Zend\Http\Response', $result);
         $this->assertEquals(204, $result->getStatusCode());
     }
@@ -683,7 +745,7 @@ class RestControllerTest extends TestCase
             return true;
         });
 
-        $result = $this->controller->deleteList();
+        $result = $this->controller->deleteList(null);
         $this->assertTrue($test->pre);
         $this->assertTrue($test->post);
     }
@@ -804,7 +866,11 @@ class RestControllerTest extends TestCase
         $result = $this->controller->getList();
         $this->assertTrue($test->pre);
         $this->assertTrue($test->post);
-        $this->assertSame($collection, $test->collection, 'Expected ' . get_class($collection) . ', received ' . get_class($test->collection));
+        $this->assertSame(
+            $collection,
+            $test->collection,
+            'Expected ' . get_class($collection) . ', received ' . get_class($test->collection)
+        );
     }
 
     public function testPatchTriggersPreAndPostEvents()
@@ -1022,7 +1088,13 @@ class RestControllerTest extends TestCase
      */
     public function testCreateAllowsReturningApiProblemFromResource()
     {
-        $problem = new ApiProblem(400, 'Validation error', null, null, array('email' => 'Invalid email address provided'));
+        $problem = new ApiProblem(
+            400,
+            'Validation error',
+            null,
+            null,
+            array('email' => 'Invalid email address provided')
+        );
         $this->resource->getEventManager()->attach('create', function ($e) use ($problem) {
             return $problem;
         });
@@ -1036,7 +1108,13 @@ class RestControllerTest extends TestCase
      */
     public function testDeleteAllowsReturningApiProblemFromResource()
     {
-        $problem = new ApiProblem(400, 'Invalid identifier', null, null, array('delete' => 'Invalid identifier provided'));
+        $problem = new ApiProblem(
+            400,
+            'Invalid identifier',
+            null,
+            null,
+            array('delete' => 'Invalid identifier provided')
+        );
         $this->resource->getEventManager()->attach('delete', function ($e) use ($problem) {
             return $problem;
         });
@@ -1055,7 +1133,7 @@ class RestControllerTest extends TestCase
             return $problem;
         });
 
-        $result = $this->controller->deleteList();
+        $result = $this->controller->deleteList(null);
         $this->assertSame($problem, $result);
     }
 
@@ -1092,7 +1170,13 @@ class RestControllerTest extends TestCase
      */
     public function testPatchAllowsReturningApiProblemFromResource()
     {
-        $problem = new ApiProblem(400, 'Validation error', null, null, array('email' => 'Invalid email address provided'));
+        $problem = new ApiProblem(
+            400,
+            'Validation error',
+            null,
+            null,
+            array('email' => 'Invalid email address provided')
+        );
         $this->resource->getEventManager()->attach('patch', function ($e) use ($problem) {
             return $problem;
         });
@@ -1106,7 +1190,13 @@ class RestControllerTest extends TestCase
      */
     public function testUpdateAllowsReturningApiProblemFromResource()
     {
-        $problem = new ApiProblem(400, 'Validation error', null, null, array('email' => 'Invalid email address provided'));
+        $problem = new ApiProblem(
+            400,
+            'Validation error',
+            null,
+            null,
+            array('email' => 'Invalid email address provided')
+        );
         $this->resource->getEventManager()->attach('update', function ($e) use ($problem) {
             return $problem;
         });
@@ -1120,7 +1210,13 @@ class RestControllerTest extends TestCase
      */
     public function testReplaceListAllowsReturningApiProblemFromResource()
     {
-        $problem = new ApiProblem(400, 'Validation error', null, null, array('email' => 'Invalid email address provided'));
+        $problem = new ApiProblem(
+            400,
+            'Validation error',
+            null,
+            null,
+            array('email' => 'Invalid email address provided')
+        );
         $this->resource->getEventManager()->attach('replaceList', function ($e) use ($problem) {
             return $problem;
         });
@@ -1212,7 +1308,13 @@ class RestControllerTest extends TestCase
      */
     public function testPatchListAllowsReturningApiProblemFromResource()
     {
-        $problem = new ApiProblem(400, 'Validation error', null, null, array('email' => 'Invalid email address provided'));
+        $problem = new ApiProblem(
+            400,
+            'Validation error',
+            null,
+            null,
+            array('email' => 'Invalid email address provided')
+        );
         $this->resource->getEventManager()->attach('patchList', function ($e) use ($problem) {
             return $problem;
         });
@@ -1293,8 +1395,13 @@ class RestControllerTest extends TestCase
     /**
      * @dataProvider validResourcePayloads
      */
-    public function testInjectsContentValidationInputFilterFromMvcEventIntoResourceEvent($method, $event, $id, $data, $returnValue)
-    {
+    public function testInjectsContentValidationInputFilterFromMvcEventIntoResourceEvent(
+        $method,
+        $event,
+        $id,
+        $data,
+        $returnValue
+    ) {
         $resourceEvent = null;
         $this->resource->getEventManager()->attach($event, function ($e) use ($returnValue, & $resourceEvent) {
             $resourceEvent = $e;
@@ -1309,7 +1416,7 @@ class RestControllerTest extends TestCase
         $this->event->setRequest($request);
 
         $container = new ParameterDataContainer();
-        $container->setBodyParams($data);
+        $container->setBodyParams((null === $data) ? array() : $data);
         $this->event->setParam('ZFContentNegotiationParameterData', $container);
 
         if ($id) {
@@ -1370,5 +1477,38 @@ class RestControllerTest extends TestCase
         $result = $this->controller->getList();
         $this->assertInstanceOf('ZF\Hal\Entity', $result);
         $this->assertSame($entity, $result->entity);
+    }
+
+    public function methods()
+    {
+        return array(
+            'get-list'    => array('getList', 'fetchAll', array(null)),
+            'get'         => array('get', 'fetch', array(1)),
+            'post'        => array('create', 'create', array(array())),
+            'put-list'    => array('replaceList', 'replaceList', array(array())),
+            'put'         => array('update', 'update', array(1, array())),
+            'patch-list'  => array('patchList', 'patchList', array(array())),
+            'patch'       => array('patch', 'patch', array(1, array())),
+            'delete-list' => array('deleteList', 'deleteList', array(array())),
+            'delete'      => array('delete', 'delete', array(1)),
+        );
+    }
+
+    /**
+     * @group 68
+     * @dataProvider methods
+     */
+    public function testAllowsReturningResponsesReturnedFromResources($method, $event, $argv)
+    {
+        $response = new Response();
+        $response->setStatusCode(418);
+
+        $events = $this->resource->getEventManager();
+        $events->attach($event, function ($e) use ($response) {
+            return $response;
+        });
+
+        $result = call_user_func_array(array($this->controller, $method), $argv);
+        $this->assertSame($response, $result);
     }
 }

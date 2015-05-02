@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -20,6 +20,8 @@ class LinkParserHelper
 {
     /**
      * Attempt to parse link destination
+     *
+     * @param Cursor $cursor
      *
      * @return null|string The string, or null if no match
      */
@@ -45,6 +47,8 @@ class LinkParserHelper
     }
 
     /**
+     * @param Cursor $cursor
+     *
      * @return int
      */
     public static function parseLinkLabel(Cursor $cursor)
@@ -56,6 +60,8 @@ class LinkParserHelper
 
     /**
      * Attempt to parse link title (sans quotes)
+     *
+     * @param Cursor $cursor
      *
      * @return null|string The string, or null if no match
      */

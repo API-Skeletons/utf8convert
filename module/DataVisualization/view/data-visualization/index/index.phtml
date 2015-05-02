@@ -89,3 +89,33 @@ ini_set('display_errors', true);
     ?>
     </tbody>
 </table>
+
+<table class="table">
+    <caption>Table Options</caption>
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                URL Pattern
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        foreach ($this->tables as $table) {
+        ?>
+            <tr>
+                <td>
+                    <a href="<?= $this->url('visualization/table', array('table_id' => $table->getId())); ?>">
+                        <?= $this->escapeHtml($table->getName()); ?>
+                    </a>
+                </td>
+                <td><?= $this->escapeHtml($table->getUrl()); ?></td>
+            </tr>
+        <?php
+        }
+        ?>
+    </tbody>
+</table>

@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -35,10 +35,6 @@ class ListParser extends AbstractBlockParser
         $indent = $tmpCursor->advanceWhileMatches(' ', 3);
 
         $rest = $tmpCursor->getRemainder();
-
-        if (preg_match(RegexHelper::getInstance()->getHRuleRegex(), $rest)) {
-            return false;
-        }
 
         $data = new ListData();
 

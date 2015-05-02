@@ -7,6 +7,7 @@
 namespace ZFTest\Console;
 
 use PHPUnit_Framework_TestCase as TestCase;
+use ReflectionProperty;
 use Zend\Console\Adapter\AdapterInterface;
 use ZF\Console\Application;
 use ZF\Console\Dispatcher;
@@ -47,7 +48,8 @@ class ApplicationTest extends TestCase
                 'short_description' => 'Build a package',
                 'options_descriptions' => array(
                     '<package>' => 'Package filename to build',
-                    '--target'  => 'Name of the application directory to package; defaults to current working directory',
+                    '--target'  => 'Name of the application directory to package; '
+                                .  'defaults to current working directory',
                 ),
                 'defaults' => array(
                     'target' => getcwd(), // default to current working directory
@@ -72,7 +74,7 @@ class ApplicationTest extends TestCase
 
     public function testRunThatDoesNotMatchRoutesDisplaysUnmatchedRouteMessage()
     {
-        $this->console->expects($this->at(0))
+        $this->console->expects($this->at(4))
             ->method('write')
             ->with($this->stringContains('Unrecognized command:'));
 
@@ -102,8 +104,8 @@ class ApplicationTest extends TestCase
 
         $writeLines = $writeLineSpy->getInvocations();
         $this->assertGreaterThanOrEqual(3, count($writeLines));
-        $this->assertContains('Usage:', $writeLines[0]->toString());
-        $this->assertContains('build ', $writeLines[1]->toString());
+        $this->assertContains('Usage:', $writeLines[2]->toString());
+        $this->assertContains('build ', $writeLines[3]->toString());
 
         $writes = $writeSpy->getInvocations();
         $this->assertGreaterThanOrEqual(2, count($writes));
@@ -125,7 +127,8 @@ class ApplicationTest extends TestCase
      */
     public function testAllowsSettingCustomExceptionHandler()
     {
-        $handler = function ($e) {};
+        $handler = function ($e) {
+        };
         $this->application->setExceptionHandler($handler);
         $this->assertSame($handler, $this->application->getExceptionHandler());
     }
@@ -166,7 +169,10 @@ class ApplicationTest extends TestCase
      */
     public function testExceptionHandlerIsNotInitializedWhenDebugModeIsEnabled()
     {
-        $this->markTestSkipped('PHP does not allow introspection of the exception handler stack, making it impossible to test if the exception handler was specified');
+        $this->markTestSkipped(
+            'PHP does not allow introspection of the exception handler stack, '
+            . 'making it impossible to test if the exception handler was specified'
+        );
     }
 
     /**
@@ -245,5 +251,30 @@ class ApplicationTest extends TestCase
             $dispatcher
         );
         $this->assertEquals(2, $application->run(array('test')));
+    }
+
+    /**
+     * @group 18
+     */
+    public function testCanRemoveAPreviouslyRegisteredRoute()
+    {
+        $r = new ReflectionProperty($this->application, 'routeCollection');
+        $r->setAccessible(true);
+        $collection = $r->getValue($this->application);
+
+        $this->assertTrue($collection->hasRoute('build'));
+
+        $this->application->removeRoute('build');
+
+        $this->assertFalse($collection->hasRoute('build'));
+    }
+
+    /**
+     * @group 18
+     */
+    public function testAttemptingToRemoveAnUnregisteredRouteRaisesAnException()
+    {
+        $this->setExpectedException('DomainException', 'registered');
+        $this->application->removeRoute('does-not-exist');
     }
 }

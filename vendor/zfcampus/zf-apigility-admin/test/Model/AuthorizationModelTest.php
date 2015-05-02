@@ -15,13 +15,9 @@ use Zend\Config\Writer\PhpArray;
 use ZF\Apigility\Admin\Model\AuthorizationEntity;
 use ZF\Apigility\Admin\Model\AuthorizationModel;
 use ZF\Apigility\Admin\Model\ModuleEntity;
+use ZF\Apigility\Admin\Model\ModulePathSpec;
 use ZF\Configuration\ResourceFactory;
 use ZF\Configuration\ModuleUtils;
-
-require_once __DIR__ . '/TestAsset/module/AuthConf/Module.php';
-require_once __DIR__ . '/TestAsset/module/AuthConfDefaults/Module.php';
-require_once __DIR__ . '/TestAsset/module/AuthConfWithConfig/Module.php';
-require_once __DIR__ . '/TestAsset/module/FooConf/Module.php';
 
 class AuthorizationModelTest extends TestCase
 {
@@ -77,9 +73,14 @@ class AuthorizationModelTest extends TestCase
                             ->will($this->returnValue($modules));
 
         $this->writer   = new PhpArray();
-        $this->modules  = new ModuleUtils($this->moduleManager);
-        $this->resource = new ResourceFactory($this->modules, $this->writer);
-        $this->model    = new AuthorizationModel($this->moduleEntity, $this->modules, $this->resource->factory($this->module));
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->modules  = new ModulePathSpec($moduleUtils);
+        $this->resource = new ResourceFactory($moduleUtils, $this->writer);
+        $this->model    = new AuthorizationModel(
+            $this->moduleEntity,
+            $this->modules,
+            $this->resource->factory($this->module)
+        );
     }
 
     public function tearDown()

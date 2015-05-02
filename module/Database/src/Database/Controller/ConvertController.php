@@ -97,13 +97,11 @@ class ConvertController extends AbstractActionController
 
         foreach ($conversion->getTableDef() as $table) {
             foreach ($table->getColumnDef() as $column) {
-                $iteration = 1;
                 $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
                 $objectManager->getRepository('Db\Entity\ConvertWorker')->mutateValueField($database, $column);
                 $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion, $column);
                 $objectManager->getRepository('Db\Entity\ConvertWorker')->utf8Convert();
                 $objectManager->getRepository('Db\Entity\ConvertWorker')->moveValidDataPoint();
-#                $objectManager->getRepository('Db\Entity\DataPointIteration')->audit($iteration);
                 $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
 
                 $revertColumn = new Entity\ColumnDef();

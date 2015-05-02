@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -17,9 +17,9 @@ namespace League\CommonMark\Block\Element;
 class ListData
 {
     /**
-     * @var int
+     * @var int|null
      */
-    public $start = 0;
+    public $start;
 
     /**
      * @var int

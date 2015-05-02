@@ -52,7 +52,12 @@ class RestParametersListener implements
      */
     public function attachShared(SharedEventManagerInterface $events)
     {
-        $this->sharedListeners[] = $events->attach('ZF\Rest\RestController', MvcEvent::EVENT_DISPATCH, array($this, 'onDispatch'), 100);
+        $this->sharedListeners[] = $events->attach(
+            'ZF\Rest\RestController',
+            MvcEvent::EVENT_DISPATCH,
+            array($this, 'onDispatch'),
+            100
+        );
     }
 
     /**
@@ -61,7 +66,7 @@ class RestParametersListener implements
     public function detachShared(SharedEventManagerInterface $events)
     {
         foreach ($this->sharedListeners as $index => $listener) {
-            if ($events->detach($listener)) {
+            if ($events->detach('ZF\Rest\RestController', $listener)) {
                 unset($this->sharedListeners[$index]);
             }
         }
@@ -75,7 +80,7 @@ class RestParametersListener implements
     public function onDispatch(MvcEvent $e)
     {
         $controller = $e->getTarget();
-        if (!$controller instanceof RestController) {
+        if (! $controller instanceof RestController) {
             return;
         }
 

@@ -29,6 +29,5 @@
     </many-to-one>
     <one-to-many field="dataPointPrimaryKey" target-entity="Db\Entity\DataPointPrimaryKeyDef" mapped-by="dataPoint"/>
     <one-to-many field="convertWorker" target-entity="Db\Entity\ConvertWorker" mapped-by="dataPoint"/>
-    <one-to-many field="dataPointIteration" target-entity="Db\Entity\DataPointIteration" mapped-by="dataPoint"/>
   </entity>
 </doctrine-mapping>

@@ -163,7 +163,11 @@ class ApiFactory
                     && (strstr($serviceClassName, '\\V' . $api->getVersion() . '\\') !== false)
                 ) {
                     $serviceData = $rpcConfig;
-                    $serviceData['action'] = $this->marshalActionFromRouteConfig($serviceName, $serviceClassName, $rpcConfig);
+                    $serviceData['action'] = $this->marshalActionFromRouteConfig(
+                        $serviceName,
+                        $serviceClassName,
+                        $rpcConfig
+                    );
                     $isRpc = true;
                     break;
                 }
@@ -193,19 +197,13 @@ class ApiFactory
             $service->setRouteIdentifierName($serviceData['route_identifier_name']);
         }
 
+        $fields = array();
         if (isset($this->config['zf-content-validation'][$serviceClassName]['input_filter'])) {
             $validatorName = $this->config['zf-content-validation'][$serviceClassName]['input_filter'];
-            $fields = array();
             if (isset($this->config['input_filter_specs'][$validatorName])) {
-                foreach ($this->config['input_filter_specs'][$validatorName] as $fieldData) {
-                    $fields[] = $field = new Field();
-                    $field->setName($fieldData['name']);
-                    if (isset($fieldData['description'])) {
-                        $field->setDescription($fieldData['description']);
-                    }
-                    $field->setRequired($fieldData['required']);
+                foreach ($this->mapFields($this->config['input_filter_specs'][$validatorName]) as $fieldData) {
+                    $fields['input_filter'][] = $this->getField($fieldData);
                 }
-                $service->setFields($fields);
                 $hasFields = true;
             }
         }
@@ -219,14 +217,35 @@ class ApiFactory
             $op = new Operation();
             $op->setHttpMethod($httpMethod);
 
+            if (isset($this->config['zf-content-validation'][$serviceClassName][$httpMethod])) {
+                $validatorName = $this->config['zf-content-validation'][$serviceClassName][$httpMethod];
+                if (isset($this->config['input_filter_specs'][$validatorName])) {
+                    foreach ($this->config['input_filter_specs'][$validatorName] as $fieldData) {
+                        $fields[$httpMethod][] = $field = new Field();
+                        $field->setName($fieldData['name']);
+                        if (isset($fieldData['description'])) {
+                            $field->setDescription($fieldData['description']);
+                        }
+                        $field->setRequired($fieldData['required']);
+                    }
+                    $hasFields = true;
+                }
+            }
+
             if ($isRest) {
-                $description = isset($docsArray[$serviceClassName]['collection'][$httpMethod]['description']) ? $docsArray[$serviceClassName]['collection'][$httpMethod]['description'] : '';
+                $description = isset($docsArray[$serviceClassName]['collection'][$httpMethod]['description'])
+                    ? $docsArray[$serviceClassName]['collection'][$httpMethod]['description']
+                    : '';
                 $op->setDescription($description);
 
-                $requestDescription = isset($docsArray[$serviceClassName]['collection'][$httpMethod]['request']) ? $docsArray[$serviceClassName]['collection'][$httpMethod]['request'] : '';
+                $requestDescription = isset($docsArray[$serviceClassName]['collection'][$httpMethod]['request'])
+                    ? $docsArray[$serviceClassName]['collection'][$httpMethod]['request']
+                    : '';
                 $op->setRequestDescription($requestDescription);
 
-                $responseDescription = isset($docsArray[$serviceClassName]['collection'][$httpMethod]['response']) ? $docsArray[$serviceClassName]['collection'][$httpMethod]['response'] : '';
+                $responseDescription = isset($docsArray[$serviceClassName]['collection'][$httpMethod]['response'])
+                    ? $docsArray[$serviceClassName]['collection'][$httpMethod]['response']
+                    : '';
 
                 $op->setResponseDescription($responseDescription);
                 $op->setRequiresAuthorization(
@@ -235,17 +254,28 @@ class ApiFactory
                     : false
                 );
 
-                $op->setResponseStatusCodes($this->getStatusCodes($httpMethod, false, $hasFields, $op->requiresAuthorization()));
+                $op->setResponseStatusCodes($this->getStatusCodes(
+                    $httpMethod,
+                    false,
+                    $hasFields,
+                    $op->requiresAuthorization()
+                ));
             }
 
             if ($isRpc) {
-                $description = isset($docsArray[$serviceClassName][$httpMethod]['description']) ? $docsArray[$serviceClassName][$httpMethod]['description'] : '';
+                $description = isset($docsArray[$serviceClassName][$httpMethod]['description'])
+                    ? $docsArray[$serviceClassName][$httpMethod]['description']
+                    : '';
                 $op->setDescription($description);
 
-                $requestDescription = isset($docsArray[$serviceClassName][$httpMethod]['request']) ? $docsArray[$serviceClassName][$httpMethod]['request'] : '';
+                $requestDescription = isset($docsArray[$serviceClassName][$httpMethod]['request'])
+                    ? $docsArray[$serviceClassName][$httpMethod]['request']
+                    : '';
                 $op->setRequestDescription($requestDescription);
 
-                $responseDescription = isset($docsArray[$serviceClassName][$httpMethod]['response']) ? $docsArray[$serviceClassName][$httpMethod]['response'] : '';
+                $responseDescription = isset($docsArray[$serviceClassName][$httpMethod]['response'])
+                    ? $docsArray[$serviceClassName][$httpMethod]['response']
+                    : '';
                 $op->setResponseDescription($responseDescription);
 
                 $op->setRequiresAuthorization(
@@ -253,11 +283,18 @@ class ApiFactory
                     ? $authorizations['actions'][$serviceData['action']][$httpMethod]
                     : false
                 );
-                $op->setResponseStatusCodes($this->getStatusCodes($httpMethod, $hasSegments, $hasFields, $op->requiresAuthorization()));
+                $op->setResponseStatusCodes($this->getStatusCodes(
+                    $httpMethod,
+                    $hasSegments,
+                    $hasFields,
+                    $op->requiresAuthorization()
+                ));
             }
 
             $ops[] = $op;
         }
+
+        $service->setFields($fields);
         $service->setOperations($ops);
 
         if (isset($serviceData['entity_http_methods'])) {
@@ -266,13 +303,19 @@ class ApiFactory
                 $op = new Operation();
                 $op->setHttpMethod($httpMethod);
 
-                $description = isset($docsArray[$serviceClassName]['entity'][$httpMethod]['description']) ? $docsArray[$serviceClassName]['entity'][$httpMethod]['description'] : '';
+                $description = isset($docsArray[$serviceClassName]['entity'][$httpMethod]['description'])
+                    ? $docsArray[$serviceClassName]['entity'][$httpMethod]['description']
+                    : '';
                 $op->setDescription($description);
 
-                $requestDescription = isset($docsArray[$serviceClassName]['entity'][$httpMethod]['request']) ? $docsArray[$serviceClassName]['entity'][$httpMethod]['request'] : '';
+                $requestDescription = isset($docsArray[$serviceClassName]['entity'][$httpMethod]['request'])
+                    ? $docsArray[$serviceClassName]['entity'][$httpMethod]['request']
+                    : '';
                 $op->setRequestDescription($requestDescription);
 
-                $responseDescription = isset($docsArray[$serviceClassName]['entity'][$httpMethod]['response']) ? $docsArray[$serviceClassName]['entity'][$httpMethod]['response'] : '';
+                $responseDescription = isset($docsArray[$serviceClassName]['entity'][$httpMethod]['response'])
+                    ? $docsArray[$serviceClassName]['entity'][$httpMethod]['response']
+                    : '';
                 $op->setResponseDescription($responseDescription);
 
                 $op->setRequiresAuthorization(
@@ -280,21 +323,88 @@ class ApiFactory
                     ? $authorizations['entity'][$httpMethod]
                     : false
                 );
-                $op->setResponseStatusCodes($this->getStatusCodes($httpMethod, true, $hasFields, $op->requiresAuthorization()));
+                $op->setResponseStatusCodes($this->getStatusCodes(
+                    $httpMethod,
+                    true,
+                    $hasFields,
+                    $op->requiresAuthorization()
+                ));
                 $ops[] = $op;
             }
             $service->setEntityOperations($ops);
         }
 
         if (isset($this->config['zf-content-negotiation']['accept_whitelist'][$serviceClassName])) {
-            $service->setRequestAcceptTypes($this->config['zf-content-negotiation']['accept_whitelist'][$serviceClassName]);
+            $service->setRequestAcceptTypes(
+                $this->config['zf-content-negotiation']['accept_whitelist'][$serviceClassName]
+            );
         }
 
         if (isset($this->config['zf-content-negotiation']['content_type_whitelist'][$serviceClassName])) {
-            $service->setRequestContentTypes($this->config['zf-content-negotiation']['content_type_whitelist'][$serviceClassName]);
+            $service->setRequestContentTypes(
+                $this->config['zf-content-negotiation']['content_type_whitelist'][$serviceClassName]
+            );
         }
 
         return $service;
+    }
+
+    /**
+     * @param array $fields
+     * @param string $prefix To unwind nesting of fields
+     * @return array
+     */
+    private function mapFields(array $fields, $prefix = '')
+    {
+        if (isset($fields['name'])) {
+            /// detect usage of "name" as a field group name
+            if (is_array($fields['name']) && isset($fields['name']['name'])) {
+                return $this->mapFields($fields['name'], 'name');
+            }
+
+            if ($prefix) {
+                $fields['name'] = sprintf('%s/%s', $prefix, $fields['name']);
+            }
+            return array($fields);
+        }
+
+        $flatFields = array();
+
+        foreach ($fields as $idx => $field) {
+            if (isset($field['type']) && is_subclass_of($field['type'], 'Zend\InputFilter\InputFilterInterface')) {
+                $filteredFields = array_diff_key($field, array('type' => 0));
+                $fullindex = $prefix ? sprintf('%s/%s', $prefix, $idx) : $idx;
+                $flatFields = array_merge($flatFields, $this->mapFields($filteredFields, $fullindex));
+                continue;
+            }
+
+            $flatFields = array_merge($flatFields, $this->mapFields($field, $prefix));
+        }
+
+        return $flatFields;
+    }
+
+    /**
+     * @param array $fieldData
+     * @return Field
+     */
+    private function getField(array $fieldData)
+    {
+        $field = new Field();
+
+        $field->setName($fieldData['name']);
+        if (isset($fieldData['description'])) {
+            $field->setDescription($fieldData['description']);
+        }
+
+        if (isset($fieldData['type'])) {
+            $field->setType($fieldData['type']);
+        }
+
+        $required = isset($fieldData['required']) ? (bool) $fieldData['required'] : false;
+        $field->setRequired($required);
+
+        return $field;
     }
 
     /**

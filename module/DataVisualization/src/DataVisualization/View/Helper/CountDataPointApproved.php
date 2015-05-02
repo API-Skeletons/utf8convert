@@ -42,7 +42,7 @@ class CountDataPointApproved extends AbstractHelper implements ServiceLocatorAwa
 
     /**
      */
-    public function __invoke(Entity\Conversion $conversion, Entity\ColumnDef $column)
+    public function __invoke(Entity\Conversion $conversion, Entity\ColumnDef $column, $imported = false)
     {
         $objectManager = $this->getServiceLocator()->getServiceLocator()->get('doctrine.entitymanager.orm_default');
 
@@ -59,7 +59,11 @@ class CountDataPointApproved extends AbstractHelper implements ServiceLocatorAwa
             ->setParameter('approved', true)
             ;
 
-#            die($qb->getQuery()->getDql());
+        if ($imported) {
+            $qb->andwhere('dp.importedAt IS NOT NULL');
+        } else {
+            $qb->andwhere('dp.importedAt IS NULL');
+        }
 
         return $qb->getQuery()->getSingleScalarResult();
     }

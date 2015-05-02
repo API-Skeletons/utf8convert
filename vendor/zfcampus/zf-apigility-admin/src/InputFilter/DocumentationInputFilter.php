@@ -52,10 +52,10 @@ class DocumentationInputFilter extends InputFilter
 
         foreach ($this->data as $key => $data) {
             if (in_array($key, $this->validHttpMethods)) {
-
                 // valid HTTP method?
                 if (isset($this->data['collection']) || isset($this->data['entity'])) {
-                    $this->messages[$key][] = 'HTTP methods cannot be present when "collection" or "entity" is also present; please verify data for "' . $key . '"';
+                    $this->messages[$key][] = 'HTTP methods cannot be present when "collection" or "entity"'
+                        . ' is also present; please verify data for "' . $key . '"';
                     $isValid = false;
                     continue;
                 }
@@ -71,7 +71,8 @@ class DocumentationInputFilter extends InputFilter
             if (in_array($key, array('collection', 'entity'))) {
                 // valid collection or entity
                 if (! is_array($data)) {
-                    $this->messages[$key][] = 'Collections and entities methods must be an array of HTTP methods; received invalid entry for "' . $key . '"';
+                    $this->messages[$key][] = 'Collections and entities methods must be an array of HTTP methods;'
+                        . ' received invalid entry for "' . $key . '"';
                     $isValid = false;
                     continue;
                 }
@@ -82,15 +83,16 @@ class DocumentationInputFilter extends InputFilter
                             $isValid = false;
                             continue;
                         }
-
                     } elseif ($subKey === 'description') {
                         if (!is_string($subData)) {
-                            $this->messages[$key][] = 'Description must be provided as a string; please verify description for "' . $subKey . '"';
+                            $this->messages[$key][] = 'Description must be provided as a string;'
+                                . ' please verify description for "' . $subKey . '"';
                             $isValid = false;
                             continue;
                         }
                     } else {
-                        $this->messages[$key][] = 'Key must be description or an HTTP indexed list; please verify documentation for "' . $subKey . '"';
+                        $this->messages[$key][] = 'Key must be description or an HTTP indexed list;'
+                            . ' please verify documentation for "' . $subKey . '"';
                         $isValid = false;
                         continue;
                     }
@@ -102,7 +104,8 @@ class DocumentationInputFilter extends InputFilter
             if ($key === 'description') {
                 // documentation checking
                 if (!is_string($data)) {
-                    $this->messages[$key][] = 'Description must be provided as a string; please verify description for "' . $key . '"';
+                    $this->messages[$key][] = 'Description must be provided as a string;'
+                        . ' please verify description for "' . $key . '"';
                     $isValid = false;
                     continue;
                 }
@@ -134,7 +137,8 @@ class DocumentationInputFilter extends InputFilter
                 continue;
             }
 
-            $this->messages[$key][] = 'Documentable elements must be any or all of description, request or response; please verify "' . $key . '"';
+            $this->messages[$key][] = 'Documentable elements must be any or all of description,'
+                . ' request or response; please verify "' . $key . '"';
             return false;
         }
 

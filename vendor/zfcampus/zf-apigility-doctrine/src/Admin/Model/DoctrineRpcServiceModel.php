@@ -12,7 +12,8 @@ use Zend\View\Renderer\PhpRenderer;
 use Zend\View\Resolver;
 use ZF\Apigility\Admin\Exception;
 use ZF\Configuration\ConfigResource;
-use ZF\Configuration\ModuleUtils;
+//use ZF\Configuration\ModuleUtils;
+use ZF\Apigility\Admin\Model\ModulePathSpec;
 use ZF\Rest\Exception\PatchException;
 use ZF\Rest\Exception\CreationException;
 use ZF\Apigility\Admin\Model\ModuleEntity;
@@ -45,11 +46,11 @@ class DoctrineRpcServiceModel
     protected $modules;
 
     /**
-     * @param string         $module
+     * @param ModuleEntity   $moduleEntity
      * @param ModuleUtils    $modules
      * @param ConfigResource $config
      */
-    public function __construct(ModuleEntity $moduleEntity, ModuleUtils $modules, ConfigResource $config)
+    public function __construct(ModuleEntity $moduleEntity, ModulePathSpec $modules, ConfigResource $config)
     {
         $this->module         = $moduleEntity->getName();
         $this->moduleEntity   = $moduleEntity;
@@ -120,6 +121,7 @@ class DoctrineRpcServiceModel
     /**
      * Fetch all services
      *
+     * @param string $version
      * @return DoctrineRpcServiceEntity[]
      */
     public function fetchAll($version = null)
@@ -232,7 +234,7 @@ class DoctrineRpcServiceModel
     /**
      * Delete the files which were automatically created
      *
-     * @param DoctrineRestServiceEntity $entity
+     * @param DoctrineRpcServiceEntity $entity
      */
     public function deleteFiles(DoctrineRpcServiceEntity $entity)
     {
@@ -246,57 +248,41 @@ class DoctrineRpcServiceModel
      * Create a controller in the current module named for the given service
      *
      * @param  string $serviceName
-     * @return stdClass
+     * @return mixed
      */
     public function createController($serviceName)
     {
         $module     = $this->module;
-        $modulePath = $this->modules->getModulePath($module);
         $version    = $this->moduleEntity->getLatestVersion();
+        $serviceName = str_replace("\\", "/", $serviceName);
 
-        $srcPath = sprintf(
-            '%s/src/%s/V%s/Rpc/%s',
-            $modulePath,
-            str_replace('\\', '/', $module),
-            $version,
-            $serviceName
-        );
+        $srcPath = $this->modules->getRpcPath($module, $version, $serviceName);
 
         if (!file_exists($srcPath)) {
-            // @codeCoverageIgnoreStart
-            mkdir($srcPath, 0777, true);
+            mkdir($srcPath, 0775, true);
         }
-            // @codeCoverageIgnoreEnd
 
         $className         = sprintf('%sController', $serviceName);
         $classPath         = sprintf('%s/%s.php', $srcPath, $className);
         $controllerService = sprintf('%s\\V%s\\Rpc\\%s\\Controller', $module, $version, $serviceName);
 
         if (file_exists($classPath)) {
-            // @codeCoverageIgnoreStart
-            throw new Exception\RuntimeException(
-                sprintf(
-                    'The controller "%s" already exists',
-                    $className
-                )
-            );
-            // @codeCoverageIgnoreEnd
+            throw new Exception\RuntimeException(sprintf(
+                'The controller "%s" already exists',
+                $className
+            ));
         }
 
-        $view = new ViewModel(
-            array(
+        $view = new ViewModel(array(
             'module'      => $module,
             'classname'   => $className,
             'servicename' => $serviceName,
             'version'     => $version,
-            )
-        );
+        ));
 
-        $resolver = new Resolver\TemplateMapResolver(
-            array(
+        $resolver = new Resolver\TemplateMapResolver(array(
             'code-connected/rpc-controller' => __DIR__ . '/../../../view/doctrine/rpc-controller.phtml'
-            )
-        );
+        ));
 
         $view->setTemplate('code-connected/rpc-controller');
         $renderer = new PhpRenderer();
@@ -304,12 +290,10 @@ class DoctrineRpcServiceModel
 
         if (!file_put_contents(
             $classPath,
-            "<?php\n" . $renderer->render($view)
+            "<" . "?php\n" . $renderer->render($view)
         )) {
-            // @codeCoverageIgnoreStart
             return false;
         }
-            // @codeCoverageIgnoreEnd
 
         $fullClassName = sprintf('%s\\V%s\\Rpc\\%s\\%s', $module, $version, $serviceName, $className);
         $this->configResource->patch(
@@ -329,6 +313,88 @@ class DoctrineRpcServiceModel
             'service' => $controllerService,
         );
     }
+//
+//    public function createController($serviceName)
+//    {
+//        $module     = $this->module;
+//        $modulePath = $this->modules->getModulePath($module);
+//        $version    = $this->moduleEntity->getLatestVersion();
+//
+//        $srcPath = sprintf(
+//            '%s/src/%s/V%s/Rpc/%s',
+//            $modulePath,
+//            str_replace('\\', '/', $module),
+//            $version,
+//            $serviceName
+//        );
+//
+//        if (!file_exists($srcPath)) {
+//            // @codeCoverageIgnoreStart
+//            mkdir($srcPath, 0777, true);
+//        }
+//            // @codeCoverageIgnoreEnd
+//
+//        $className         = sprintf('%sController', $serviceName);
+//        $classPath         = sprintf('%s/%s.php', $srcPath, $className);
+//        $controllerService = sprintf('%s\\V%s\\Rpc\\%s\\Controller', $module, $version, $serviceName);
+//
+//        if (file_exists($classPath)) {
+//            // @codeCoverageIgnoreStart
+//            throw new Exception\RuntimeException(
+//                sprintf(
+//                    'The controller "%s" already exists',
+//                    $className
+//                )
+//            );
+//            // @codeCoverageIgnoreEnd
+//        }
+//
+//        $view = new ViewModel(
+//            array(
+//            'module'      => $module,
+//            'classname'   => $className,
+//            'servicename' => $serviceName,
+//            'version'     => $version,
+//            )
+//        );
+//
+//        $resolver = new Resolver\TemplateMapResolver(
+//            array(
+//            'code-connected/rpc-controller' => __DIR__ . '/../../../view/doctrine/rpc-controller.phtml'
+//            )
+//        );
+//
+//        $view->setTemplate('code-connected/rpc-controller');
+//        $renderer = new PhpRenderer();
+//        $renderer->setResolver($resolver);
+//
+//        if (!file_put_contents(
+//            $classPath,
+//            "<?php\n" . $renderer->render($view)
+//        )) {
+//            // @codeCoverageIgnoreStart
+//            return false;
+//        }
+//            // @codeCoverageIgnoreEnd
+//
+//        $fullClassName = sprintf('%s\\V%s\\Rpc\\%s\\%s', $module, $version, $serviceName, $className);
+//        $this->configResource->patch(
+//            array(
+//            'controllers' => array(
+//                'invokables' => array(
+//                    $controllerService => $fullClassName,
+//                ),
+//            ),
+//            ),
+//            true
+//        );
+//
+//        return (object) array(
+//            'class'   => $fullClassName,
+//            'file'    => $classPath,
+//            'service' => $controllerService,
+//        );
+//    }
 
     /**
      * Create the route configuration
@@ -365,7 +431,7 @@ class DoctrineRpcServiceModel
                 )
             ),
             'zf-versioning' => array(
-                'uri' => array (
+                'uri' => array(
                     $routeName
                 )
             )
@@ -376,13 +442,11 @@ class DoctrineRpcServiceModel
         return $routeName;
     }
 
-    /*
+    /**
      * Create the zf-rpc configuration for the controller service
      *
-     * @param  string               $controllerService
-     * @param  string               $routeName
-     * @param  array                $httpMethods
-     * @param  null|string|callable $callable
+     * @param $controllerService
+     * @param $options
      * @return array
      */
     public function createDoctrineRpcConfig($controllerService, $options)
@@ -394,7 +458,7 @@ class DoctrineRpcServiceModel
         return $this->configResource->patch($config, true);
     }
 
-    /*
+    /**
      * Create the zf-rpc configuration for the controller service
      *
      * @param  string               $controllerService

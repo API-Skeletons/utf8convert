@@ -12,6 +12,31 @@ angular.module('utf8convert')
                 this.load(url + '/api/data-point?conversion=' + conversion + '&column=' + column);
             },
 
+			addConvertButton: function()
+			{
+				$('span.editable-buttons').each(function(index, node) {
+					if ( ! $(node).find('button.convert').length) {
+						button = $('<button type="button" class="btn btn-danger convert"><i class="glyphicon glyphicon-flash"></i></button>');
+						button.on('click', function(event) {
+							textarea = $(this).parent().parent().find('textarea');
+
+							$scope.columnPromise = $http({
+								method: 'post',
+								timeout: 180000,
+								url: $scope.columnModel.baseUrl + '/api/convert',
+								data: {
+									value: textarea.val()
+								}
+							}).success(function(data) {
+								textarea.val(data.value);
+								textarea.trigger('change');
+							});
+						});
+						$(node).append(button);
+					}
+				});
+			},
+
             load: function(url)
             {
                 $scope.columnPromise = $http({
@@ -113,6 +138,8 @@ angular.module('utf8convert')
 					delete newData[key].user;
 					delete newData[key].columnDef;
 					delete newData[key].conversion;
+					delete newData[key].oldValue;
+					delete newData[key].newValue;
 
 					angular.forEach(value, function(fieldValue, fieldKey) {
 						if (fieldKey.charAt(0) == '_') {

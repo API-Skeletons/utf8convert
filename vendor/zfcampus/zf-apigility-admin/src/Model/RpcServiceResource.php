@@ -52,8 +52,12 @@ class RpcServiceResource extends AbstractResourceListener
      * @param  RpcServiceModelFactory $rpcFactory
      * @param  InputFilterModel $inputFilterModel
      */
-    public function __construct(RpcServiceModelFactory $rpcFactory, InputFilterModel $inputFilterModel, ControllerManager $controllerManager, DocumentationModel $documentationModel)
-    {
+    public function __construct(
+        RpcServiceModelFactory $rpcFactory,
+        InputFilterModel $inputFilterModel,
+        ControllerManager $controllerManager,
+        DocumentationModel $documentationModel
+    ) {
         $this->rpcFactory = $rpcFactory;
         $this->inputFilterModel = $inputFilterModel;
         $this->controllerManager = $controllerManager;
@@ -188,7 +192,7 @@ class RpcServiceResource extends AbstractResourceListener
     public function fetchAll($params = array())
     {
         $version  = $this->getEvent()->getQueryParam('version', null);
-        $services = $this->getModel()->fetchAll($version);
+        $services = $this->getModel()->fetchAll($version ?: null);
 
         foreach ($services as $service) {
             $this->injectInputFilters($service);
@@ -320,7 +324,10 @@ class RpcServiceResource extends AbstractResourceListener
 
     protected function injectDocumentation(RpcServiceEntity $service)
     {
-        $documentation = $this->documentationModel->fetchDocumentation($this->moduleName, $service->controllerServiceName);
+        $documentation = $this->documentationModel->fetchDocumentation(
+            $this->moduleName,
+            $service->controllerServiceName
+        );
         if (!$documentation) {
             return;
         }

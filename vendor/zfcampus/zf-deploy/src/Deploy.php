@@ -102,7 +102,14 @@ class Deploy
             return 1;
         }
 
-        $this->cloneApplication($opts->target, $tmpDir, $opts->gitignore, $opts->vendor, $opts->modules, $opts->configs);
+        $this->cloneApplication(
+            $opts->target,
+            $tmpDir,
+            $opts->gitignore,
+            $opts->vendor,
+            $opts->modules,
+            $opts->configs
+        );
         $this->copyModules($opts->modules, $opts->target, $tmpDir);
 
         if (false === $this->executeComposer($opts->vendor, $opts->composer, $tmpDir)) {
@@ -168,7 +175,11 @@ class Deploy
         $dom->loadXML(file_get_contents($file));
         if (! $dom->schemaValidate($tmpSchema)) {
             unlink($tmpSchema);
-            return $this->reportError(sprintf('The XML file "%s" does not validate against the schema "%s".', $file, $schema));
+            return $this->reportError(sprintf(
+                'The XML file "%s" does not validate against the schema "%s".',
+                $file,
+                $schema
+            ));
         }
 
         unlink($tmpSchema);
@@ -237,12 +248,17 @@ class Deploy
         // Is it a valid ZF2 app? (if not, error!)
         $appConfigPath = $target . '/config/application.config.php';
         if (! file_exists($appConfigPath)) {
-            return $this->reportError(sprintf('Error: the folder "%s" does not contain a standard ZF2 application', $target));
+            return $this->reportError(sprintf(
+                'Error: the folder "%s" does not contain a standard ZF2 application',
+                $target
+            ));
         }
-
-        $appConfig = file_get_contents($appConfigPath);
-        if (! preg_match('/\'modules\'\s*=>\s*array\s*\(/s', $appConfig)) {
-            return $this->reportError(sprintf('Error: the folder "%s" does not contain a standard ZF2 application', $target));
+        $config = require $appConfigPath;
+        if (! isset($config['modules'])) {
+            return $this->reportError(sprintf(
+                'Error: the folder "%s" does not contain a standard ZF2 application',
+                $target
+            ));
         }
 
         // Set $this->appConfigPath when done
@@ -267,7 +283,7 @@ class Deploy
 
         // Validate each module
         foreach ($modules as $module) {
-            $normalized = str_replace('\\','/', $module);
+            $normalized = str_replace('\\', '/', $module);
             if (! is_dir($target . '/module/' . $normalized)) {
                 return $this->reportError(sprintf('Error: the module "%s" does not exist in %s', $module, $target));
             }
@@ -296,7 +312,10 @@ class Deploy
 
         // Does the directory contain a deployment.xml file? (if not, error!)
         if (! file_exists($dir . '/deployment.xml')) {
-            return $this->reportError(sprintf('Error: The specified ZPK data directory "%s" does not contain a deployment.xml file', $dir));
+            return $this->reportError(sprintf(
+                'Error: The specified ZPK data directory "%s" does not contain a deployment.xml file',
+                $dir
+            ));
         }
 
         return true;
@@ -436,9 +455,9 @@ class Deploy
     {
         $deployString = file_get_contents($deploymentXml);
 
-        $deployString = str_replace('{NAME}',     $appname,  $deployString);
-        $deployString = str_replace('{VERSION}',  $version,  $deployString);
-        $deployString = str_replace('{LOGO}',     $logo,     $deployString);
+        $deployString = str_replace('{NAME}', $appname, $deployString);
+        $deployString = str_replace('{VERSION}', $version, $deployString);
+        $deployString = str_replace('{LOGO}', $logo, $deployString);
 
         $packageLocation = $tmpDir . '/deployment.xml';
         file_put_contents($packageLocation, $deployString);
@@ -487,7 +506,7 @@ class Deploy
      * @param string $applicationPath
      * @param string $tmpDir
      */
-    protected function copyModules(array $modules = null, $applicationPath, $tmpDir)
+    protected function copyModules(array $modules, $applicationPath, $tmpDir)
     {
         if (empty($modules)) {
             return;
@@ -495,15 +514,25 @@ class Deploy
 
         // copy modules
         foreach ($modules as $module) {
-            $normalized = str_replace('\\','/', $module);
+            $normalized = str_replace('\\', '/', $module);
             self::recursiveCopy($applicationPath . '/module/' . $normalized, $tmpDir . '/module/' . $normalized);
         }
 
         // enable only the selected modules in the config/application.config.php
         if (file_exists($tmpDir . '/config/application.config.php')) {
             $config = include $tmpDir . '/config/application.config.php';
-            $config['modules'] = $modules;
-            file_put_contents($tmpDir . '/config/application.config.php', '<' .'?php return ' . var_export($config, true) . ';');
+            // Remove a module if not present in $modules
+            $tot = count($config['modules']);
+            for ($i = 0; $i < $tot; $i++) {
+                $normalized = str_replace('\\', '/', $config['modules'][$i]);
+                if (is_dir($applicationPath . '/module/' . $normalized) && !in_array($config['modules'][$i], $modules)) {
+                    unset($config['modules'][$i]);
+                }
+            }
+            file_put_contents(
+                $tmpDir . '/config/application.config.php',
+                '<?php return ' . var_export($config, true) . ';'
+            );
         }
     }
 
@@ -566,7 +595,8 @@ class Deploy
             $umask = umask(0);
             mkdir($dest, $dirperms, true);
             umask($umask); // Restore original umask when done
-        } while (false !== ($file = readdir($dir))) {
+        }
+        while (false !== ($file = readdir($dir))) {
             if ($file === '.' || $file === '..' || $file === '.git') {
                 continue;
             }
@@ -601,7 +631,8 @@ class Deploy
     {
         if (false === ($dh = @opendir($dir))) {
             return false;
-        } while (false !== ($obj = readdir($dh))) {
+        }
+        while (false !== ($obj = readdir($dh))) {
             if ($obj == '.' || $obj == '..') {
                 continue;
             }
@@ -652,7 +683,9 @@ class Deploy
         }
 
         if ($exitCode !== 0) {
-            return $this->reportError('Composer error during install command (exit code: ' . $exitCode . ') ' . $result);
+            return $this->reportError(
+                'Composer error during install command (exit code: ' . $exitCode . ') ' . $result
+            );
         }
     }
 
@@ -699,6 +732,7 @@ class Deploy
         switch ($format) {
             case 'zpk':
                 $dir = dirname($dir);
+                // intentionally fall through; zpk is a zip archive
             case 'zip':
                 $packager = new ZipArchive;
                 $packager->open($package, ZipArchive::CREATE);
@@ -777,21 +811,22 @@ class Deploy
     }
 
     /**
-	 * Prepends the PHP binary path to the given command.
-	 *
+     * Prepends the PHP binary path to the given command.
+     *
      * This is particularly useful when executing PHARs and ensures that they
      * execute successfully even if the PHAR is not executable or there no PHP
      * executable available in the environment.
      *
      * The prepended PHP path is the one of the PHP executing the current
      * process.
-	 *
-	 * @param string $command a command line
-	 * @return string The modified command line
-	 */
+     *
+     * @param string $command a command line
+     * @return string The modified command line
+     */
     protected function prependPhpBinaryPath($command)
     {
-        if (defined('PHP_BINARY')) { // Since PHP 5.4
+        if (defined('PHP_BINARY')) {
+            // Since PHP 5.4
             $command = '"' . PHP_BINARY . '" ' . $command;
         }
         return $command;

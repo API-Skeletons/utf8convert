@@ -7,16 +7,16 @@
 namespace ZFTest\Apigility\Admin\Model;
 
 use FooConf;
+use BazConf;
 use PHPUnit_Framework_TestCase as TestCase;
 use ReflectionClass;
 use Zend\Config\Writer\PhpArray;
 use ZF\Apigility\Admin\Model\ModuleEntity;
+use ZF\Apigility\Admin\Model\ModulePathSpec;
 use ZF\Apigility\Admin\Model\RpcServiceModel;
 use ZF\Apigility\Admin\Model\VersioningModel;
 use ZF\Configuration\ResourceFactory;
 use ZF\Configuration\ModuleUtils;
-
-require_once __DIR__ . '/TestAsset/module/FooConf/Module.php';
 
 class RpcServiceModelTest extends TestCase
 {
@@ -42,9 +42,16 @@ class RpcServiceModelTest extends TestCase
 
     protected function cleanUpAssets()
     {
+        $pathSpec = (empty($this->modulePathSpec)) ? 'psr-0' : $this->modulePathSpec->getPathSpec();
+
+        $modulePath = array(
+            'psr-0' => '%s/src/%s/V*',
+            'psr-4' => '%s/src/V*'
+        );
+
         $basePath   = sprintf('%s/TestAsset/module/%s', __DIR__, $this->module);
         $configPath = $basePath . '/config';
-        foreach (glob(sprintf('%s/src/%s/V*', $basePath, $this->module)) as $dir) {
+        foreach (glob(sprintf($modulePath[$pathSpec], $basePath, $this->module)) as $dir) {
             $this->removeDir($dir);
         }
         copy($configPath . '/module.config.php.dist', $configPath . '/module.config.php');
@@ -56,7 +63,8 @@ class RpcServiceModelTest extends TestCase
         $this->cleanUpAssets();
 
         $modules = array(
-            'FooConf' => new FooConf\Module()
+            'FooConf' => new FooConf\Module(),
+            'BazConf' => new BazConf\Module()
         );
 
         $this->moduleEntity  = new ModuleEntity($this->module);
@@ -68,9 +76,19 @@ class RpcServiceModelTest extends TestCase
                             ->will($this->returnValue($modules));
 
         $this->writer   = new PhpArray();
-        $this->modules  = new ModuleUtils($this->moduleManager);
-        $this->resource = new ResourceFactory($this->modules, $this->writer);
-        $this->codeRpc  = new RpcServiceModel($this->moduleEntity, $this->modules, $this->resource->factory($this->module));
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->modulePathSpec  = new ModulePathSpec($moduleUtils);
+        $this->resource = new ResourceFactory($moduleUtils, $this->writer);
+        $this->codeRpc  = new RpcServiceModel(
+            $this->moduleEntity,
+            $this->modulePathSpec,
+            $this->resource->factory($this->module)
+        );
+    }
+
+    protected function setCurrentModule()
+    {
+
     }
 
     public function tearDown()
@@ -105,12 +123,20 @@ class RpcServiceModelTest extends TestCase
         $this->codeRpc->createService('Foo/Bar', 'route', array());
     }
 
+    /**
+     * @group createController
+     */
     public function testCanCreateControllerServiceNameFromResourceNameSpace()
     {
+        $this->markTestSkipped('Invalid use case');
+
         /**
          * @todo is this the expected behavior?
         */
-        $this->assertEquals('FooConf\V1\Rpc\Baz\Bat\Foo\Baz\Bat\FooController', $this->codeRpc->createController('Baz\Bat\Foo')->class);
+        $this->assertEquals(
+            'FooConf\V1\Rpc\Baz\Bat\Foo\Baz\Bat\FooController',
+            $this->codeRpc->createController('Baz\Bat\Foo')->class
+        );
     }
 
     public function testCreateControllerRpc()
@@ -128,7 +154,14 @@ class RpcServiceModelTest extends TestCase
         $this->assertObjectHasAttribute('service', $result);
 
         $className         = sprintf("%s\\V1\\Rpc\\%s\\%sController", $this->module, $serviceName, $serviceName);
-        $fileName          = sprintf("%s/TestAsset/module/%s/src/%s/V1/Rpc/%s/%sController.php", __DIR__, $this->module, $this->module, $serviceName, $serviceName);
+        $fileName          = sprintf(
+            "%s/TestAsset/module/%s/src/%s/V1/Rpc/%s/%sController.php",
+            __DIR__,
+            $this->module,
+            $this->module,
+            $serviceName,
+            $serviceName
+        );
         $controllerService = sprintf("%s\\V1\\Rpc\\%s\\Controller", $this->module, $serviceName);
 
         $this->assertEquals($className, $result->class);
@@ -140,9 +173,73 @@ class RpcServiceModelTest extends TestCase
         $this->assertTrue($controllerClass->isSubclassOf('Zend\Mvc\Controller\AbstractActionController'));
 
         $actionMethodName = lcfirst($serviceName) . 'Action';
-        $this->assertTrue($controllerClass->hasMethod($actionMethodName), 'Expected ' . $actionMethodName . "; class:\n" . file_get_contents($fileName));
+        $this->assertTrue(
+            $controllerClass->hasMethod($actionMethodName),
+            'Expected ' . $actionMethodName . "; class:\n" . file_get_contents($fileName)
+        );
 
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
+        $config     = include $configFile;
+        $expected = array(
+            'controllers' => array('factories' => array(
+                $controllerService => $className . 'Factory',
+            )),
+        );
+        $this->assertEquals($expected, $config);
+    }
+
+    /**
+     * @group feature/psr4
+     */
+    public function testCreateControllerRpcPSR4()
+    {
+        $this->module = 'BazConf';
+        $this->moduleEntity  = new ModuleEntity($this->module);
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->modulePathSpec  = new ModulePathSpec($moduleUtils, 'psr-4', __DIR__ . '/TestAsset');
+        $this->codeRpc  = new RpcServiceModel(
+            $this->moduleEntity,
+            $this->modulePathSpec,
+            $this->resource->factory($this->module)
+        );
+
+        $serviceName = 'Bar';
+        $moduleSrcPath = sprintf('%s/TestAsset/module/%s/src', __DIR__, $this->module);
+        if (!is_dir($moduleSrcPath)) {
+            mkdir($moduleSrcPath, 0775, true);
+        }
+
+        $result = $this->codeRpc->createController($serviceName);
+        $this->assertInstanceOf('stdClass', $result);
+        $this->assertObjectHasAttribute('class', $result);
+        $this->assertObjectHasAttribute('file', $result);
+        $this->assertObjectHasAttribute('service', $result);
+
+        $className         = sprintf("%s\\V1\\Rpc\\%s\\%sController", $this->module, $serviceName, $serviceName);
+        $fileName          = sprintf(
+            "%s/TestAsset/module/%s/src/V1/Rpc/%s/%sController.php",
+            __DIR__,
+            $this->module,
+            $serviceName,
+            $serviceName
+        );
+        $controllerService = sprintf("%s\\V1\\Rpc\\%s\\Controller", $this->module, $serviceName);
+
+        $this->assertEquals($className, $result->class);
+        $this->assertEquals(realpath($fileName), realpath($result->file));
+        $this->assertEquals($controllerService, $result->service);
+
+        require_once $fileName;
+        $controllerClass = new ReflectionClass($className);
+        $this->assertTrue($controllerClass->isSubclassOf('Zend\Mvc\Controller\AbstractActionController'));
+
+        $actionMethodName = lcfirst($serviceName) . 'Action';
+        $this->assertTrue(
+            $controllerClass->hasMethod($actionMethodName),
+            'Expected ' . $actionMethodName . "; class:\n" . file_get_contents($fileName)
+        );
+
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $config     = include $configFile;
         $expected = array(
             'controllers' => array('factories' => array(
@@ -154,10 +251,14 @@ class RpcServiceModelTest extends TestCase
 
     public function testCanCreateRouteConfiguration()
     {
-        $result = $this->codeRpc->createRoute('/foo_conf/hello_world', 'HelloWorld', 'FooConf\Rpc\HelloWorld\Controller');
+        $result = $this->codeRpc->createRoute(
+            '/foo_conf/hello_world',
+            'HelloWorld',
+            'FooConf\Rpc\HelloWorld\Controller'
+        );
         $this->assertEquals('foo-conf.rpc.hello-world', $result);
 
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $config     = include $configFile;
         $expected   = array(
             'router' => array('routes' => array(
@@ -188,7 +289,12 @@ class RpcServiceModelTest extends TestCase
 
     public function testCanCreateRpcConfiguration()
     {
-        $result = $this->codeRpc->createRpcConfig('HelloWorld', 'FooConf\Rpc\HelloWorld\Controller', 'foo-conf.rpc.hello-world', array('GET', 'PATCH'));
+        $result = $this->codeRpc->createRpcConfig(
+            'HelloWorld',
+            'FooConf\Rpc\HelloWorld\Controller',
+            'foo-conf.rpc.hello-world',
+            array('GET', 'PATCH')
+        );
         $expected = array(
             'zf-rpc' => array(
                 'FooConf\Rpc\HelloWorld\Controller' => array(
@@ -200,7 +306,7 @@ class RpcServiceModelTest extends TestCase
         );
         $this->assertEquals($expected, $result);
 
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $config     = include $configFile;
         $this->assertEquals($expected, $config);
 
@@ -247,7 +353,7 @@ class RpcServiceModelTest extends TestCase
         );
         $this->assertEquals($expected, $result);
 
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $config     = include $configFile;
         $this->assertEquals($expected, $config);
 
@@ -267,7 +373,7 @@ class RpcServiceModelTest extends TestCase
         $result      = $this->codeRpc->createService($serviceName, $route, $httpMethods, $selector);
         $this->assertInstanceOf('ZF\Apigility\Admin\Model\RpcServiceEntity', $result);
 
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $expected   = array(
             'controllers' => array('factories' => array(
                 'FooConf\V1\Rpc\HelloWorld\Controller' => 'FooConf\V1\Rpc\HelloWorld\HelloWorldControllerFactory',
@@ -319,10 +425,16 @@ class RpcServiceModelTest extends TestCase
         $this->assertEquals($expected, $config);
 
         $class     = 'FooConf\V1\Rpc\HelloWorld\HelloWorldController';
-        $classFile = sprintf('%s/TestAsset/module/FooConf/src/FooConf/V1/Rpc/HelloWorld/HelloWorldController.php', __DIR__);
+        $classFile = sprintf(
+            '%s/TestAsset/module/FooConf/src/FooConf/V1/Rpc/HelloWorld/HelloWorldController.php',
+            __DIR__
+        );
         $this->assertTrue(file_exists($classFile));
 
-        $classFactoryFile = sprintf('%s/TestAsset/module/FooConf/src/FooConf/V1/Rpc/HelloWorld/HelloWorldControllerFactory.php', __DIR__);
+        $classFactoryFile = sprintf(
+            '%s/TestAsset/module/FooConf/src/FooConf/V1/Rpc/HelloWorld/HelloWorldControllerFactory.php',
+            __DIR__
+        );
         $this->assertTrue(file_exists($classFactoryFile));
 
         require_once $classFile;
@@ -330,7 +442,10 @@ class RpcServiceModelTest extends TestCase
         $this->assertTrue($controllerClass->isSubclassOf('Zend\Mvc\Controller\AbstractActionController'));
 
         $actionMethodName = lcfirst($serviceName) . 'Action';
-        $this->assertTrue($controllerClass->hasMethod($actionMethodName), 'Expected ' . $actionMethodName . "; class:\n" . file_get_contents($classFile));
+        $this->assertTrue(
+            $controllerClass->hasMethod($actionMethodName),
+            'Expected ' . $actionMethodName . "; class:\n" . file_get_contents($classFile)
+        );
 
         return (object) array(
             'rpc_service' => $result->getArrayCopy(),
@@ -354,9 +469,12 @@ class RpcServiceModelTest extends TestCase
 
         // and now do the actual work for the test
         $this->assertTrue($this->codeRpc->updateRoute($service['controller_service_name'], '/api/hello/world'));
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $config     = include $configFile;
-        $this->assertEquals('/api/hello/world', $config['router']['routes'][$service['route_name']]['options']['route']);
+        $this->assertEquals(
+            '/api/hello/world',
+            $config['router']['routes'][$service['route_name']]['options']['route']
+        );
     }
 
     /**
@@ -373,7 +491,7 @@ class RpcServiceModelTest extends TestCase
 
     public function testCanUpdateContentNegotiationSelector()
     {
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $this->writer->toFile($configFile, array(
             'zf-content-negotiation' => array(
                 'controllers' => array(
@@ -383,12 +501,15 @@ class RpcServiceModelTest extends TestCase
         ));
         $this->assertTrue($this->codeRpc->updateSelector('FooConf\Rpc\HelloWorld\Controller', 'MyCustomSelector'));
         $config = include $configFile;
-        $this->assertEquals('MyCustomSelector', $config['zf-content-negotiation']['controllers']['FooConf\Rpc\HelloWorld\Controller']);
+        $this->assertEquals(
+            'MyCustomSelector',
+            $config['zf-content-negotiation']['controllers']['FooConf\Rpc\HelloWorld\Controller']
+        );
     }
 
     public function testCanUpdateContentNegotiationWhitelists()
     {
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $this->writer->toFile($configFile, array(
             'zf-content-negotiation' => array(
                 'accept_whitelist' => array(
@@ -404,8 +525,20 @@ class RpcServiceModelTest extends TestCase
                 ),
             ),
         ));
-        $this->assertTrue($this->codeRpc->updateContentNegotiationWhitelist('FooConf\Rpc\HelloWorld\Controller', 'accept', array('application/xml', 'application/*+xml')));
-        $this->assertTrue($this->codeRpc->updateContentNegotiationWhitelist('FooConf\Rpc\HelloWorld\Controller', 'content_type', array('application/xml')));
+        $this->assertTrue(
+            $this->codeRpc->updateContentNegotiationWhitelist(
+                'FooConf\Rpc\HelloWorld\Controller',
+                'accept',
+                array('application/xml', 'application/*+xml')
+            )
+        );
+        $this->assertTrue(
+            $this->codeRpc->updateContentNegotiationWhitelist(
+                'FooConf\Rpc\HelloWorld\Controller',
+                'content_type',
+                array('application/xml')
+            )
+        );
         $config = include $configFile;
         $this->assertEquals(array(
             'application/xml',
@@ -432,7 +565,7 @@ class RpcServiceModelTest extends TestCase
         $this->codeRpc->deleteService($result);
         $this->assertTrue(file_exists($servicePath));
 
-        $configFile = $this->modules->getModuleConfigPath($this->module);
+        $configFile = $this->modulePathSpec->getModuleConfigFilePath($this->module);
         $config     = include $configFile;
 
         $this->assertInternalType('array', $config);
@@ -444,9 +577,18 @@ class RpcServiceModelTest extends TestCase
 
         $this->assertArrayNotHasKey($result->routeName, $config['router']['routes']);
         $this->assertArrayNotHasKey($result->controllerServiceName, $config['zf-rpc']);
-        $this->assertArrayNotHasKey($result->controllerServiceName, $config['zf-content-negotiation']['controllers']);
-        $this->assertArrayNotHasKey($result->controllerServiceName, $config['zf-content-negotiation']['accept_whitelist']);
-        $this->assertArrayNotHasKey($result->controllerServiceName, $config['zf-content-negotiation']['content_type_whitelist']);
+        $this->assertArrayNotHasKey(
+            $result->controllerServiceName,
+            $config['zf-content-negotiation']['controllers']
+        );
+        $this->assertArrayNotHasKey(
+            $result->controllerServiceName,
+            $config['zf-content-negotiation']['accept_whitelist']
+        );
+        $this->assertArrayNotHasKey(
+            $result->controllerServiceName,
+            $config['zf-content-negotiation']['content_type_whitelist']
+        );
         $this->assertNotContains($result->routeName, $config['zf-versioning']['uri']);
         foreach ($config['controllers'] as $serviceType => $services) {
             $this->assertArrayNotHasKey($result->controllerServiceName, $services);
@@ -464,6 +606,41 @@ class RpcServiceModelTest extends TestCase
 
         $moduleSrcPath = sprintf('%s/TestAsset/module/%s/src/%s', __DIR__, $this->module, $this->module);
         $servicePath = $moduleSrcPath . '/V1/Rpc/' . $serviceName;
+
+        $this->codeRpc->deleteService($result, true);
+        $this->assertFalse(file_exists($servicePath));
+    }
+
+    /**
+     * @group feature/psr4
+     */
+    public function testDeleteServiceRecursivePSR4()
+    {
+        $this->module = 'BazConf';
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->moduleEntity  = new ModuleEntity($this->module);
+        $this->modulePathSpec  = new ModulePathSpec($moduleUtils, 'psr-4', __DIR__ . '/TestAsset');
+        $this->codeRpc  = new RpcServiceModel(
+            $this->moduleEntity,
+            $this->modulePathSpec,
+            $this->resource->factory($this->module)
+        );
+
+        $serviceName = 'HelloWorld';
+        $route       = '/foo_conf/hello/world';
+        $httpMethods = array('GET', 'PATCH');
+        $selector    = 'HalJson';
+        $result      = $this->codeRpc->createService($serviceName, $route, $httpMethods, $selector);
+        $this->assertInstanceOf('ZF\Apigility\Admin\Model\RpcServiceEntity', $result);
+
+        $moduleSrcPath = sprintf('%s/TestAsset/module/%s/src', __DIR__, $this->module);
+        $servicePath = $moduleSrcPath . '/V1/Rpc/' . $serviceName;
+        $filepath = $servicePath . "/". $serviceName . "Controller.php";
+
+        /** deleteService calls class_exists.  ensure that it's loaded in case the autoloader doesn't pick it up */
+        if (file_exists($filepath)) {
+            require_once $filepath;
+        }
 
         $this->codeRpc->deleteService($result, true);
         $this->assertFalse(file_exists($servicePath));

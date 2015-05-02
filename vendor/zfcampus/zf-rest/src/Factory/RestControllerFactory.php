@@ -107,7 +107,8 @@ class RestControllerFactory implements AbstractFactoryInterface
 
         if (!$listener instanceof ListenerAggregateInterface) {
             throw new ServiceNotCreatedException(sprintf(
-                '%s expects that the "listener" reference a service that implements Zend\EventManager\ListenerAggregateInterface; received %s',
+                '%s expects that the "listener" reference a service that implements '
+                . 'Zend\EventManager\ListenerAggregateInterface; received %s',
                 __METHOD__,
                 (is_object($listener) ? get_class($listener) : gettype($listener))
             ));
@@ -143,7 +144,6 @@ class RestControllerFactory implements AbstractFactoryInterface
             ));
         }
 
-        $controller->setEventManager($events);
         $controller->setResource($resource);
         $this->setControllerOptions($config, $controller);
 
@@ -268,9 +268,17 @@ class RestControllerFactory implements AbstractFactoryInterface
                 case 'route_identifier_name':
                     $controller->setIdentifierName($value);
                     break;
+                    
+                case 'min_page_size':
+                    $controller->setMinPageSize($value);
+                    break;
 
                 case 'page_size':
                     $controller->setPageSize($value);
+                    break;
+
+                case 'max_page_size':
+                    $controller->setMaxPageSize($value);
                     break;
 
                 case 'page_size_param':

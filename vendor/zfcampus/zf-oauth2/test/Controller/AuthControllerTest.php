@@ -6,6 +6,11 @@
 
 namespace ZFTest\OAuth2\Controller;
 
+use ReflectionProperty;
+use Zend\Db\Adapter\Adapter;
+use Zend\Db\Adapter\Driver\Pdo\Pdo as PdoDriver;
+use Zend\Db\Sql\Sql;
+use Zend\Stdlib\Parameters;
 use Zend\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
 
 class AuthControllerTest extends AbstractHttpControllerTestCase
@@ -14,15 +19,33 @@ class AuthControllerTest extends AbstractHttpControllerTestCase
 
     public function setUp()
     {
-        @copy(__DIR__ . '/../TestAsset/autoload/db_oauth2.sqlite', __DIR__ . '/../TestAsset/autoload/dbtest.sqlite');
-
-        $this->setApplicationConfig(include __DIR__ . '/../TestAsset/application.config.php');
+        $this->setApplicationConfig(include __DIR__ . '/../TestAsset/pdo.application.config.php');
         parent::setUp();
+        $this->setupDb();
     }
 
-    public function tearDown()
+    public function setupDb()
     {
-        @unlink(__DIR__ . '/../TestAsset/autoload/dbtest.sqlite');
+        $pdo = $this->getApplication()->getServiceManager()->get('ZF\OAuth2\Adapter\PdoAdapter');
+        $r = new ReflectionProperty($pdo, 'db');
+        $r->setAccessible(true);
+        $db = $r->getValue($pdo);
+
+        $sql = file_get_contents(__DIR__ . '/../TestAsset/database/pdo.sql');
+        $db->exec($sql);
+    }
+
+    public function getDb()
+    {
+        if ($this->db) {
+            return $this->db;
+        }
+
+        $adapter = $this->getApplication()->getServiceManager()->get('ZF\OAuth2\Adapter\PdoAdapter');
+        $r = new ReflectionProperty($adapter, 'db');
+        $r->setAccessible(true);
+        $this->db = new Adapter(new PdoDriver($r->getValue($adapter)));
+        return $this->db;
     }
 
     public function testToken()
@@ -45,13 +68,58 @@ class AuthControllerTest extends AbstractHttpControllerTestCase
         $this->assertTrue(!empty($response['token_type']));
     }
 
+    public function testTokenErrorIsApiProblem()
+    {
+        $request = $this->getRequest();
+        $request->getPost()->set('grant_type', 'fake_grant_type');
+        $request->getServer()->set('PHP_AUTH_USER', 'testclient');
+        $request->getServer()->set('PHP_AUTH_PW', 'testpass');
+        $request->setMethod('POST');
+
+        $this->dispatch('/oauth');
+        $this->assertControllerName('ZF\OAuth2\Controller\Auth');
+        $this->assertActionName('token');
+        $this->assertResponseStatusCode(400);
+
+        $headers = $this->getResponse()->getHeaders();
+        $this->assertEquals('application/problem+json', $headers->get('content-type')->getFieldValue());
+
+        $response = json_decode($this->getResponse()->getContent(), true);
+        $this->assertEquals('unsupported_grant_type', $response['title']);
+        $this->assertEquals('Grant type "fake_grant_type" not supported', $response['detail']);
+        $this->assertEquals('400', $response['status']);
+    }
+
+    public function testTokenErrorIsOAuth2Format()
+    {
+        $request = $this->getRequest();
+        $request->getPost()->set('grant_type', 'fake_grant_type');
+        $request->getServer()->set('PHP_AUTH_USER', 'testclient');
+        $request->getServer()->set('PHP_AUTH_PW', 'testpass');
+        $request->setMethod('POST');
+
+        $this->setIsOAuth2FormatResponse();
+
+        $this->dispatch('/oauth');
+        $this->assertControllerName('ZF\OAuth2\Controller\Auth');
+        $this->assertActionName('token');
+        $this->assertResponseStatusCode(400);
+
+        $headers = $this->getResponse()->getHeaders();
+        $this->assertEquals('application/json', $headers->get('content-type')->getFieldValue());
+
+        $response = json_decode($this->getResponse()->getContent(), true);
+        $this->assertEquals('unsupported_grant_type', $response['error']);
+        $this->assertEquals('Grant type "fake_grant_type" not supported', $response['error_description']);
+    }
+
     public function testAuthorizeForm()
     {
-        $_GET['response_type'] = 'code';
-        $_GET['client_id'] = 'testclient';
-        $_GET['state'] = 'xyz';
-
-        $this->dispatch('/oauth/authorize');
+        $this->dispatch('/oauth/authorize', 'GET', array(
+            'response_type' => 'code',
+            'client_id'     => 'testclient',
+            'state'         => 'xyz',
+        ));
         $this->assertControllerName('ZF\OAuth2\Controller\Auth');
         $this->assertActionName('authorize');
         $this->assertResponseStatusCode(200);
@@ -59,7 +127,7 @@ class AuthControllerTest extends AbstractHttpControllerTestCase
         $this->assertXpathQuery('//form/input[@name="authorized" and @value="no"]');
     }
 
-    public function testAuthorizeErrorParam()
+    public function testAuthorizeParamErrorIsApiProblem()
     {
         $this->dispatch('/oauth/authorize');
 
@@ -76,14 +144,38 @@ class AuthControllerTest extends AbstractHttpControllerTestCase
         $this->assertEquals('400', $response['status']);
     }
 
+    public function testAuthorizeParamErrorIsOAuth2Format()
+    {
+        $this->setIsOAuth2FormatResponse();
+
+        $this->dispatch('/oauth/authorize');
+
+        $this->assertControllerName('ZF\OAuth2\Controller\Auth');
+        $this->assertActionName('authorize');
+        $this->assertResponseStatusCode(400);
+
+        $headers = $this->getResponse()->getHeaders();
+        $this->assertEquals('application/json', $headers->get('content-type')->getFieldValue());
+
+        $response = json_decode($this->getResponse()->getContent(), true);
+        $this->assertEquals('invalid_client', $response['error']);
+        $this->assertEquals('No client id supplied', $response['error_description']);
+    }
+
     public function testAuthorizeCode()
     {
-        $_GET['response_type'] = 'code';
-        $_GET['client_id'] = 'testclient';
-        $_GET['state'] = 'xyz';
-        $_GET['redirect_uri'] = '/oauth/receivecode';
-        $_POST['authorized'] = 'yes';
-        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $request = $this->getRequest();
+        $request->setQuery(new Parameters(array(
+            'response_type' => 'code',
+            'client_id'     => 'testclient',
+            'state'         => 'xyz',
+            'user_id'       => 123,
+            'redirect_uri'  => '/oauth/receivecode',
+        )));
+        $request->setPost(new Parameters(array(
+            'authorized' => 'yes',
+        )));
+        $request->setMethod('POST');
 
         $this->dispatch('/oauth/authorize');
         $this->assertTrue($this->getResponse()->isRedirect());
@@ -94,6 +186,18 @@ class AuthControllerTest extends AbstractHttpControllerTestCase
         if (preg_match('#code=([0-9a-f]+)#', $location, $matches)) {
             $code = $matches[1];
         }
+
+        // test data in database is correct
+        $adapter = $this->getDb();
+        $sql = new Sql($adapter);
+        $select = $sql->select();
+        $select->from('oauth_authorization_codes');
+        $select->where(array('authorization_code' => $code));
+
+        $selectString = $sql->getSqlStringForSqlObject($select);
+        $results = $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE)->toArray();
+        $this->assertEquals('123', $results[0]['user_id']);
+
         // test get token from authorized code
         $request = $this->getRequest();
         $request->getPost()->set('grant_type', 'authorization_code');
@@ -174,11 +278,13 @@ class AuthControllerTest extends AbstractHttpControllerTestCase
         $this->assertResponseStatusCode(200);
 
         $response = json_decode($this->getResponse()->getContent(), true);
+
         $this->assertTrue($response['success']);
         $this->assertEquals('You accessed my APIs!', $response['message']);
 
         // test resource through token by Bearer header
-        $server->set('HTTP_AUTHORIZATION', "Bearer $token");
+        $request->getHeaders()
+            ->addHeaderLine('Authorization', 'Bearer ' . $token);
         unset($post['access_token']);
         $request->setMethod('GET');
 
@@ -190,5 +296,16 @@ class AuthControllerTest extends AbstractHttpControllerTestCase
         $response = json_decode($this->getResponse()->getContent(), true);
         $this->assertTrue($response['success']);
         $this->assertEquals('You accessed my APIs!', $response['message']);
+    }
+
+    protected function setIsOAuth2FormatResponse()
+    {
+        $serviceManager = $this->getApplication()->getServiceManager();
+
+        $config = $serviceManager->get('Config');
+        $config['zf-oauth2']['api_problem_error_response'] = false;
+
+        $serviceManager->setAllowOverride(true);
+        $serviceManager->setService('Config', $config);
     }
 }

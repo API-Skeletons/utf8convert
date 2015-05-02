@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -182,17 +182,6 @@ class RegexHelper
     }
 
     /**
-     * Matches a character with a special meaning in markdown,
-     * or a string of non-special characters.
-     *
-     * @return string
-     */
-    public function getMainRegex()
-    {
-        return '/^(?:[_*`\n]+|[\[\]\\\\!<&*_]|(?: *[^\n `\[\]\\\\!<&*_]+)+|[ \n]+)/m';
-    }
-
-    /**
      * Attempt to match a regex in string s at offset offset
      * @param string $regex
      * @param string $string
@@ -203,12 +192,15 @@ class RegexHelper
     public static function matchAt($regex, $string, $offset)
     {
         $matches = array();
-        $string = substr($string, $offset);
+        $string = mb_substr($string, $offset, null, 'utf-8');
         if (!preg_match($regex, $string, $matches, PREG_OFFSET_CAPTURE)) {
             return null;
         }
 
-        return $offset + $matches[0][1];
+        // PREG_OFFSET_CAPTURE always returns the byte offset, not the char offset, which is annoying
+        $charPos = mb_strlen(mb_strcut($string, 0, $matches[0][1], 'utf-8'), 'utf-8');
+
+        return $offset + $charPos;
     }
 
     /**

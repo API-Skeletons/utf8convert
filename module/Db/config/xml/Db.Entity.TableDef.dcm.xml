@@ -5,6 +5,7 @@
       <generator strategy="AUTO"/>
     </id>
     <field name="name" type="string" unique="true" nullable="true"/>
+    <field name="url" type="text" nullable="true"/>
     <one-to-many field="primaryKeyDef" target-entity="Db\Entity\PrimaryKeyDef" mapped-by="tableDef"/>
     <one-to-many field="columnDef" target-entity="Db\Entity\ColumnDef" mapped-by="tableDef"/>
     <many-to-many field="conversion" target-entity="Db\Entity\Conversion" inversed-by="tableDef">

@@ -50,7 +50,7 @@ class RpcServiceModel
      * @param  ModuleUtils $modules
      * @param  ConfigResource $config
      */
-    public function __construct(ModuleEntity $moduleEntity, ModuleUtils $modules, ConfigResource $config)
+    public function __construct(ModuleEntity $moduleEntity, ModulePathSpec $modules, ConfigResource $config)
     {
         $this->module         = $moduleEntity->getName();
         $this->moduleEntity   = $moduleEntity;
@@ -91,8 +91,11 @@ class RpcServiceModel
             $data['service_name'] = $rpcConfig['service_name'];
         } else {
             $data['service_name'] = $controllerServiceName;
-            $q = preg_quote('\\');
-            if (preg_match('#' . $q . 'V[^' . $q . ']+' . $q . 'Rpc' . $q . '(?<service>[^' . $q . ']+)' . $q . 'Controller#', $controllerServiceName, $matches)) {
+            $pattern = vsprintf(
+                '#%sV[^%s]+%sRpc%s(?<service>[^%s]+)%sController#',
+                array_fil(0, 6, preg_quote('\\'))
+            );
+            if (preg_match($pattern, $controllerServiceName, $matches)) {
                 $data['service_name'] = $matches['service'];
             }
         }
@@ -114,7 +117,8 @@ class RpcServiceModel
             if (isset($contentNegotiationConfig['content_type_whitelist'])
                 && isset($contentNegotiationConfig['content_type_whitelist'][$controllerServiceName])
             ) {
-                $data['content_type_whitelist'] = $contentNegotiationConfig['content_type_whitelist'][$controllerServiceName];
+                $data['content_type_whitelist'] =
+                    $contentNegotiationConfig['content_type_whitelist'][$controllerServiceName];
             }
         }
 
@@ -237,26 +241,18 @@ class RpcServiceModel
     public function createFactoryController($serviceName)
     {
         $module     = $this->module;
-        $modulePath = $this->modules->getModulePath($module);
         $version    = $this->moduleEntity->getLatestVersion();
 
-        $srcPath = sprintf(
-                '%s/src/%s/V%s/Rpc/%s',
-                $modulePath,
-                str_replace('\\', '/', $module),
-                $version,
-                $serviceName
-        );
+        $srcPath = $this->modules->getRpcPath($module, $version, $serviceName);
 
         $className         = sprintf('%sController', $serviceName);
         $classFactory      = sprintf('%sControllerFactory', $serviceName);
         $classPath         = sprintf('%s/%s.php', $srcPath, $classFactory);
-        $controllerService = sprintf('%s\\V%s\\Rpc\\%s\\Controller', $module, $version, $serviceName);
 
         if (file_exists($classPath)) {
             throw new Exception\RuntimeException(sprintf(
-                    'The controller factory "%s" already exists',
-                    $className
+                'The controller factory "%s" already exists',
+                $className
             ));
         }
 
@@ -276,9 +272,11 @@ class RpcServiceModel
         $renderer = new PhpRenderer();
         $renderer->setResolver($resolver);
 
-        if (!file_put_contents($classPath,
-                "<" . "?php\n" . $renderer->render($view))) {
-                return false;
+        if (!file_put_contents(
+            $classPath,
+            "<" . "?php\n" . $renderer->render($view)
+        )) {
+            return false;
         }
 
         return sprintf('%s\\V%s\\Rpc\\%s\\%s', $module, $version, $serviceName, $classFactory);
@@ -295,14 +293,9 @@ class RpcServiceModel
         $module     = $this->module;
         $modulePath = $this->modules->getModulePath($module);
         $version    = $this->moduleEntity->getLatestVersion();
+        $serviceName = str_replace("\\", "/", $serviceName);
 
-        $srcPath = sprintf(
-            '%s/src/%s/V%s/Rpc/%s',
-            $modulePath,
-            str_replace('\\', '/', $module),
-            $version,
-            $serviceName
-        );
+        $srcPath = $this->modules->getRpcPath($module, $version, $serviceName);
 
         if (!file_exists($srcPath)) {
             mkdir($srcPath, 0775, true);
@@ -334,8 +327,10 @@ class RpcServiceModel
         $renderer = new PhpRenderer();
         $renderer->setResolver($resolver);
 
-        if (!file_put_contents($classPath,
-            "<" . "?php\n" . $renderer->render($view))) {
+        if (!file_put_contents(
+            $classPath,
+            "<" . "?php\n" . $renderer->render($view)
+        )) {
             return false;
         }
 
@@ -391,7 +386,7 @@ class RpcServiceModel
                 )
             ),
             'zf-versioning' => array(
-                'uri' => array (
+                'uri' => array(
                     $routeName
                 )
             )
@@ -411,8 +406,13 @@ class RpcServiceModel
      * @param  null|string|callable $callable
      * @return array
      */
-    public function createRpcConfig($serviceName, $controllerService, $routeName, array $httpMethods = array('GET'), $callable = null)
-    {
+    public function createRpcConfig(
+        $serviceName,
+        $controllerService,
+        $routeName,
+        array $httpMethods = array('GET'),
+        $callable = null
+    ) {
         $config = array('zf-rpc' => array(
             $controllerService => array(
                 'service_name' => $serviceName,

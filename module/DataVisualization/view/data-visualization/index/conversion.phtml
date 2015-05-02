@@ -9,7 +9,8 @@
 foreach ($conversion->getTableDef() as $table) {
     $totalDataPoint = 0;
     foreach ($table->getColumnDef() as $column) {
-        $totalDataPoint += $this->countDataPoint($conversion, $column);
+        $totalDataPoint += $this->countDataPoint($conversion, $column, false);
+        $totalDataPoint += $this->countDataPoint($conversion, $column, true);
     }
     if (!$totalDataPoint) {
         continue;
@@ -43,12 +44,16 @@ foreach ($conversion->getTableDef() as $table) {
             <th>
                 Denied
             </th>
+            <th>
+                Imported
+            </th>
         </tr>
     </thead>
     <tbody>
     <?php
     foreach ($table->getColumnDef() as $column) {
-        $totalDataPoint = $this->countDataPoint($conversion, $column);
+        $totalDataPoint = $this->countDataPoint($conversion, $column, false);
+        $totalDataPoint += $this->countDataPoint($conversion, $column, true);
         if (!$totalDataPoint) {
             continue;
         }
@@ -68,39 +73,47 @@ foreach ($conversion->getTableDef() as $table) {
                 <?= $this->escapeHtml($column->getLength()); ?>
             </td>
             <td>
-                <?= $this->countDataPoint($conversion, $column); ?>
+                <?= $this->countDataPoint($conversion, $column, false) + $this->countDataPoint($conversion, $column, true); ?>
             </td>
-            <td 
+            <td
                 class="<?=
-                ($this->countDataPointNotReviewed($conversion, $column)) 
+                ($this->countDataPointNotReviewed($conversion, $column, false))
                     ? 'info': '';
                 ?>"
             >
-                <?= $this->countDataPointNotReviewed($conversion, $column); ?>
+                <?= $this->countDataPointNotReviewed($conversion, $column, false); ?>
             </td>
-            <td 
+            <td
                 class="<?=
-                ($this->countDataPointApproved($conversion, $column)) 
+                ($this->countDataPointApproved($conversion, $column, false))
                     ? 'success': '';
                 ?>"
             >
-                <?= $this->countDataPointApproved($conversion, $column); ?>
+                <?= $this->countDataPointApproved($conversion, $column, false); ?>
             </td>
-            <td 
+            <td
                 class="<?=
-                ($this->countDataPointFlagged($conversion, $column)) 
+                ($this->countDataPointFlagged($conversion, $column, false))
                     ? 'warning': '';
                 ?>"
             >
-                <?= $this->countDataPointFlagged($conversion, $column); ?>
+                <?= $this->countDataPointFlagged($conversion, $column, false); ?>
             </td>
-            <td 
+            <td
                 class="<?=
-                ($this->countDataPointDenied($conversion, $column)) 
+                ($this->countDataPointDenied($conversion, $column, false))
                     ? 'danger': '';
                 ?>"
             >
-                <?= $this->countDataPointDenied($conversion, $column); ?>
+                <?= $this->countDataPointDenied($conversion, $column, false); ?>
+            </td>
+            <td
+                class="<?=
+                ($this->countDataPointApproved($conversion, $column, true))
+                    ? 'info': '';
+                ?>"
+            >
+                <?= $this->countDataPointApproved($conversion, $column, true); ?>
             </td>
         </tr>
     <?php
@@ -108,6 +121,15 @@ foreach ($conversion->getTableDef() as $table) {
     ?>
     </tbody>
 </table>
+<?php
+}
+?>
+
+<?php
+if ($this->isAllowed('administration', 'access')) {
+?>
+<a class="btn btn-large btn-primary" href="<?=
+    $this->url('visualization/conversion/import', array('conversion_id' => $conversion->getId())); ?>">Import Approved</a>
 <?php
 }
 ?>

@@ -43,7 +43,7 @@ class ObjectRadio extends RadioElement
 
     /**
      * @param  array|\Traversable $options
-     * @return ObjectSelect
+     * @return self
      */
     public function setOptions($options)
     {
@@ -64,9 +64,16 @@ class ObjectRadio extends RadioElement
      */
     public function getValueOptions()
     {
-        if (empty($this->valueOptions)) {
-            $this->setValueOptions($this->getProxy()->getValueOptions());
+        if (! empty($this->valueOptions)) {
+            return $this->valueOptions;
         }
+
+        $proxyValueOptions = $this->getProxy()->getValueOptions();
+
+        if (! empty($proxyValueOptions)) {
+            $this->setValueOptions($proxyValueOptions);
+        }
+
         return $this->valueOptions;
     }
 }

@@ -5,7 +5,7 @@
  *
  * (c) Colin O'Dell <colinodell@gmail.com>
  *
- * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmarkjs)
+ * Original code based on the CommonMark JS reference parser (http://bitly.com/commonmark-js)
  *  - (c) John MacFarlane
  *
  * For the full copyright and license information, please view the LICENSE
@@ -48,7 +48,7 @@ class BacktickParser extends AbstractInlineParser
 
         while ($matchingTicks = $cursor->match('/`+/m')) {
             if ($matchingTicks === $ticks) {
-                $code = substr($cursor->getLine(), $previousState->getCurrentPosition(), $cursor->getPosition() - $previousState->getCurrentPosition() - strlen($ticks));
+                $code = mb_substr($cursor->getLine(), $previousState->getCurrentPosition(), $cursor->getPosition() - $previousState->getCurrentPosition() - strlen($ticks), 'utf-8');
                 $c = preg_replace('/[ \n]+/', ' ', $code);
                 $inlineContext->getInlines()->add(new Code(trim($c)));
 

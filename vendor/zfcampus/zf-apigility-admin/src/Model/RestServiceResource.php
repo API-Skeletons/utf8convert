@@ -47,8 +47,11 @@ class RestServiceResource extends AbstractResourceListener
      * @param  InputFilterModel $inputFilterModel
      * @param  DocumentationModel $documentationModel
      */
-    public function __construct(RestServiceModelFactory $restFactory, InputFilterModel $inputFilterModel, DocumentationModel $documentationModel)
-    {
+    public function __construct(
+        RestServiceModelFactory $restFactory,
+        InputFilterModel $inputFilterModel,
+        DocumentationModel $documentationModel
+    ) {
         $this->restFactory = $restFactory;
         $this->inputFilterModel = $inputFilterModel;
         $this->documentationModel = $documentationModel;
@@ -148,7 +151,7 @@ class RestServiceResource extends AbstractResourceListener
     public function fetchAll($params = array())
     {
         $version  = $this->getEvent()->getQueryParam('version', null);
-        $services = $this->getModel()->fetchAll($version);
+        $services = $this->getModel()->fetchAll($version ?: null);
 
         foreach ($services as $service) {
             $this->injectInputFilters($service);
@@ -189,7 +192,10 @@ class RestServiceResource extends AbstractResourceListener
         try {
             switch (true) {
                 case ($entity instanceof DbConnectedRestServiceEntity):
-                    $model   = $this->restFactory->factory($this->getModuleName(), RestServiceModelFactory::TYPE_DB_CONNECTED);
+                    $model   = $this->restFactory->factory(
+                        $this->getModuleName(),
+                        RestServiceModelFactory::TYPE_DB_CONNECTED
+                    );
                     $updated = $model->updateService($entity);
                     break;
                 case ($entity instanceof RestServiceEntity):
@@ -206,8 +212,9 @@ class RestServiceResource extends AbstractResourceListener
     /**
      * Delete a service
      *
-     * @param  string $id
-     * @return true
+     * @param mixed $id
+     * @return bool
+     * @throws \Exception
      */
     public function delete($id)
     {
@@ -221,7 +228,10 @@ class RestServiceResource extends AbstractResourceListener
         try {
             switch (true) {
                 case ($entity instanceof DbConnectedRestServiceEntity):
-                    $model   = $this->restFactory->factory($this->getModuleName(), RestServiceModelFactory::TYPE_DB_CONNECTED);
+                    $model   = $this->restFactory->factory(
+                        $this->getModuleName(),
+                        RestServiceModelFactory::TYPE_DB_CONNECTED
+                    );
                     $model->deleteService($entity, $recursive);
                     break;
                 case ($entity instanceof RestServiceEntity):
@@ -282,9 +292,15 @@ class RestServiceResource extends AbstractResourceListener
         ));
     }
 
+    /**
+     * @param RestServiceEntity $service
+     */
     protected function injectDocumentation(RestServiceEntity $service)
     {
-        $documentation = $this->documentationModel->fetchDocumentation($this->moduleName, $service->controllerServiceName);
+        $documentation = $this->documentationModel->fetchDocumentation(
+            $this->moduleName,
+            $service->controllerServiceName
+        );
         if (!$documentation) {
             return;
         }

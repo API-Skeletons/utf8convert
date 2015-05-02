@@ -37,6 +37,10 @@ return array(
             // ),
             // repeat as needed for each resource/collection type
         ),
+        'options' => array(
+            // Needed for generate valid _link url when you use a proxy
+            'use_proxy' => false,
+        ),
     ),
     // Creates a "HalJson" selector for zfcampus/zf-content-negotiation
     'zf-content-negotiation' => array(
@@ -47,6 +51,23 @@ return array(
                     'application/*+json',
                 ),
             ),
+        ),
+    ),
+    'service_manager' => array(
+        'factories' => array(
+            'ZF\Hal\JsonRenderer' => 'ZF\Hal\Factory\HalJsonRendererFactory',
+            'ZF\Hal\JsonStrategy' => 'ZF\Hal\Factory\HalJsonStrategyFactory',
+            'ZF\Hal\MetadataMap'  => 'ZF\Hal\Factory\MetadataMapFactory',
+        ),
+    ),
+    'view_helpers' => array(
+        'factories' => array(
+            'Hal' => 'ZF\Hal\Factory\HalViewHelperFactory',
+        ),
+    ),
+    'controller_plugins' => array(
+        'factories' => array(
+            'Hal' => 'ZF\Hal\Factory\HalControllerPluginFactory',
         ),
     ),
 );

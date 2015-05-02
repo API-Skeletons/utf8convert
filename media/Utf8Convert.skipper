@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<skipper version="3.0.0.1104" name="Utf8Convert" mvc="Without MVC" orm="Doctrine2" uuid="a90f0648-66e9-4a07-91db-c4c8e3a51864">
+<skipper version="3.1.2.1193" name="Utf8Convert" mvc="Without MVC" orm="Doctrine2" uuid="a90f0648-66e9-4a07-91db-c4c8e3a51864">
   <module name="Utf8Convert" import-format="Doctrine2Xml" import-path="../module/Db/config/xml" uuid="2492e6cc-ebbf-4021-b0da-9b8a264a678a">
     <entity name="User" uuid="d39deddb-4b37-453e-a0d9-94804f0b2a12">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="d9cb0bd8-d391-4147-9df1-12e8aaaa6b9f"/>
@@ -14,7 +14,7 @@
       <field name="roleId" uuid="5a51d38a-6066-4f9b-af9c-d2e9cfc2dd0b"/>
       <field name="role_id" type="integer" uuid="febacb8e-7c09-4c98-a2bf-11c58373d3f0"/>
     </entity>
-    <association from="Role" to="Role" inverse-alias="parent" uuid="d41adf57-1185-4809-bc0f-fd5477bfb4a2">
+    <association from="Role" to="Role" inverse-alias="parent" many-owner="true" many-inverse="false" uuid="d41adf57-1185-4809-bc0f-fd5477bfb4a2">
       <association-field from="role_id" to="id"/>
     </association>
     <entity name="UserToRole" uuid="1486a327-c989-4d35-8065-c62cdb0d538b">
@@ -43,13 +43,13 @@
       <field name="importedAt" type="datetime" uuid="a9993f1b-fce6-42d3-ba6d-9cb875948a3a"/>
       <field name="user_id" type="integer" uuid="bb0adc08-383f-4c15-b3dc-f48d90899ba4"/>
     </entity>
-    <association from="DataPoint" to="User" owner-alias="dataPoint" inverse-alias="user" uuid="de1e9a1b-7384-44ea-928a-a478eb26a18d">
+    <association from="DataPoint" to="User" owner-alias="dataPoint" inverse-alias="user" many-owner="true" many-inverse="false" uuid="de1e9a1b-7384-44ea-928a-a478eb26a18d">
       <association-field from="user_id" to="id"/>
     </association>
-    <association from="DataPoint" to="Conversion" owner-alias="dataPoint" inverse-alias="conversion" uuid="7821fa10-c89e-4dbe-9758-f823901fcb06">
+    <association from="DataPoint" to="Conversion" owner-alias="dataPoint" inverse-alias="conversion" many-owner="true" many-inverse="false" parent-required="true" uuid="7821fa10-c89e-4dbe-9758-f823901fcb06">
       <association-field from="conversion_id" to="id"/>
     </association>
-    <association from="DataPoint" to="ColumnDef" owner-alias="dataPoint" inverse-alias="columnDef" uuid="fed34212-bcbe-4793-8055-4d8f50b731be">
+    <association from="DataPoint" to="ColumnDef" owner-alias="dataPoint" inverse-alias="columnDef" many-owner="true" many-inverse="false" parent-required="true" uuid="fed34212-bcbe-4793-8055-4d8f50b731be">
       <association-field from="column_def_id" to="id"/>
     </association>
     <entity name="Conversion" uuid="e482a350-bc6a-4790-8a2b-3632d78ea224">
@@ -68,7 +68,7 @@
       <field name="name" type="string" uuid="a7c98395-c6a5-4cf5-bf0d-dc3f4c5649a0"/>
       <field name="table_def_id" type="integer" required="true" uuid="269cf8a1-ba66-4d99-b6a8-da122291bd1a"/>
     </entity>
-    <association from="PrimaryKeyDef" to="TableDef" owner-alias="primaryKeyDef" inverse-alias="tableDef" uuid="b33c0e47-6b5d-4063-84f5-f2de055cc8c3">
+    <association from="PrimaryKeyDef" to="TableDef" owner-alias="primaryKeyDef" inverse-alias="tableDef" many-owner="true" many-inverse="false" parent-required="true" uuid="b33c0e47-6b5d-4063-84f5-f2de055cc8c3">
       <association-field from="table_def_id" to="id"/>
     </association>
     <entity name="DataPointPrimaryKeyDef" uuid="5b71554e-4c20-4b72-85fd-fbb05c04beb5">
@@ -77,15 +77,16 @@
       <field name="data_point_id" type="integer" required="true" uuid="756cffe5-25ca-4e25-9200-c665e73cf1ec"/>
       <field name="primary_key_def_id" type="integer" required="true" uuid="21fd4ed2-5094-4bef-98b6-16c3503515df"/>
     </entity>
-    <association from="DataPointPrimaryKeyDef" to="DataPoint" owner-alias="dataPointPrimaryKey" inverse-alias="dataPoint" uuid="6dfc4c01-7fec-4cb5-a750-09fb3ff2b93b">
+    <association from="DataPointPrimaryKeyDef" to="DataPoint" owner-alias="dataPointPrimaryKey" inverse-alias="dataPoint" many-owner="true" many-inverse="false" parent-required="true" uuid="6dfc4c01-7fec-4cb5-a750-09fb3ff2b93b">
       <association-field from="data_point_id" to="id"/>
     </association>
-    <association from="DataPointPrimaryKeyDef" to="PrimaryKeyDef" owner-alias="dataPointPrimaryKey" inverse-alias="primaryKeyDef" uuid="a5060d03-3f36-4952-ac1f-a652ba2c4012">
+    <association from="DataPointPrimaryKeyDef" to="PrimaryKeyDef" owner-alias="dataPointPrimaryKey" inverse-alias="primaryKeyDef" many-owner="true" many-inverse="false" parent-required="true" uuid="a5060d03-3f36-4952-ac1f-a652ba2c4012">
       <association-field from="primary_key_def_id" to="id"/>
     </association>
     <entity name="TableDef" uuid="51b89a76-be62-4924-89a6-34f29b523c7f">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="e7d6bf11-1e56-489e-80c4-0613a17646c4"/>
       <field name="name" type="string" unique="true" uuid="35c0d7c8-afa4-4da0-a0e7-0b4d19c6f4d4"/>
+      <field name="url" type="text" uuid="8c39d95b-baa4-47dc-bf42-3191bf12a857"/>
     </entity>
     <entity name="ConversionToTableDef" uuid="f523074d-eb26-48d1-9e8a-8b124f0347d1">
       <field name="conversion_id" type="integer" required="true" primary="true" uuid="6a556620-8ef5-489c-8d28-e2cfc8129426"/>
@@ -113,30 +114,18 @@
         <index-field name="table_def_id"/>
       </index>
     </entity>
-    <association from="ColumnDef" to="TableDef" owner-alias="columnDef" inverse-alias="tableDef" uuid="d22b1e65-8fcd-47ef-8abe-ff6e30a4e1e9">
+    <association from="ColumnDef" to="TableDef" owner-alias="columnDef" inverse-alias="tableDef" many-owner="true" many-inverse="false" parent-required="true" uuid="d22b1e65-8fcd-47ef-8abe-ff6e30a4e1e9">
       <association-field from="table_def_id" to="id"/>
     </association>
     <entity name="ConvertWorker" uuid="897b98c6-04de-4d93-94e2-936dc7ae8d27">
       <field name="id" type="integer" required="true" primary="true" auto-increment="true" uuid="1700678a-402b-405e-9f4d-51b18dd1836e"/>
-      <field name="data_point_id" type="integer" required="true" uuid="1f482db2-1d58-45bc-a717-fa309978d3c5"/>
+      <field name="data_point_id" type="integer" uuid="1f482db2-1d58-45bc-a717-fa309978d3c5"/>
       <field name="value" type="text" uuid="a0652a67-0ce9-4fbe-b074-d8b5d7a3b3cd"/>
       <orm-attributes>
         <attribute name="repository-class">Db\Repository\ConvertWorkerRepository</attribute>
       </orm-attributes>
     </entity>
-    <association from="ConvertWorker" to="DataPoint" owner-alias="convertWorker" inverse-alias="dataPoint" uuid="8bec5db1-64f2-4628-8825-28921cc57ad4">
-      <association-field from="data_point_id" to="id"/>
-    </association>
-    <entity name="DataPointIteration" uuid="c306a677-45a7-4bc0-b219-48098b8d271e">
-      <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="010ee1aa-87d7-462e-a44a-5ebb5b7fb3f4"/>
-      <field name="value" type="text" uuid="0b113e13-d7c0-4fe6-8ec1-19e1c5ba13bf"/>
-      <field name="iteration" type="integer" uuid="4e0ef8a0-a8a8-4b66-9578-971b1cc915bf"/>
-      <field name="data_point_id" type="integer" uuid="96205162-59b8-4291-82d1-747acca38dfc"/>
-      <orm-attributes>
-        <attribute name="repository-class">Db\Repository\DataPointIterationRepository</attribute>
-      </orm-attributes>
-    </entity>
-    <association from="DataPointIteration" to="DataPoint" owner-alias="dataPointIteration" inverse-alias="dataPoint" uuid="5aec0bae-a98f-42cb-9b86-2ad3348bc04a">
+    <association from="ConvertWorker" to="DataPoint" owner-alias="convertWorker" inverse-alias="dataPoint" many-owner="true" many-inverse="false" uuid="8bec5db1-64f2-4628-8825-28921cc57ad4">
       <association-field from="data_point_id" to="id"/>
     </association>
     <orm-attributes>
@@ -150,7 +139,6 @@
     <module uuid="2492e6cc-ebbf-4021-b0da-9b8a264a678a" bg-color="4287552497" position-x="50" position-y="49" size-x="0" size-x2="674" size-y="0" size-y2="758"/>
     <entity uuid="34c62268-3f13-4e57-97ba-8ee0e7e54ad9" bg-color="4294967295" hdr-color="4292006610" position-x="31" position-y="299" size-x="0" size-x2="118" size-y="0" size-y2="157"/>
     <entity uuid="51b89a76-be62-4924-89a6-34f29b523c7f" bg-color="4294967295" hdr-color="4292006610" position-x="426" position-y="257" size-x="0" size-x2="77" size-y="0" size-y2="45"/>
-    <association uuid="5aec0bae-a98f-42cb-9b86-2ad3348bc04a" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
     <entity uuid="5b71554e-4c20-4b72-85fd-fbb05c04beb5" bg-color="4294967295" hdr-color="4292006610" position-x="155" position-y="134" size-x="0" size-x2="138" size-y="0" size-y2="73"/>
     <association uuid="6dfc4c01-7fec-4cb5-a750-09fb3ff2b93b" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
     <association uuid="7821fa10-c89e-4dbe-9758-f823901fcb06" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
@@ -161,7 +149,6 @@
     <project uuid="a90f0648-66e9-4a07-91db-c4c8e3a51864" size-x="0" size-x2="899" size-y="0" size-y2="824"/>
     <association uuid="b33c0e47-6b5d-4063-84f5-f2de055cc8c3" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="-1" color="4288059030"/>
     <entity uuid="b61b9955-5fa9-4003-a410-e680304380d6" bg-color="4294967295" hdr-color="4292006610" position-x="205" position-y="240" size-x="0" size-x2="109" size-y="0" size-y2="129"/>
-    <entity uuid="c306a677-45a7-4bc0-b219-48098b8d271e" bg-color="4294967295" hdr-color="4292006610" position-x="33" position-y="547" size-x="0" size-x2="114" size-y="0" size-y2="73"/>
     <many-to-many-association-entity uuid="cdc18459-81e9-4251-82b7-cdd67a4c0b5c" center-position-x="0" center-position-y="0"/>
     <association uuid="d22b1e65-8fcd-47ef-8abe-ff6e30a4e1e9" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
     <entity uuid="d39deddb-4b37-453e-a0d9-94804f0b2a12" bg-color="4294967295" hdr-color="4292006610" position-x="20" position-y="26" size-x="0" size-x2="106" size-y="0" size-y2="101"/>

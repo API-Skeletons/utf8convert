@@ -7,18 +7,18 @@
 namespace ZFTest\Apigility\Admin\Model;
 
 use BarConf;
+use BazConf;
 use PHPUnit_Framework_TestCase as TestCase;
 use ReflectionClass;
 use Zend\Config\Writer\PhpArray;
 use ZF\Apigility\Admin\Model\ModuleEntity;
+use ZF\Apigility\Admin\Model\ModulePathSpec;
 use ZF\Apigility\Admin\Model\NewRestServiceEntity;
 use ZF\Apigility\Admin\Model\RestServiceEntity;
 use ZF\Apigility\Admin\Model\RestServiceModel;
 use ZF\Apigility\Admin\Model\VersioningModel;
 use ZF\Configuration\ResourceFactory;
 use ZF\Configuration\ModuleUtils;
-
-require_once __DIR__ . '/TestAsset/module/BarConf/Module.php';
 
 class RestServiceModelTest extends TestCase
 {
@@ -41,16 +41,32 @@ class RestServiceModelTest extends TestCase
         }
         return rmdir($dir);
     }
-
     protected function cleanUpAssets()
     {
+        $pathSpec = (empty($this->modules)) ? 'psr-0' : $this->modules->getPathSpec();
+
+        $modulePath = array(
+            'psr-0' => '%s/src/%s/V*',
+            'psr-4' => '%s/src/V*'
+        );
+
         $basePath   = sprintf('%s/TestAsset/module/%s', __DIR__, $this->module);
         $configPath = $basePath . '/config';
-        foreach (glob(sprintf('%s/src/%s/V*', $basePath, $this->module)) as $dir) {
+        foreach (glob(sprintf($modulePath[$pathSpec], $basePath, $this->module)) as $dir) {
             $this->removeDir($dir);
         }
         copy($configPath . '/module.config.php.dist', $configPath . '/module.config.php');
     }
+
+//    protected function cleanUpAssets()
+//    {
+//        $basePath   = sprintf('%s/TestAsset/module/%s', __DIR__, $this->module);
+//        $configPath = $basePath . '/config';
+//        foreach (glob(sprintf('%s/src/%s/V*', $basePath, $this->module)) as $dir) {
+//            $this->removeDir($dir);
+//        }
+//        copy($configPath . '/module.config.php.dist', $configPath . '/module.config.php');
+//    }
 
     public function setUp()
     {
@@ -58,7 +74,8 @@ class RestServiceModelTest extends TestCase
         $this->cleanUpAssets();
 
         $modules = array(
-            'BarConf' => new BarConf\Module()
+            'BarConf' => new BarConf\Module(),
+            'BazConf' => new BazConf\Module()
         );
 
         $this->moduleEntity  = new ModuleEntity($this->module, array(), array(), false);
@@ -70,9 +87,14 @@ class RestServiceModelTest extends TestCase
                             ->will($this->returnValue($modules));
 
         $this->writer   = new PhpArray();
-        $this->modules  = new ModuleUtils($this->moduleManager);
-        $this->resource = new ResourceFactory($this->modules, $this->writer);
-        $this->codeRest = new RestServiceModel($this->moduleEntity, $this->modules, $this->resource->factory('BarConf'));
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->modules  = new ModulePathSpec($moduleUtils);
+        $this->resource = new ResourceFactory($moduleUtils, $this->writer);
+        $this->codeRest = new RestServiceModel(
+            $this->moduleEntity,
+            $this->modules,
+            $this->resource->factory('BarConf')
+        );
     }
 
     public function tearDown()
@@ -128,7 +150,10 @@ class RestServiceModelTest extends TestCase
 
     public function testCanCreateControllerServiceNameFromServiceNameSpace()
     {
-        $this->assertEquals('BarConf\V1\Rest\Foo\Bar\Baz\Controller', $this->codeRest->createControllerServiceName('Foo\Bar\Baz'));
+        $this->assertEquals(
+            'BarConf\V1\Rest\Foo\Bar\Baz\Controller',
+            $this->codeRest->createControllerServiceName('Foo\Bar\Baz')
+        );
     }
 
     public function testCanCreateControllerServiceNameFromServiceName()
@@ -148,6 +173,35 @@ class RestServiceModelTest extends TestCase
 
         $className = str_replace($this->module . '\\V1\\Rest\\Foo\\', '', $resourceClass);
         $path      = realpath(__DIR__) . '/TestAsset/module/BarConf/src/BarConf/V1/Rest/Foo/' . $className . '.php';
+        $this->assertTrue(file_exists($path));
+
+        require_once $path;
+
+        $r = new ReflectionClass($resourceClass);
+        $this->assertInstanceOf('ReflectionClass', $r);
+        $parent = $r->getParentClass();
+        $this->assertEquals('ZF\Rest\AbstractResourceListener', $parent->getName());
+    }
+
+    /**
+     * @group feature/psr4
+     */
+    public function testCreateResourceClassCreatesClassFileWithNamedResourceClassPSR4()
+    {
+        $this->module = 'BazConf';
+        $this->moduleEntity  = new ModuleEntity($this->module);
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->modules  = new ModulePathSpec($moduleUtils, 'psr-4', __DIR__ . '/TestAsset');
+        $this->codeRest = new RestServiceModel(
+            $this->moduleEntity,
+            $this->modules,
+            $this->resource->factory('BazConf')
+        );
+
+        $resourceClass = $this->codeRest->createResourceClass('Foo');
+
+        $className = str_replace($this->module . '\\V1\\Rest\\Foo\\', '', $resourceClass);
+        $path      = realpath(__DIR__) . '/TestAsset/module/BazConf/src/V1/Rest/Foo/' . $className . '.php';
         $this->assertTrue(file_exists($path));
 
         require_once $path;
@@ -268,7 +322,12 @@ class RestServiceModelTest extends TestCase
             'entity_class'     => 'BarConf\Rest\Foo\FooEntity',
             'collection_class' => 'BarConf\Rest\Foo\FooCollection',
         ));
-        $this->codeRest->createRestConfig($details, 'BarConf\Rest\Foo\Controller', 'BarConf\Rest\Foo\FooResource', 'bar-conf.rest.foo');
+        $this->codeRest->createRestConfig(
+            $details,
+            'BarConf\Rest\Foo\Controller',
+            'BarConf\Rest\Foo\FooResource',
+            'bar-conf.rest.foo'
+        );
         $config = include __DIR__ . '/TestAsset/module/BarConf/config/module.config.php';
 
         $this->assertArrayHasKey('zf-rest', $config);
@@ -320,7 +379,12 @@ class RestServiceModelTest extends TestCase
     public function testCreateHalConfigWritesHalConfiguration()
     {
         $details = $this->getCreationPayload();
-        $this->codeRest->createHalConfig($details, 'BarConf\Rest\Foo\FooEntity', 'BarConf\Rest\Foo\FooCollection', 'bar-conf.rest.foo');
+        $this->codeRest->createHalConfig(
+            $details,
+            'BarConf\Rest\Foo\FooEntity',
+            'BarConf\Rest\Foo\FooCollection',
+            'bar-conf.rest.foo'
+        );
         $config = include __DIR__ . '/TestAsset/module/BarConf/config/module.config.php';
 
         $this->assertArrayHasKey('zf-hal', $config);
@@ -357,8 +421,14 @@ class RestServiceModelTest extends TestCase
         $this->assertEquals('BarConf\V1\Rest\Foo\FooEntity', $result->entityClass);
         $this->assertEquals('BarConf\V1\Rest\Foo\FooCollection', $result->collectionClass);
         $this->assertEquals('bar-conf.rest.foo', $result->routeName);
-        $this->assertEquals(array('application/vnd.bar-conf.v1+json', 'application/hal+json', 'application/json'), $result->acceptWhitelist);
-        $this->assertEquals(array('application/vnd.bar-conf.v1+json', 'application/json'), $result->contentTypeWhitelist);
+        $this->assertEquals(
+            array('application/vnd.bar-conf.v1+json', 'application/hal+json', 'application/json'),
+            $result->acceptWhitelist
+        );
+        $this->assertEquals(
+            array('application/vnd.bar-conf.v1+json', 'application/json'),
+            $result->contentTypeWhitelist
+        );
     }
 
     public function testCreateServiceUsesDefaultContentNegotiation()
@@ -369,8 +439,14 @@ class RestServiceModelTest extends TestCase
         ));
         $result  = $this->codeRest->createService($payload);
         $this->assertInstanceOf('ZF\Apigility\Admin\Model\RestServiceEntity', $result);
-        $this->assertEquals(array('application/vnd.bar-conf.v1+json', 'application/hal+json', 'application/json'), $result->acceptWhitelist);
-        $this->assertEquals(array('application/vnd.bar-conf.v1+json', 'application/json'), $result->contentTypeWhitelist);
+        $this->assertEquals(
+            array('application/vnd.bar-conf.v1+json', 'application/hal+json', 'application/json'),
+            $result->acceptWhitelist
+        );
+        $this->assertEquals(
+            array('application/vnd.bar-conf.v1+json', 'application/json'),
+            $result->contentTypeWhitelist
+        );
     }
 
     public function testCanFetchServiceAfterCreation()
@@ -485,11 +561,17 @@ class RestServiceModelTest extends TestCase
 
         $this->assertArrayHasKey('accept_whitelist', $config);
         $this->assertArrayHasKey($original->controllerServiceName, $config['accept_whitelist']);
-        $this->assertEquals($options['accept_whitelist'], $config['accept_whitelist'][$original->controllerServiceName]);
+        $this->assertEquals(
+            $options['accept_whitelist'],
+            $config['accept_whitelist'][$original->controllerServiceName]
+        );
 
         $this->assertArrayHasKey('content_type_whitelist', $config);
         $this->assertArrayHasKey($original->controllerServiceName, $config['content_type_whitelist']);
-        $this->assertEquals($options['content_type_whitelist'], $config['content_type_whitelist'][$original->controllerServiceName]);
+        $this->assertEquals(
+            $options['content_type_whitelist'],
+            $config['content_type_whitelist'][$original->controllerServiceName]
+        );
     }
 
     public function testCanUpdateHalConfigForExistingService()
@@ -645,6 +727,33 @@ class RestServiceModelTest extends TestCase
         $this->codeRest->fetch($service->controllerServiceName);
     }
 
+    /**
+     * @group feature/psr4
+     */
+    public function testCanDeleteAServicePSR4()
+    {
+        $this->module = 'BazConf';
+        $this->moduleEntity  = new ModuleEntity($this->module);
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->modules  = new ModulePathSpec($moduleUtils, 'psr-4', __DIR__ . '/TestAsset');
+        $this->codeRest = new RestServiceModel(
+            $this->moduleEntity,
+            $this->modules,
+            $this->resource->factory('BazConf')
+        );
+
+        $details = $this->getCreationPayload();
+        $service = $this->codeRest->createService($details);
+
+        $this->assertTrue($this->codeRest->deleteService($service->controllerServiceName));
+
+        $fooPath = __DIR__ . '/TestAsset/module/BazConf/src/V1/Rest/Foo';
+        $this->assertTrue(file_exists($fooPath));
+
+        $this->setExpectedException('ZF\Apigility\Admin\Exception\RuntimeException', 'find', 404);
+        $this->codeRest->fetch($service->controllerServiceName);
+    }
+
     public function testCanDeleteAServiceRecursive()
     {
         $details = $this->getCreationPayload();
@@ -653,6 +762,30 @@ class RestServiceModelTest extends TestCase
         $this->assertTrue($this->codeRest->deleteService($service->controllerServiceName, true));
 
         $fooPath = __DIR__ . '/TestAsset/module/BarConf/src/BarConf/V1/Rest/Foo';
+        $this->assertFalse(file_exists($fooPath));
+    }
+
+    /**
+     * @group feature/psr4
+     */
+    public function testCanDeleteAServiceRecursivePSR4()
+    {
+        $this->module = 'BazConf';
+        $this->moduleEntity  = new ModuleEntity($this->module);
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->modules  = new ModulePathSpec($moduleUtils, 'psr-4', __DIR__ . '/TestAsset');
+        $this->codeRest = new RestServiceModel(
+            $this->moduleEntity,
+            $this->modules,
+            $this->resource->factory('BazConf')
+        );
+
+        $details = $this->getCreationPayload();
+        $service = $this->codeRest->createService($details);
+
+        $this->assertTrue($this->codeRest->deleteService($service->controllerServiceName, true));
+
+        $fooPath = __DIR__ . '/TestAsset/module/BazConf/src/V1/Rest/Foo';
         $this->assertFalse(file_exists($fooPath));
     }
 
@@ -678,14 +811,24 @@ class RestServiceModelTest extends TestCase
         $this->assertArrayNotHasKey('BarConf\V1\Rest\Foo\Controller', $config['zf-rest'], 'REST entry not deleted');
         $this->assertArrayNotHasKey('bar-conf.rest.foo', $config['router']['routes'], 'Route not deleted');
         $this->assertNotContains('bar-conf.rest.foo', $config['zf-versioning']['uri'], 'Versioning not deleted');
+        // @codingStandardsIgnoreStart
         $this->assertArrayNotHasKey('BarConf\\V1\\Rest\\Foo\\Controller', $config['zf-content-negotiation']['controllers'], 'Content Negotiation controllers entry not deleted');
         $this->assertArrayNotHasKey('BarConf\V1\Rest\Foo\Controller', $config['zf-content-negotiation']['accept_whitelist'], 'Content Negotiation accept whitelist entry not deleted');
         $this->assertArrayNotHasKey('BarConf\V1\Rest\Foo\Controller', $config['zf-content-negotiation']['content_type_whitelist'], 'Content Negotiation content-type whitelist entry not deleted');
+        // @codingStandardsIgnoreEnd
         foreach ($config['service_manager'] as $serviceType => $services) {
             $this->assertArrayNotHasKey('BarConf\V1\Rest\Foo\FooResource', $services, 'Service entry not deleted');
         }
-        $this->assertArrayNotHasKey('BarConf\V1\Rest\Foo\FooEntity', $config['zf-hal']['metadata_map'], 'HAL entity not deleted');
-        $this->assertArrayNotHasKey('BarConf\V1\Rest\Foo\FooCollection', $config['zf-hal']['metadata_map'], 'HAL collection not deleted');
+        $this->assertArrayNotHasKey(
+            'BarConf\V1\Rest\Foo\FooEntity',
+            $config['zf-hal']['metadata_map'],
+            'HAL entity not deleted'
+        );
+        $this->assertArrayNotHasKey(
+            'BarConf\V1\Rest\Foo\FooCollection',
+            $config['zf-hal']['metadata_map'],
+            'HAL collection not deleted'
+        );
     }
 
     /**

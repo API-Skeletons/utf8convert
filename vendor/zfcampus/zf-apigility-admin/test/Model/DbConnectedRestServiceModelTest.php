@@ -14,12 +14,11 @@ use Zend\EventManager\Event;
 use ZF\Apigility\Admin\Model\DbConnectedRestServiceModel;
 use ZF\Apigility\Admin\Model\DbConnectedRestServiceEntity;
 use ZF\Apigility\Admin\Model\ModuleEntity;
+use ZF\Apigility\Admin\Model\ModulePathSpec;
 use ZF\Apigility\Admin\Model\RestServiceEntity;
 use ZF\Apigility\Admin\Model\RestServiceModel;
 use ZF\Configuration\ResourceFactory;
 use ZF\Configuration\ModuleUtils;
-
-require_once __DIR__ . '/TestAsset/module/BarConf/Module.php';
 
 class DbConnectedRestServiceModelTest extends TestCase
 {
@@ -72,9 +71,14 @@ class DbConnectedRestServiceModelTest extends TestCase
                             ->will($this->returnValue($modules));
 
         $this->writer   = new PhpArray();
-        $this->modules  = new ModuleUtils($this->moduleManager);
-        $this->resource = new ResourceFactory($this->modules, $this->writer);
-        $this->codeRest = new RestServiceModel($this->moduleEntity, $this->modules, $this->resource->factory('BarConf'));
+        $moduleUtils    = new ModuleUtils($this->moduleManager);
+        $this->modules  = new ModulePathSpec($moduleUtils);
+        $this->resource = new ResourceFactory($moduleUtils, $this->writer);
+        $this->codeRest = new RestServiceModel(
+            $this->moduleEntity,
+            $this->modules,
+            $this->resource->factory('BarConf')
+        );
         $this->model    = new DbConnectedRestServiceModel($this->codeRest);
         $this->codeRest->getEventManager()->attach('fetch', array($this->model, 'onFetch'));
     }
@@ -187,7 +191,9 @@ class DbConnectedRestServiceModelTest extends TestCase
     {
         $originalEntity = $this->getCreationPayload();
         $result         = $this->model->createService($originalEntity);
-        $this->assertFalse(file_exists(__DIR__ . '/TestAsset/module/BarConf/src/BarConf/Rest/Barbaz/BarbazResource.php'));
+        $this->assertFalse(
+            file_exists(__DIR__ . '/TestAsset/module/BarConf/src/BarConf/Rest/Barbaz/BarbazResource.php')
+        );
     }
 
     public function testOnFetchWillRecastEntityToDbConnectedIfDbConnectedConfigurationExists()
@@ -218,10 +224,17 @@ class DbConnectedRestServiceModelTest extends TestCase
         foreach ($originalData as $key => $value) {
             $this->assertArrayHasKey($key, $asArray);
             if ($key === 'resource_class') {
-                $this->assertNull($asArray[$key], sprintf("Failed asserting that resource_class is null\nEntity is: %s\n", var_export($asArray, 1)));
+                $this->assertNull(
+                    $asArray[$key],
+                    sprintf("Failed asserting that resource_class is null\nEntity is: %s\n", var_export($asArray, 1))
+                );
                 continue;
             }
-            $this->assertEquals($value, $asArray[$key], sprintf("Failed testing key '%s'\nEntity is: %s\n", $key, var_export($asArray, 1)));
+            $this->assertEquals(
+                $value,
+                $asArray[$key],
+                sprintf("Failed testing key '%s'\nEntity is: %s\n", $key, var_export($asArray, 1))
+            );
         }
         foreach ($config['zf-apigility']['db-connected']['BarConf\Rest\Barbaz\BarbazResource'] as $key => $value) {
             $this->assertArrayHasKey($key, $asArray);

@@ -1,4 +1,4 @@
-# CommonMark
+# league/commonmark
 
 [![Latest Version](https://img.shields.io/packagist/v/league/commonmark.svg?style=flat-square)](https://packagist.org/packages/league/commonmark)
 [![Software License](http://img.shields.io/badge/License-BSD--3-brightgreen.svg?style=flat-square)](LICENSE)
@@ -7,15 +7,14 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/thephpleague/commonmark.svg?style=flat-square)](https://scrutinizer-ci.com/g/thephpleague/commonmark)
 [![Total Downloads](https://img.shields.io/packagist/dt/league/commonmark.svg?style=flat-square)](https://packagist.org/packages/league/commonmark)
 
-**league/commonmark** is a Markdown parser for PHP which supports the full [CommonMark] spec.  It is directly based the [CommonMark JS reference implementation][stmd.js] by [John MacFarlane] \([@jgm]\).
+**league/commonmark** is a Markdown parser for PHP which supports the full [CommonMark] spec.  It is based on the [CommonMark JS reference implementation][commonmark.js] by [John MacFarlane] \([@jgm]\).
 
 ## Goals
 
-While other Markdown parsers focus on speed, or try to enable a wide range of flavors, this parser will 
-strive to match the C and JavaScript implementations of CommonMark to make a logical and similar API.
-
-We will always focus on CommonMark compliance over speed, but performance improvements will definitely 
-happen during efforts to reach v1.0.0 and afterwards.
+* Fully support the CommonMark spec (100% compliance)
+* Match the C and JavaScript implementations of CommonMark to make a logical and similar API
+* Continuously improve performance without sacrificing quality or compliance
+* Provide an extensible parser/renderer which users may customize as needed
 
 ## Installation
 
@@ -87,9 +86,13 @@ The [documentation][docs] provides several [customization examples][docs-example
 
 You can also reference the core CommonMark parsers/renderers as they use the same functionality available to you.
 
+## Community Extensions
+
+Custom parsers/renderers can be bundled into extensions which extend CommonMark.  The wiki lists such [community extensions](https://github.com/thephpleague/commonmark/wiki/Community-Extensions) that you may find interesting.
+
 ## Compatibility with CommonMark ##
 
-This project aims to fully support the entire [CommonMark spec]. Other flavors of Markdown may work but are not supported.  Any/all changes made to the [spec][CommonMark spec] or [JS reference implementation][stmd.js] should eventually find their way back into this codebase.
+This project aims to fully support the entire [CommonMark spec]. Other flavors of Markdown may work but are not supported.  Any/all changes made to the [spec][CommonMark spec] or [JS reference implementation][commonmark.js] should eventually find their way back into this codebase.
 
 The following table shows which versions of league/commonmark are compatible with which version of the CommonMark spec:
 
@@ -103,9 +106,13 @@ The following table shows which versions of league/commonmark are compatible wit
     </thead>
     <tbody>
         <tr>
-            <td><strong>0.6.1</strong></td>
-            <td><strong><a href="http://spec.commonmark.org/0.17/">0.17</a></strong></td>
-            <td>current spec (as of Jan 25 '15)</td>
+            <td><strong>0.8.0</strong></td>
+            <td><strong><a href="http://spec.commonmark.org/0.19/">0.19</a></strong>
+            <td>current spec (as of Apr 29 '15)</td>
+        <tr>
+            <td>0.7.2<br>0.7.1<br>0.7.0<br>0.6.1</td>
+            <td><a href="http://spec.commonmark.org/0.18/">0.18</a><br><a href="http://spec.commonmark.org/0.17/">0.17</a></td>
+            <td></td>
         </tr>
         <tr>
             <td>0.6.0</td>
@@ -169,15 +176,19 @@ SemVer will be followed [closely](http://semver.org/).
 
 If you encounter a bug in the spec, please report it to the [CommonMark] project.  Any resulting fix will eventually be implemented in this project as well.
 
-For now, I'd like to maintain similar logic as the [JS reference implementation][stmd.js] until everything is stable.  I'll gladly accept any contributions which:
+For now, I'd like to maintain similar logic as the [JS reference implementation][commonmark.js] until everything is stable.  I'll gladly accept any contributions which:
 
- * Mirror fixes made to the [reference implementation][stmd.js]
+ * Mirror fixes made to the [reference implementation][commonmark.js]
  * Optimize existing methods or regular expressions
  * Fix issues with adhering to the spec examples
 
-Major refactoring should be avoided for now so that we can easily follow updates made to [the reference implementation][stmd.js].  This restriction will likely be lifted once the CommonMark specs and implementations are considered stable.
+Major refactoring should be avoided for now so that we can easily follow updates made to [the reference implementation][commonmark.js].  This restriction will likely be lifted once the CommonMark specs and implementations are considered stable.
 
 Please see [CONTRIBUTING](https://github.com/thephpleague/commonmark/blob/master/CONTRIBUTING.md) for additional details.
+
+## Security
+
+If you discover any security related issues, please email colinodell@gmail.com instead of using the issue tracker.
 
 ## Credits & Acknowledgements
 
@@ -185,7 +196,7 @@ Please see [CONTRIBUTING](https://github.com/thephpleague/commonmark/blob/master
 - [John MacFarlane][@jgm]
 - [All Contributors]
 
-This code is a port of the [CommonMark JS reference implementation][stmd.js] which is written, maintained and copyrighted by [John MacFarlane].  This project simply wouldn't exist without his work.
+This code is a port of the [CommonMark JS reference implementation][commonmark.js] which is written, maintained and copyrighted by [John MacFarlane].  This project simply wouldn't exist without his work.
 
 ## License ##
 
@@ -193,7 +204,7 @@ This code is a port of the [CommonMark JS reference implementation][stmd.js] whi
 
 [CommonMark]: http://commonmark.org/
 [CommonMark spec]: http://spec.commonmark.org/
-[stmd.js]: https://github.com/jgm/CommonMark/tree/master/js
+[commonmark.js]: https://github.com/jgm/commonmark.js
 [John MacFarlane]: http://johnmacfarlane.net
 [docs]: http://commonmark.thephpleague.com/
 [docs-examples]: http://commonmark.thephpleague.com/customization/overview/#examples

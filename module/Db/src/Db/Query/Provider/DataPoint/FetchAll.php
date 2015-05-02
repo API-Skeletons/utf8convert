@@ -18,6 +18,7 @@ class FetchAll extends DefaultOrm
             ->from($entityClass, 'row')
             ->andwhere('row.conversion = :conversion')
             ->andwhere('row.columnDef = :column')
+            ->andwhere('row.importedAt is null')
             ->setParameter('conversion', $parameters['conversion'])
             ->setParameter('column', $parameters['column'])
             ->orderby('row.oldValue')

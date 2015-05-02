@@ -63,13 +63,29 @@ class RestController extends AbstractRestfulController
     protected $collectionName = 'items';
 
     /**
+     * Minimum number of entities to return per page of a collection.  If
+     * $pageSize parameter is out of range an ApiProblem will be returned
+     *
+     * @var int
+     */
+    protected $minPageSize;
+
+    /**
      * Number of entities to return per page of a collection.  If
-     * $pageSizeParameter is specified, then it will override this when
+     * $pageSize parameter is specified, then it will override this when
      * provided in a request.
      *
      * @var int
      */
     protected $pageSize = 30;
+
+    /**
+     * Maximum number of entities to return per page of a collection.  If
+     * $pageSize parameter is out of range an ApiProblem will be returned
+     *
+     * @var int
+     */
+    protected $maxPageSize;
 
     /**
      * A query parameter to use to specify the number of records to return in
@@ -144,6 +160,26 @@ class RestController extends AbstractRestfulController
     }
 
     /**
+     * Set the minimum page size for paginated responses
+     *
+     * @param  int
+     */
+    public function setMinPageSize($count)
+    {
+        $this->minPageSize = (int) $count;
+    }
+
+    /**
+     * Return the minimum page size
+     *
+     * @return int
+     */
+    public function getMinPageSize()
+    {
+        return $this->minPageSize;
+    }
+
+    /**
      * Set the default page size for paginated responses
      *
      * @param  int
@@ -154,13 +190,33 @@ class RestController extends AbstractRestfulController
     }
 
     /**
-     * Return the page size
+     * Return the default page size
      *
      * @return int
      */
     public function getPageSize()
     {
         return $this->pageSize;
+    }
+
+    /**
+     * Set the maximum page size for paginated responses
+     *
+     * @param  int
+     */
+    public function setMaxPageSize($count)
+    {
+        $this->maxPageSize = (int) $count;
+    }
+
+    /**
+     * Return the maximum page size
+     *
+     * @return int
+     */
+    public function getMaxPageSize()
+    {
+        return $this->maxPageSize;
     }
 
     /**
@@ -253,14 +309,15 @@ class RestController extends AbstractRestfulController
      */
     public function onDispatch(MvcEvent $e)
     {
-        if (!$this->getResource()) {
+        if (! $this->getResource()) {
             throw new DomainException(sprintf(
                 '%s requires that a %s\ResourceInterface object is composed; none provided',
-                __CLASS__, __NAMESPACE__
+                __CLASS__,
+                __NAMESPACE__
             ));
         }
 
-        if (!$this->route) {
+        if (! $this->route) {
             throw new DomainException(sprintf(
                 '%s requires that a route name for the resource is composed; none provided',
                 __CLASS__
@@ -270,14 +327,14 @@ class RestController extends AbstractRestfulController
         // Check for an API-Problem in the event
         $return = $e->getParam('api-problem', false);
 
-        // If no API-Problem, dispatch the parent event
-        if (!$return) {
+        // If no return value dispatch the parent event
+        if (! $return) {
             $return = parent::onDispatch($e);
         }
 
-        if (!$return instanceof ApiProblem
-            && !$return instanceof HalEntity
-            && !$return instanceof HalCollection
+        if (! $return instanceof ApiProblem
+            && ! $return instanceof HalEntity
+            && ! $return instanceof HalCollection
         ) {
             return $return;
         }
@@ -291,8 +348,8 @@ class RestController extends AbstractRestfulController
 
         // Use content negotiation for creating the view model
         $viewModel = new ContentNegotiationViewModel(array('payload' => $return));
-        $viewModel->setTerminal(true);
         $e->setResult($viewModel);
+
         return $viewModel;
     }
 
@@ -316,6 +373,7 @@ class RestController extends AbstractRestfulController
 
         if ($entity instanceof ApiProblem
             || $entity instanceof ApiProblemResponse
+            || $entity instanceof Response
         ) {
             return $entity;
         }
@@ -362,6 +420,7 @@ class RestController extends AbstractRestfulController
 
         if ($result instanceof ApiProblem
             || $result instanceof ApiProblemResponse
+            || $result instanceof Response
         ) {
             return $result;
         }
@@ -374,13 +433,19 @@ class RestController extends AbstractRestfulController
         return $response;
     }
 
-    public function deleteList()
+    /**
+     * Delete a collection of entities as specified.
+     *
+     * @param mixed $data Typically an array
+     * @return Response|ApiProblem
+     */
+    public function deleteList($data)
     {
         $events = $this->getEventManager();
         $events->trigger('deleteList.pre', $this, array());
 
         try {
-            $result = $this->getResource()->deleteList();
+            $result = $this->getResource()->deleteList($data);
         } catch (\Exception $e) {
             return new ApiProblem($this->getHttpStatusCodeFromException($e), $e);
         }
@@ -389,6 +454,7 @@ class RestController extends AbstractRestfulController
 
         if ($result instanceof ApiProblem
             || $result instanceof ApiProblemResponse
+            || $result instanceof Response
         ) {
             return $result;
         }
@@ -423,6 +489,7 @@ class RestController extends AbstractRestfulController
 
         if ($entity instanceof ApiProblem
             || $entity instanceof ApiProblemResponse
+            || $entity instanceof Response
         ) {
             return $entity;
         }
@@ -460,6 +527,7 @@ class RestController extends AbstractRestfulController
 
         if ($collection instanceof ApiProblem
             || $collection instanceof ApiProblemResponse
+            || $collection instanceof Response
         ) {
             return $collection;
         }
@@ -479,6 +547,20 @@ class RestController extends AbstractRestfulController
         $pageSize = $this->pageSizeParam
             ? $this->getRequest()->getQuery($this->pageSizeParam, $this->pageSize)
             : $this->pageSize;
+
+        if (isset($this->minPageSize) && $pageSize < $this->minPageSize) {
+            return new ApiProblem(
+                500,
+                sprintf("Page size is out of range, minimum page size is %s", $this->minPageSize)
+            );
+        }
+
+        if (isset($this->maxPageSize) && $pageSize > $this->maxPageSize) {
+            return new ApiProblem(
+                500,
+                sprintf("Page size is out of range, maximum page size is %s", $this->maxPageSize)
+            );
+        }
 
         $this->setPageSize($pageSize);
 
@@ -560,6 +642,7 @@ class RestController extends AbstractRestfulController
 
         if ($entity instanceof ApiProblem
             || $entity instanceof ApiProblemResponse
+            || $entity instanceof Response
         ) {
             return $entity;
         }
@@ -601,6 +684,7 @@ class RestController extends AbstractRestfulController
 
         if ($entity instanceof ApiProblem
             || $entity instanceof ApiProblemResponse
+            || $entity instanceof Response
         ) {
             return $entity;
         }
@@ -637,6 +721,7 @@ class RestController extends AbstractRestfulController
 
         if ($collection instanceof ApiProblem
             || $collection instanceof ApiProblemResponse
+            || $collection instanceof Response
         ) {
             return $collection;
         }
@@ -673,6 +758,7 @@ class RestController extends AbstractRestfulController
 
         if ($collection instanceof ApiProblem
             || $collection instanceof ApiProblemResponse
+            || $collection instanceof Response
         ) {
             return $collection;
         }

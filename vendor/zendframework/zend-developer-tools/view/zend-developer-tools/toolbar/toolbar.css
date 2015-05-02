@@ -16,6 +16,7 @@
     background: linear-gradient(to bottom, #333, #222);
     font: normal 13px/40px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     direction: ltr;
+    text-align: left;
 }
 
 #zend-developer-toolbar a {
@@ -79,7 +80,7 @@
 }
 
 .zdt-toolbar-detail {
-    bottom: 40px;
+    bottom: 39px;
     display: none;
     line-height: 20px;
     padding: 7px 10px;
@@ -120,7 +121,7 @@
 }
 
 .zdt-toolbar-detail .zdt-toolbar-info-redundant,.zdt-toolbar-detail .zdt-toolbar-extra-info-redundant
-    {
+{
     display: none;
 }
 
@@ -240,8 +241,7 @@
     text-decoration: none;
 }
 
-#zend-developer-toolbar .zdt-toolbar-entry .zdt-toolbar-detail,#zend-developer-toolbar .zdt-toolbar-entry .zdt-toolbar-info
-    {
+#zend-developer-toolbar .zdt-toolbar-entry .zdt-toolbar-detail,#zend-developer-toolbar .zdt-toolbar-entry .zdt-toolbar-info {
     font-size: 11px;
     max-width: 700px;
 }

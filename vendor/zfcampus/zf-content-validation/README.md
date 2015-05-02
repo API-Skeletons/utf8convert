@@ -83,7 +83,18 @@ Example where there is a default as well as a GET filter:
 In the above example, the `Application\Controller\HelloWorld\Validator` service will be selected for
 `PATCH`, `PUT`, or `DELETE` requests, while the `Application\Controller\HelloWorld\CreationValidator`will be selected for `POST` requests.
 
-#### `input_filter_spec`
+Starting in version 1.1.0, two additional keys can be defined to affect application validation
+behavior:
+
+- `use_raw_data`: if NOT present, raw data is ALWAYS injected into the "BodyParams" container (defined
+  by zf-content-negotiation).  If this key is present and a boolean false, then the validated,
+  filtered data from the input filter will be used instead.
+
+- `allows_only_fields_in_filter`: if present, and `use_raw_data` is boolean false, the value of this
+  flag will define whether or not additional fields present in the payload will be merged with the
+  filtered data.
+
+#### input_filter_spec
 
 `input_filter_spec` is for configuration-driven creation of input filters.  The keys for this array
 will be a unique name, but more often based off the service name it is mapped to under the
@@ -141,7 +152,7 @@ ZF2 Events
 
 ### Listeners
 
-#### `ZF\ContentValidation\ContentValidationListener`
+#### ZF\ContentValidation\ContentValidationListener
 
 This listener is attached to the `MvcEvent::EVENT_ROUTE` event at priority `-650`.  Its purpose is
 to utilize the `zf-content-validation` configuration in order to determine if the current request's
@@ -154,9 +165,18 @@ get the deserialized content body parameters.
 ZF2 Services
 ============
 
+### Controller Plugins
+
+#### ZF\ContentValidation\InputFilter\InputFilterPlugin (aka getInputFilter)
+
+This plugin is available to Zend Framework 2 controllers. When invoked (`$this->getInputFilter()` or
+`$this->plugin('getinputfilter')->__invoke()`), it returns whatever is in the MVC event parameter
+`ZF\ContentValidation\InputFilter`, returning null for any value that is not an implementation of
+`Zend\InputFilter\InputFilter`.
+
 ### Service
 
-#### `ZF\ContentValidation\InputFilter\InputFilterAbstractServiceFactory`
+#### ZF\ContentValidation\InputFilter\InputFilterAbstractServiceFactory
 
 This abstract factory is responsible for creating and returning an appropriate input filter given
 a name and the configuration from the top-level key `input_filter_specs`. It is registered with

@@ -6,14 +6,15 @@
 
 namespace ZF\ContentNegotiation;
 
-use Zend\Mime\Decode;
 use Zend\Mvc\MvcEvent;
-use Zend\Stdlib\Parameters;
 use ZF\ApiProblem\ApiProblem;
 use ZF\ApiProblem\ApiProblemResponse;
 
 class ContentTypeListener
 {
+    /**
+     * @var array
+     */
     protected $jsonErrors = array(
         JSON_ERROR_DEPTH          => 'Maximum stack depth exceeded',
         JSON_ERROR_STATE_MISMATCH => 'Underflow or the modes mismatch',
@@ -39,7 +40,7 @@ class ContentTypeListener
      * If an error occurs during deserialization, an ApiProblemResponse is
      * returned, indicating an issue with the submission.
      *
-     * @param MvcEvent $e
+     * @param  MvcEvent $e
      * @return null|ApiProblemResponse
      */
     public function __invoke(MvcEvent $e)
@@ -74,6 +75,7 @@ class ContentTypeListener
                 break;
             case $request::METHOD_PATCH:
             case $request::METHOD_PUT:
+            case $request::METHOD_DELETE:
                 $content = $request->getContent();
 
                 if ($contentType && $contentType->match('multipart/form-data')) {
@@ -106,6 +108,7 @@ class ContentTypeListener
             return $bodyParams;
         }
 
+        $bodyParams = $bodyParams ?: array();
         $parameterData->setBodyParams($bodyParams);
         $e->setParam('ZFContentNegotiationParameterData', $parameterData);
     }
@@ -117,10 +120,9 @@ class ContentTypeListener
      */
     public function onFinish(MvcEvent $e)
     {
-        $request      = $e->getRequest();
+        $request = $e->getRequest();
 
-        foreach ($request->getFiles() as $name => $fileInfo) {
-            $tmpDir  = dirname($fileInfo['tmp_name']);
+        foreach ($request->getFiles() as $fileInfo) {
             if (dirname($fileInfo['tmp_name']) !== $this->uploadTmpDir) {
                 // File was moved
                 continue;
@@ -145,21 +147,27 @@ class ContentTypeListener
      * Decodes a JSON string and returns it; if invalid, returns
      * an ApiProblemResponse.
      *
-     * @param string $json
+     * @param  string $json
      * @return mixed|ApiProblemResponse
      */
     public function decodeJson($json)
     {
+        // Trim whitespace from front and end of string to avoid parse errors
+        $json = preg_replace('/^\s*/m', '', $json);
+        $json = preg_replace('/\s*/m', '', $json);
+
         $data = json_decode($json, true);
         if (null !== $data) {
             return $data;
         }
+
         $error = json_last_error();
         if ($error === JSON_ERROR_NONE) {
             return $data;
         }
 
         $message = array_key_exists($error, $this->jsonErrors) ? $this->jsonErrors[$error] : 'Unknown error';
+
         return new ApiProblemResponse(
             new ApiProblem(400, sprintf('JSON decoding error: %s', $message))
         );

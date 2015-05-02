@@ -56,8 +56,8 @@ class MvcRouteListener extends AbstractListenerAggregate
      */
     public function attach(EventManagerInterface $events)
     {
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'authentication'), 500);
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'authenticationPost'), 499);
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'authentication'), -50);
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'authenticationPost'), -51);
         $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'authorization'), -600);
         $this->listeners[] = $events->attach(MvcEvent::EVENT_ROUTE, array($this, 'authorizationPost'), -601);
     }
@@ -116,7 +116,11 @@ class MvcRouteListener extends AbstractListenerAggregate
         if ($mvcAuthEvent->hasAuthenticationResult()
             && $mvcAuthEvent->getAuthenticationResult()->isValid()
         ) {
-            $mvcAuthEvent->setIdentity(new Identity\AuthenticatedIdentity($mvcAuthEvent->getAuthenticationResult()->getIdentity()));
+            $mvcAuthEvent->setIdentity(
+                new Identity\AuthenticatedIdentity(
+                    $mvcAuthEvent->getAuthenticationResult()->getIdentity()
+                )
+            );
         }
 
         if ($identity instanceof Identity\IdentityInterface) {
@@ -145,9 +149,13 @@ class MvcRouteListener extends AbstractListenerAggregate
             return;
         }
 
-        $responses = $this->events->trigger(MvcAuthEvent::EVENT_AUTHENTICATION_POST, $this->mvcAuthEvent, function ($r) {
-            return ($r instanceof Response);
-        });
+        $responses = $this->events->trigger(
+            MvcAuthEvent::EVENT_AUTHENTICATION_POST,
+            $this->mvcAuthEvent,
+            function ($r) {
+                return ($r instanceof Response);
+            }
+        );
         return $responses->last();
     }
 

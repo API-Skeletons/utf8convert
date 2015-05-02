@@ -6,6 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Zend\\' => array($vendorDir . '/zendframework/zendframework/library/Zend'),
     'ZF\\Versioning\\' => array($vendorDir . '/zfcampus/zf-versioning/src'),
     'ZF\\Rpc\\' => array($vendorDir . '/zfcampus/zf-rpc/src'),
     'ZF\\Rest\\' => array($vendorDir . '/zfcampus/zf-rest/src'),
@@ -37,8 +38,10 @@ return array(
     'ZFTest\\Apigility\\' => array($vendorDir . '/zfcampus/zf-apigility/test'),
     'ZFTest\\ApiProblem\\' => array($vendorDir . '/zfcampus/zf-api-problem/test'),
     'Seld\\JsonLint\\' => array($vendorDir . '/seld/jsonlint/src/Seld/JsonLint'),
+    'SanSessionToolbar\\' => array($vendorDir . '/san/san-session-toolbar/src'),
     'Phpro\\DoctrineHydrationModule\\' => array($vendorDir . '/phpro/zf-doctrine-hydration-module/src'),
     'PhproTest\\DoctrineHydrationModule\\' => array($vendorDir . '/phpro/zf-doctrine-hydration-module/test/src'),
     'MaglMarkdown\\' => array($vendorDir . '/maglnet/magl-markdown/src/MaglMarkdown'),
     'League\\CommonMark\\' => array($vendorDir . '/league/commonmark/src'),
+    'DoctrineExtensions\\' => array($vendorDir . '/beberlei/DoctrineExtensions/src'),
 );

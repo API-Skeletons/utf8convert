@@ -178,7 +178,8 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                     <a
                         class="btn btn-default"
                         title="View URL"
-                        href=""
+                        href="#"
+                        ng-click="columnModel.openUrl(dataPoint);"
                         >
                         <i class="glyphicon glyphicon-link"></i>
                     </a>

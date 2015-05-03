@@ -12,6 +12,20 @@ angular.module('utf8convert')
                 this.load(url + '/api/data-point?conversion=' + conversion + '&column=' + column);
             },
 
+			openUrl: function(dataPoint)
+			{
+				$scope.columnPromise = $http({
+					method: 'post',
+					timeout: 180000,
+					url: $scope.columnModel.baseUrl + '/api/url',
+					data: {
+						dataPointId: dataPoint.id
+					}
+				}).success(function(data) {
+					window.open(data.url);
+				});
+			},
+
 			addConvertButton: function()
 			{
 				$('span.editable-buttons').each(function(index, node) {

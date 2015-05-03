@@ -47,6 +47,7 @@ return array(
                 array('route' => 'database-api.rest.doctrine.data-point', 'roles' => array('edit')),
                 array('route' => 'database-api.rest.data-point-data', 'roles' => array('edit')),
                 array('route' => 'database-api.rpc.convert', 'roles' => array('edit')),
+                array('route' => 'database-api.rpc.url', 'roles' => array('edit')),
 
                 array('route' => 'zfcuser', 'roles' => array('view')),
                 array('route' => 'zfcuser/changepassword', 'roles' => array('view')),

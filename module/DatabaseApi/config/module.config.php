@@ -44,6 +44,16 @@ return array(
                     ),
                 ),
             ),
+            'database-api.rpc.url' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route' => '/api/url',
+                    'defaults' => array(
+                        'controller' => 'DatabaseApi\\V1\\Rpc\\Url\\Controller',
+                        'action' => 'url',
+                    ),
+                ),
+            ),
         ),
     ),
     'zf-versioning' => array(
@@ -52,6 +62,7 @@ return array(
             1 => 'database-api.rest.data-point-data',
             2 => 'database-api.rest.doctrine.column-def',
             3 => 'database-api.rpc.convert',
+            4 => 'database-api.rpc.url',
         ),
     ),
     'zf-rest' => array(
@@ -129,6 +140,7 @@ return array(
             'DatabaseApi\\V1\\Rest\\DataPointData\\Controller' => 'HalJson',
             'DatabaseApi\\V1\\Rest\\ColumnDef\\Controller' => 'HalJson',
             'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => 'Json',
+            'DatabaseApi\\V1\\Rpc\\Url\\Controller' => 'Json',
         ),
         'accept-whitelist' => array(
             'DatabaseApi\\V1\\Rest\\DataPoint\\Controller' => array(
@@ -167,6 +179,11 @@ return array(
                 1 => 'application/json',
                 2 => 'application/*+json',
             ),
+            'DatabaseApi\\V1\\Rpc\\Url\\Controller' => array(
+                0 => 'application/vnd.database-api.v1+json',
+                1 => 'application/json',
+                2 => 'application/*+json',
+            ),
         ),
         'content_type_whitelist' => array(
             'DatabaseApi\\V1\\Rest\\DataPointData\\Controller' => array(
@@ -177,6 +194,10 @@ return array(
                 0 => 'application/json',
             ),
             'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => array(
+                0 => 'application/vnd.database-api.v1+json',
+                1 => 'application/json',
+            ),
+            'DatabaseApi\\V1\\Rpc\\Url\\Controller' => array(
                 0 => 'application/vnd.database-api.v1+json',
                 1 => 'application/json',
             ),
@@ -257,6 +278,9 @@ return array(
         ),
         'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => array(
             'input_filter' => 'DatabaseApi\\V1\\Rpc\\Convert\\Validator',
+        ),
+        'DatabaseApi\\V1\\Rpc\\Url\\Controller' => array(
+            'input_filter' => 'DatabaseApi\\V1\\Rpc\\Url\\Validator',
         ),
     ),
     'input_filter_specs' => array(
@@ -389,7 +413,14 @@ return array(
                 'allow_empty' => true,
             ),
         ),
-        'DatabaseApi\\V1\\Rpc\\Convert\\Validator' => array(
+        'DatabaseApi\\V1\\Rpc\\Convert\\Validator' => array(),
+        'DatabaseApi\\V1\\Rpc\\Url\\Validator' => array(
+            0 => array(
+                'name' => 'dataPointId',
+                'required' => true,
+                'filters' => array(),
+                'validators' => array(),
+            ),
         ),
     ),
     'service_manager' => array(
@@ -400,6 +431,7 @@ return array(
     'controllers' => array(
         'factories' => array(
             'DatabaseApi\\V1\\Rpc\\Convert\\Controller' => 'DatabaseApi\\V1\\Rpc\\Convert\\ConvertControllerFactory',
+            'DatabaseApi\\V1\\Rpc\\Url\\Controller' => 'DatabaseApi\\V1\\Rpc\\Url\\UrlControllerFactory',
         ),
     ),
     'zf-rpc' => array(
@@ -409,6 +441,13 @@ return array(
                 0 => 'POST',
             ),
             'route_name' => 'database-api.rpc.convert',
+        ),
+        'DatabaseApi\\V1\\Rpc\\Url\\Controller' => array(
+            'service_name' => 'Url',
+            'http_methods' => array(
+                0 => 'POST',
+            ),
+            'route_name' => 'database-api.rpc.url',
         ),
     ),
 );

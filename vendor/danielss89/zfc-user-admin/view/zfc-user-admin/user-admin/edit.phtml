@@ -1,0 +1,15 @@
+<?php
+$form = $this->editUserForm;
+$form->prepare();
+$form->setAttribute('action', $this->url('zfcadmin/zfcuseradmin/edit', array('userId' => $this->userId)));
+$form->setAttribute('method', 'post');
+?>
+
+<h1>Edit user</h1>
+
+<?php include '_form.phtml'; ?>
+
+<a href="<?php echo $this->url('zfcadmin/zfcuseradmin/remove', array('userId' => $this->userId)); ?>"
+   onclick="return confirm('<?php echo $this->translate('Really delete user?') ?>')">
+    <?php echo $this->translate('Delete') ?>
+</a>

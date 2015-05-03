@@ -24,6 +24,8 @@ angular.module('utf8convert')
 				}).success(function(data) {
 					window.open(data.url);
 				});
+
+				return false;
 			},
 
 			addConvertButton: function()

@@ -290,7 +290,7 @@ return array(
                 'required' => false,
                 'filters' => array(
                     0 => array(
-                        'name' => 'Zend\\Filter\\ToInt',
+                        'name' => 'Zend\\Filter\\Int',
                         'options' => array(),
                     ),
                 ),
@@ -303,7 +303,7 @@ return array(
                 'required' => false,
                 'filters' => array(
                     0 => array(
-                        'name' => 'Zend\\Filter\\ToInt',
+                        'name' => 'Zend\\Filter\\Int',
                         'options' => array(),
                     ),
                 ),

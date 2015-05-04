@@ -32,9 +32,10 @@ class ConversionRepository extends EntityRepository
         $qb->select("dp")
             ->from('Db\Entity\DataPoint', 'dp')
             ->andwhere('dp.conversion = :conversion')
-            ->setParameter('conversion', $conversion)
             ->andwhere('dp.approved = :approved')
+            ->andwhere('dp.importedAt is null')
             ->setParameter('approved', true)
+            ->setParameter('conversion', $conversion)
             ;
 
         $start = 0;
@@ -83,6 +84,7 @@ class ConversionRepository extends EntityRepository
                     foreach ($rowDataPoints as $dp) {
                         $dp->setImportedAt(new Datetime());
                     }
+                    echo $sql;
                     $this->_em->flush();
                 } catch (RuntimeException $e) {
                     $errors[] = array(

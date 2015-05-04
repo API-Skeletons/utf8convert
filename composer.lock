@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "200bbb11c5e4cdab1a0bf20537579ca3",
+    "hash": "a7bd56c60346ef3c0d751b248192d61d",
     "packages": [
         {
             "name": "beberlei/DoctrineExtensions",
@@ -16,7 +16,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/beberlei/DoctrineExtensions/zipball/5e4ec9c3ec3434151e1c73144b4ab87ae30aefbc",
+                "url": "https://api.github.com/repos/beberlei/DoctrineExtensions/zipball/6f4a04e8c96d687085f54b857708255ccf22a3ba",
                 "reference": "5e4ec9c3ec3434151e1c73144b4ab87ae30aefbc",
                 "shasum": ""
             },
@@ -1570,6 +1570,50 @@
             "time": "2015-01-16 06:13:50"
         },
         {
+            "name": "pusher/pusher-php-server",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pusher/pusher-http-php.git",
+                "reference": "165f92cb93efa901e5bf0e17e962e725e3bc8381"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pusher/pusher-http-php/zipball/165f92cb93efa901e5bf0e17e962e725e3bc8381",
+                "reference": "165f92cb93efa901e5bf0e17e962e725e3bc8381",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "lib/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Library for interacting with the Pusher REST API",
+            "homepage": "https://github.com/pusher/pusher-php-server",
+            "keywords": [
+                "events",
+                "php-pusher-server",
+                "publish",
+                "pusher",
+                "realtime",
+                "rest",
+                "trigger"
+            ],
+            "time": "2015-03-03 15:52:18"
+        },
+        {
             "name": "rwoverdijk/assetmanager",
             "version": "1.4.2",
             "source": {
@@ -1787,7 +1831,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/ZendDeveloperTools/zipball/4cb1864711eaa2856d2a0c698faedaaf167af248",
+                "url": "https://api.github.com/repos/zendframework/ZendDeveloperTools/zipball/7844297420672a5e5e404493a962a73f735d7bb0",
                 "reference": "4cb1864711eaa2856d2a0c698faedaaf167af248",
                 "shasum": ""
             },
@@ -3743,6 +3787,7 @@
         "zendframework/zend-developer-tools": 20,
         "danielss89/zfc-user-admin": 20,
         "beberlei/doctrineextensions": 20,
+        "pusher/pusher-php-server": 20,
         "zendframework/zftool": 20
     },
     "prefer-stable": false,

@@ -2,6 +2,36 @@ angular.module('utf8convert')
     .controller('columnController', ['$http', '$scope',
     function($http, $scope) {
 
+        var pusher = new Pusher('4a692f8bd0d32221b070');
+        var channel = pusher.subscribe('column');
+        channel.bind('update', function(data) {
+            angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
+                if (value.id == data.id) {
+
+					// Restore angular variables
+					angular.forEach(value, function(value, key) {
+						if (key.charAt(0) == '_') {
+							data[key] = value;
+						}
+					});
+
+					if (!data.comment) {
+						data._showComment = false;
+					}
+
+					// data._showData = !data._showData;
+
+                    angular.forEach($scope.dataPoint._embedded.data_point[key], function(colValue, colKey) {
+						if (typeof data[colKey] != 'undefined') {
+							$scope.dataPoint._embedded.data_point[key][colKey] = data[colKey];
+						}
+					});
+
+					$scope.$apply();
+                }
+            });
+        });
+
         $scope.columnModel =
         {
 			dateUrl: '',
@@ -119,25 +149,6 @@ angular.module('utf8convert')
                     url: this.baseUrl + '/api/data-point/' + dataPoint.id,
                     data: data
                 }).success(function(data) {
-					// Restore angular variables
-					angular.forEach(dataPoint, function(value, key) {
-						if (key.charAt(0) == '_') {
-							data[key] = value;
-						}
-					});
-
-					if (!data.comment) {
-						data._showComment = false;
-					}
-
-					data._showData = !data._showData;
-
-					angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
-						if (value.id == data.id) {
-							$scope.dataPoint._embedded.data_point[key] = data;
-							return $scope.columnModel.data($scope.dataPoint._embedded.data_point[key]);
-						}
-					});
                 });
 
                 return $scope.columnPromise;

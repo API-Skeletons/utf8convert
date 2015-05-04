@@ -44,7 +44,8 @@
         "danielss89/zfc-user-admin": "dev-master",
         "beberlei/DoctrineExtensions": "dev-master",
         "maglnet/magl-markdown": "~1.1",
-        "zfcampus/zf-apigility-doctrine": "~0.3"
+        "zfcampus/zf-apigility-doctrine": "~0.3",
+        "pusher/pusher-php-server": "dev-master"
     },
     "require-dev": {
         "zendframework/zftool": "dev-master",

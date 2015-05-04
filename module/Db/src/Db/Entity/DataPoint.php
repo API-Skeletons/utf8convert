@@ -30,11 +30,6 @@ class DataPoint
     private $iteration;
 
     /**
-     * @var boolean
-     */
-    private $flagForReview;
-
-    /**
      * @var integer
      */
     private $id;
@@ -67,6 +62,26 @@ class DataPoint
         $this->dataPointPrimaryKey = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+    public function getArrayCopy()
+    {
+        return array(
+            'id' => $this->getId(),
+            'primaryKey' => $this->getPrimaryKey(),
+            'oldValue' => $this->getOldValue(),
+            'newValue' => $this->getNewValue(),
+            'comment' => $this->getComment(),
+            'flagged' => $this->getFlagged(),
+            'approved' => $this->getApproved(),
+            'denied' => $this->getDenied(),
+            'getImportedAt' => $this->getImportedAt(),
+        );
+    }
+
+    public function exchangeArray()
+    {
+
+    }
+
     /**
      * Set primaryKey
      *
@@ -83,7 +98,7 @@ class DataPoint
     /**
      * Get primaryKey
      *
-     * @return string 
+     * @return string
      */
     public function getPrimaryKey()
     {
@@ -106,7 +121,7 @@ class DataPoint
     /**
      * Get oldValue
      *
-     * @return string 
+     * @return string
      */
     public function getOldValue()
     {
@@ -129,7 +144,7 @@ class DataPoint
     /**
      * Get newValue
      *
-     * @return string 
+     * @return string
      */
     public function getNewValue()
     {
@@ -152,7 +167,7 @@ class DataPoint
     /**
      * Get iteration
      *
-     * @return integer 
+     * @return integer
      */
     public function getIteration()
     {
@@ -175,7 +190,7 @@ class DataPoint
     /**
      * Get flagForReview
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getFlagForReview()
     {
@@ -185,7 +200,7 @@ class DataPoint
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -218,7 +233,7 @@ class DataPoint
     /**
      * Get dataPointPrimaryKey
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getDataPointPrimaryKey()
     {
@@ -241,7 +256,7 @@ class DataPoint
     /**
      * Get user
      *
-     * @return \Db\Entity\User 
+     * @return \Db\Entity\User
      */
     public function getUser()
     {
@@ -264,7 +279,7 @@ class DataPoint
     /**
      * Get conversion
      *
-     * @return \Db\Entity\Conversion 
+     * @return \Db\Entity\Conversion
      */
     public function getConversion()
     {
@@ -287,7 +302,7 @@ class DataPoint
     /**
      * Get columnDef
      *
-     * @return \Db\Entity\ColumnDef 
+     * @return \Db\Entity\ColumnDef
      */
     public function getColumnDef()
     {
@@ -325,7 +340,7 @@ class DataPoint
     /**
      * Get convertWorker
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getConvertWorker()
     {
@@ -363,7 +378,7 @@ class DataPoint
     /**
      * Get dataPointIteration
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getDataPointIteration()
     {
@@ -396,7 +411,7 @@ class DataPoint
     /**
      * Get flagged
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getFlagged()
     {
@@ -419,7 +434,7 @@ class DataPoint
     /**
      * Get approved
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getApproved()
     {
@@ -447,7 +462,7 @@ class DataPoint
     /**
      * Get comment
      *
-     * @return string 
+     * @return string
      */
     public function getComment()
     {
@@ -480,7 +495,7 @@ class DataPoint
     /**
      * Get denied
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getDenied()
     {
@@ -503,7 +518,7 @@ class DataPoint
     /**
      * Get importedAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getImportedAt()
     {

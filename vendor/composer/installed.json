@@ -634,7 +634,7 @@
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/beberlei/DoctrineExtensions/zipball/5e4ec9c3ec3434151e1c73144b4ab87ae30aefbc",
+            "url": "https://api.github.com/repos/beberlei/DoctrineExtensions/zipball/6f4a04e8c96d687085f54b857708255ccf22a3ba",
             "reference": "5e4ec9c3ec3434151e1c73144b4ab87ae30aefbc",
             "shasum": ""
         },
@@ -2084,7 +2084,7 @@
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zendframework/ZendDeveloperTools/zipball/4cb1864711eaa2856d2a0c698faedaaf167af248",
+            "url": "https://api.github.com/repos/zendframework/ZendDeveloperTools/zipball/7844297420672a5e5e404493a962a73f735d7bb0",
             "reference": "4cb1864711eaa2856d2a0c698faedaaf167af248",
             "shasum": ""
         },
@@ -3853,6 +3853,52 @@
             "apigility",
             "zend",
             "zf2"
+        ]
+    },
+    {
+        "name": "pusher/pusher-php-server",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/pusher/pusher-http-php.git",
+            "reference": "165f92cb93efa901e5bf0e17e962e725e3bc8381"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/pusher/pusher-http-php/zipball/165f92cb93efa901e5bf0e17e962e725e3bc8381",
+            "reference": "165f92cb93efa901e5bf0e17e962e725e3bc8381",
+            "shasum": ""
+        },
+        "require": {
+            "ext-curl": "*",
+            "php": ">=5.2"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~4"
+        },
+        "time": "2015-03-03 15:52:18",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "classmap": [
+                "lib/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "description": "Library for interacting with the Pusher REST API",
+        "homepage": "https://github.com/pusher/pusher-php-server",
+        "keywords": [
+            "events",
+            "php-pusher-server",
+            "publish",
+            "pusher",
+            "realtime",
+            "rest",
+            "trigger"
         ]
     }
 ]

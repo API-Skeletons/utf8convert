@@ -5,6 +5,7 @@ use ZF\Apigility\Doctrine\Server\Resource\DoctrineResource;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Db\Entity;
+use Pusher;
 
 class DataPointResource extends DoctrineResource implements ServiceLocatorAwareInterface
 {
@@ -108,6 +109,20 @@ class DataPointResource extends DoctrineResource implements ServiceLocatorAwareI
 
         $objectManager->persist($dataPoint);
         $objectManager->flush();
+
+        return $dataPoint;
+    }
+
+    public function patch($id, $data)
+    {
+        $dataPoint = parent::patch($id, $data);
+
+        $app_id = '118458';
+        $app_key = '4a692f8bd0d32221b070';
+        $app_secret = 'b85af6f07d3b7c888a28';
+
+        $pusher = new Pusher($app_key, $app_secret, $app_id);
+        $pusher->trigger('column', 'update', $dataPoint->getArrayCopy());
 
         return $dataPoint;
     }

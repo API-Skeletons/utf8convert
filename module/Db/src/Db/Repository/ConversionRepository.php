@@ -84,7 +84,6 @@ class ConversionRepository extends EntityRepository
                     foreach ($rowDataPoints as $dp) {
                         $dp->setImportedAt(new Datetime());
                     }
-                    echo $sql;
                     $this->_em->flush();
                 } catch (RuntimeException $e) {
                     $errors[] = array(

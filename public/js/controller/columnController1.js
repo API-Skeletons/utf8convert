@@ -221,6 +221,13 @@ angular.module('utf8convert')
 				});
 			},
 
+			hideAllComments: function()
+			{
+				angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
+					value._showComment = false;
+				});
+			},
+
 			copyAll: function()
 			{
 				if (confirm('Are you sure?')) {
@@ -230,10 +237,10 @@ angular.module('utf8convert')
 				}
 			},
 
-			hideAllComments: function()
+			diffAll: function(show)
 			{
 				angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
-					value._showComment = false;
+					value._showDiff = show;
 				});
 			}
         }

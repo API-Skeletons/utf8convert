@@ -29,6 +29,16 @@
         padding: 5px;
     }
 
+    ins {
+        background-color: green;
+        color: white;
+    }
+
+    del {
+        background-color: yellow;
+        color: black;
+    }
+
     .editable-buttons {
         display: block;
         margin-left: 0px;
@@ -84,6 +94,14 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
         <i class="glyphicon glyphicon-remove"></i> All
     </a>
 
+    <a href="#" class="btn btn-default" ng-click="columnModel.diffAll(true)">
+        <i class="glyphicon glyphicon-random"></i> Show
+    </a>
+
+    <a href="#" class="btn btn-default" ng-click="columnModel.diffAll(false)">
+        <i class="glyphicon glyphicon-random"></i> Hide
+    </a>
+
     <a href="#" class="btn btn-default" ng-click="columnModel.showAllComments()">
         <i class="glyphicon glyphicon-comment"></i> Show
     </a>
@@ -116,7 +134,20 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 
 <div class="container" ng-repeat="dataPoint in dataPoint._embedded.data_point" ng-class-odd="'odd'" ng-class-even="'even'">
 
-    <div class="col-md-1">
+    <div class="col-md-2">
+        <a
+            class="btn btn-default"
+            title="Show diff"
+            ng-click="dataPoint._showDiff = ! dataPoint._showDiff"
+            ng-class="
+            {
+                'btn-default': ! dataPoint._showDiff,
+                'btn-primary': dataPoint._showDiff
+            }"
+        >
+            <i class="glyphicon glyphicon-random"></i>
+        </a>
+
         <a
             class="btn"
             title="Edit comment"
@@ -130,7 +161,7 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
             <i class="glyphicon glyphicon-comment"></i>
         </a>
     </div>
-    <div class="col-md-7">
+    <div class="col-md-6">
         <pre
             ng-hide="! dataPoint._showComment"
             class="ng-hide"
@@ -207,7 +238,11 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                 </span>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6 ng-hide" ng-hide="! dataPoint._showDiff">
+        <pre ng-bind-html="dataPoint.oldValue | diff: dataPoint.newValue"></pre>
+    </div>
+
+    <div class="col-md-6 ng-hide" ng-hide="dataPoint._showDiff">
         <pre>{{ dataPoint.oldValue }}</pre>
     </div>
 

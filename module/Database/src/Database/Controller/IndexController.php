@@ -14,10 +14,6 @@ class IndexController extends AbstractActionController
         $displayName = $this->getRequest()->getParam('displayName');
 
         $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
-        if (sizeof($objectManager->getRepository('Db\Entity\User')->findAll())) {
-            echo "\nUsers already exist in the system.\n";
-            return;
-        }
 
         $zfcUserService = $this->getServiceLocator()->get('zfcuser_user_service');
 

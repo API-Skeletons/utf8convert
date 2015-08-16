@@ -58,8 +58,7 @@ php public/index.php create conversion [--name=conversionName] [--whitelist=] [-
 Run a Conversion
 ----------------
 
-This step is not a part of creating a conversion.  After you conversion has been created you must run it.  This can
-be a very slow process because you may be scanning the whole database for incorrect values.
+This step is not a part of creating a conversion.  After your conversion has been created you must run it.  
 
 ```sh
 php public/index.php run conversion --name=conversionName

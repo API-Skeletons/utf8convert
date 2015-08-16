@@ -1,6 +1,6 @@
 <?php
 
-    $this->headScript()->appendFile($this->basePath() . '/js/controller/columnController.js');
+    $this->headScript()->appendFile($this->basePath() . '/js/controller/columnController1.js');
 
 ?>
 
@@ -57,6 +57,8 @@
 <div cg-busy="columnPromise"></div>
 
 Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
+<pagination page="1" max-size="20" total-items="1000" items-per-page="50"></pagination>
+
 <ul class="pagination center-block">
     <li ng-repeat="(name, link) in dataPoint._links">
         <a href="#" ng-click="columnModel.load(link.href)">{{ name }}</a>
@@ -64,8 +66,16 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 </ul>
 
 <span class="pull-right btn-group">
-    <a href="#" class="btn btn-default" ng-click="columnModel.approveAll()">
+    <a href="#" class="btn btn-default" ng-click="columnModel.flagAll('approved')">
         <i class="glyphicon glyphicon-ok"></i> All
+    </a>
+
+    <a href="#" class="btn btn-default" ng-click="columnModel.flagAll('flagged')">
+        <i class="glyphicon glyphicon-flag"></i> All
+    </a>
+
+    <a href="#" class="btn btn-default" ng-click="columnModel.flagAll('denied')">
+        <i class="glyphicon glyphicon-remove"></i> All
     </a>
 
     <a href="#" class="btn btn-default" ng-click="columnModel.showAllComments()">
@@ -74,6 +84,9 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 
     <a href="#" class="btn btn-default" ng-click="columnModel.hideAllComments()">
         <i class="glyphicon glyphicon-comment"></i> Hide
+    </a>
+    <a href="#" class="btn btn-danger" onClick="if (confirm('Are you sure?')) $('.copy').click();" title="Copy All Old Value to New Value">
+        <i class="glyphicon glyphicon-hand-right"></i> Copy All
     </a>
 </span>
 
@@ -106,6 +119,13 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
     </div>
 
     <div class="col-md-4">
+		<a 
+			class="btn btn-default copy"
+			title="Copy Old Value to New Value"
+			ng-click="columnModel.update(dataPoint, {'newValue': dataPoint.oldValue})"
+		>
+            <i class="glyphicon glyphicon-hand-right"></i>
+		</a>
         {{ dataPoint.oldValue }}
         <br style="clear: both">
         <span
@@ -124,7 +144,7 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
             onbeforesave="columnModel.update(dataPoint, {'newValue': $data})"
             editable-textarea="dataPoint.newValue"
             onshow="columnModel.addConvertButton()"
-        >{{ dataPoint.newValue }}</span>
+        >{{ dataPoint.newValue || "no data"}}</span>
     </div>
 
     <div class="col-md-3 text-right">

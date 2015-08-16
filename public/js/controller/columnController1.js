@@ -154,7 +154,7 @@ angular.module('utf8convert')
                 return $scope.columnPromise;
 			},
 
-			approveAll: function()
+			flagAll: function(status)
 			{
 				var newData = angular.copy($scope.dataPoint._embedded.data_point);
 
@@ -174,9 +174,9 @@ angular.module('utf8convert')
 						}
 					});
 
-					newData[key].approved = true;
-					newData[key].flagged = false;
-					newData[key].denied = false;
+					newData[key].approved = (status == 'approved');
+					newData[key].flagged = (status == 'flagged');
+					newData[key].denied = (status == 'denied');
 				});
 
                 $scope.columnPromise = $http({

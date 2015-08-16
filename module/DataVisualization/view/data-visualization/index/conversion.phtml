@@ -13,6 +13,8 @@
     </a>
 </h1>
 
+<?= $this->markdown($conversion->getDescription()); ?>
+
 <?php
 foreach ($conversion->getTableDef() as $table) {
     $totalDataPoint = 0;
@@ -25,7 +27,7 @@ foreach ($conversion->getTableDef() as $table) {
     }
 ?>
 <table class="table table-striped table-hover">
-    <caption>Table
+    <caption>
         <a href="<?= $this->url('visualization/table', array('table_id' => $table->getId())); ?>">
             <?= $this->escapeHtml($table->getName()); ?>
         </a>

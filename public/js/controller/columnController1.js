@@ -58,7 +58,14 @@ angular.module('utf8convert')
 				return false;
 			},
 
-			addConvertButton: function()
+			hideNewValue: function(node)
+			{
+				console.log(node.$id);
+				console.log($('#' + node.$id));
+				$('#' + node.$id).closest('.new-value').removeClass('col-md-12').addClass('col-md-6');
+			},
+
+			addEditHelperButtons: function(dataPoint)
 			{
 				$('span.editable-buttons').each(function(index, node) {
 					if ( ! $(node).find('button.convert').length) {
@@ -77,6 +84,22 @@ angular.module('utf8convert')
 								textarea.val(data.value);
 								textarea.trigger('change');
 							});
+						});
+						$(node).append(button);
+
+						button = $('<button type="button" alt="Inflate/Deflate textarea" class="btn btn-default"><i class="glyphicon glyphicon-expand"></i></button>');
+						button.on('click', function(event) {
+							dataPoint._maximized = ! dataPoint._maximized;
+
+							textarea = $(this).parent().parent().find('textarea');
+
+							if (dataPoint._maximized) {
+								textarea.attr('cols', '120');
+							} else {
+								textarea.attr('cols', '50');
+							}
+
+							$scope.$apply();
 						});
 						$(node).append(button);
 					}

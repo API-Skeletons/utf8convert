@@ -6,13 +6,13 @@
 
 <style>
     .odd {
-        background-color: #eee;
+        background-color: #ccc;
         border-top: 1px solid;
         padding: 5px;
     }
 
     .even {
-        background-color: #fff;
+        background-color: #aaa;
         border-top: 1px solid;
         padding: 5px;
     }
@@ -27,6 +27,12 @@
         background-color: #ddf;
         border-top: 1px solid;
         padding: 5px;
+    }
+
+    .editable-buttons {
+        display: block;
+        margin-left: 0px;
+        margin-top: 5px;
     }
 </style>
 
@@ -86,69 +92,57 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
         <i class="glyphicon glyphicon-comment"></i> Hide
     </a>
     <a href="#" class="btn btn-danger" onClick="if (confirm('Are you sure?')) $('.copy').click();" title="Copy All Old Value to New Value">
-        <i class="glyphicon glyphicon-hand-right"></i> Copy All
+        <i class="glyphicon glyphicon-copy"></i> Copy All
     </a>
 </span>
 
 <div class="container text-left" style="clear: both;">
-    <div class="col-md-1">
-        <strong>#</strong>
+    <div class="col-md-8">
+        <strong>Comment</strong>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-4 text-right">
+        <strong>Actions</strong>
+    </div>
+
+    <div class="col-md-6">
         <strong>Old Value</strong>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-6">
         <strong>New Value</strong>
-    </div>
-
-    <div class="col-md-3 text-right">
-        <strong>Actions & Comment</strong>
     </div>
 </div>
 
 <div class="container" ng-repeat="dataPoint in dataPoint._embedded.data_point" ng-class-odd="'odd'" ng-class-even="'even'">
 
     <div class="col-md-1">
-        {{ dataPoint.primaryKey }}
-        <br>
-        <b
-            ng-hide="!dataPoint._showComment"
-        >Comment</b>
+        <a
+            class="btn"
+            title="Edit comment"
+            ng-class="
+            {
+                'btn-default': ! dataPoint.comment,
+                'btn-info': dataPoint.comment && ! dataPoint._showComment,
+                'btn-primary': dataPoint.comment && dataPoint._showComment
+            }
+        " ng-click="dataPoint._showComment = ! dataPoint._showComment">
+            <i class="glyphicon glyphicon-comment"></i>
+        </a>
     </div>
-
-    <div class="col-md-4">
-		<a 
-			class="btn btn-default copy"
-			title="Copy Old Value to New Value"
-			ng-click="columnModel.update(dataPoint, {'newValue': dataPoint.oldValue})"
-		>
-            <i class="glyphicon glyphicon-hand-right"></i>
-		</a>
-        {{ dataPoint.oldValue }}
-        <br style="clear: both">
-        <span
-            ng-hide="!dataPoint._showComment"
+    <div class="col-md-7">
+        <pre
+            ng-hide="! dataPoint._showComment"
             class="ng-hide"
             onbeforesave="columnModel.update(dataPoint, {'comment': $data})"
             editable-textarea="dataPoint.comment"
             e-rows="4"
-            e-cols="40"
-        >{{ dataPoint.comment || 'no comment' }}</span>
-
+            e-cols="80"
+        >{{ dataPoint.comment || 'no comment' }}</pre>
     </div>
 
-    <div class="col-md-4">
-        <span
-            onbeforesave="columnModel.update(dataPoint, {'newValue': $data})"
-            editable-textarea="dataPoint.newValue"
-            onshow="columnModel.addConvertButton()"
-        >{{ dataPoint.newValue || "no data"}}</span>
-    </div>
-
-    <div class="col-md-3 text-right">
-                <span class="btn-group pull-right">
+    <div class="col-md-4 text-right">
+                <span class="btn-group">
                     <a
                         class="btn"
                         title="Mark as Approved"
@@ -180,6 +174,14 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                     </a>
 
                     <a
+                        class="btn btn-default copy"
+                        title="Copy Old Value to New Value"
+                        ng-click="columnModel.update(dataPoint, {'newValue': dataPoint.oldValue})"
+                    >
+                        <i class="glyphicon glyphicon-copy"></i>
+                    </a>
+
+                    <a
                         class="btn"
                         title="Toggle live data view"
                         ng-class="
@@ -202,20 +204,22 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                         >
                         <i class="glyphicon glyphicon-link"></i>
                     </a>
-
-                    <a
-                        class="btn"
-                        title="Edit comment"
-                        ng-class="
-                        {
-                            'btn-default': !dataPoint.comment,
-                            'btn-info': dataPoint.comment && !dataPoint._showComment,
-                            'btn-primary': dataPoint.comment && dataPoint._showComment
-                        }
-                    " ng-click="dataPoint._showComment = !dataPoint._showComment">
-                        <i class="glyphicon glyphicon-comment"></i>
-                    </a>
                 </span>
+    </div>
+
+    <div class="col-md-6">
+        <pre>{{ dataPoint.oldValue }}</pre>
+    </div>
+
+    <div ng-class="dataPoint._maximized ? 'col-md-12': 'col-md-6'">
+        <pre
+            e-rows="4"
+            e-cols="50"
+            onbeforesave="columnModel.update(dataPoint, {'newValue': $data})"
+            editable-textarea="dataPoint.newValue"
+            onshow="columnModel.addEditHelperButtons(dataPoint)"
+            onhide="dataPoint._maximized = false"
+        >{{ dataPoint.newValue || "no data"}}</pre>
     </div>
 
     <div class="col-md-12 ng-hide"

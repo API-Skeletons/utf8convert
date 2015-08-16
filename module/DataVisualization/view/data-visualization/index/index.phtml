@@ -50,9 +50,7 @@ ini_set('display_errors', true);
                         continue;
                     }
                 ?>
-                    <a class="btn btn-default" href="">
-                        <?= $this->escapeHtml($table->getName()); ?>
-                    </a>
+                    <?= $this->escapeHtml($table->getName()); ?>
                 <?php
                 }
                 ?>

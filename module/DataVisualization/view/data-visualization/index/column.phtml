@@ -94,21 +94,24 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
         <i class="glyphicon glyphicon-remove"></i> All
     </a>
 
-    <a href="#" class="btn btn-default" ng-click="columnModel.diffAll(true)">
-        <i class="glyphicon glyphicon-random"></i> Show
+    <a
+        href="#"
+        class="btn"
+        ng-class="toggleDiff ? 'btn-primary': 'btn-default'"
+        ng-click="columnModel.toggleDiff()"
+    >
+        <i class="glyphicon glyphicon-random"></i> Toggle
     </a>
 
-    <a href="#" class="btn btn-default" ng-click="columnModel.diffAll(false)">
-        <i class="glyphicon glyphicon-random"></i> Hide
+    <a
+        href="#"
+        class="btn"
+        ng-class="toggleComment ? 'btn-primary': 'btn-default'"
+        ng-click="columnModel.toggleComments()"
+    >
+        <i class="glyphicon glyphicon-comment"></i> Toggle
     </a>
 
-    <a href="#" class="btn btn-default" ng-click="columnModel.showAllComments()">
-        <i class="glyphicon glyphicon-comment"></i> Show
-    </a>
-
-    <a href="#" class="btn btn-default" ng-click="columnModel.hideAllComments()">
-        <i class="glyphicon glyphicon-comment"></i> Hide
-    </a>
     <a href="#" class="btn btn-danger" onClick="if (confirm('Are you sure?')) $('.copy').click();" title="Copy All Old Value to New Value">
         <i class="glyphicon glyphicon-copy"></i> Copy All
     </a>
@@ -238,11 +241,19 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
                 </span>
     </div>
 
-    <div class="col-md-6 ng-hide" ng-hide="! dataPoint._showDiff">
+    <div
+        class="col-md-6 ng-hide"
+        ng-hide="! dataPoint._showDiff"
+        ng-class="dataPoint._maximized ? 'col-md-12': 'col-md-6'"
+    >
         <pre ng-bind-html="dataPoint.oldValue | diff: dataPoint.newValue"></pre>
     </div>
 
-    <div class="col-md-6 ng-hide" ng-hide="dataPoint._showDiff">
+    <div
+        class="ng-hide"
+        ng-hide="dataPoint._showDiff"
+            ng-class="dataPoint._maximized ? 'col-md-12': 'col-md-6'"
+        >
         <pre>{{ dataPoint.oldValue }}</pre>
     </div>
 

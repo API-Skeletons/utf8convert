@@ -101,6 +101,7 @@ return array(
                         ),
                     ),
                 ),
+                /*
                 'refactor' => array(
                     'type'    => 'simple',
                     'options' => array(
@@ -111,6 +112,7 @@ return array(
                         ),
                     ),
                 ),
+                */
                 'createConversion' => array(
                     'type'    => 'simple',
                     'options' => array(

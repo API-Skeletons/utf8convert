@@ -212,20 +212,15 @@ angular.module('utf8convert')
 				});
 			},
 
-			showAllComments: function()
+			toggleComments: function()
 			{
-				angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
-					if (value.comment) {
-						value._showComment = true;
-					}
-				});
-			},
+				$scope.toggleComment = ! $scope.toggleComment;
 
-			hideAllComments: function()
-			{
 				angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
-					value._showComment = false;
+					value._showComment = $scope.toggleComment;
 				});
+
+				return false;
 			},
 
 			copyAll: function()
@@ -235,13 +230,19 @@ angular.module('utf8convert')
 						columnModel.update(value, {'newValue': value.oldValue})
 					});
 				}
+
+				return false;
 			},
 
-			diffAll: function(show)
+			toggleDiff: function()
 			{
+				$scope.toggleDiff = ! $scope.toggleDiff;
+
 				angular.forEach($scope.dataPoint._embedded.data_point, function(value, key) {
-					value._showDiff = show;
+					value._showDiff = $scope.toggleDiff;
 				});
+
+				return false;
 			}
         }
     }

@@ -44,6 +44,10 @@
         margin-left: 0px;
         margin-top: 5px;
     }
+
+    .corrupted {
+        background-color: red;
+    }
 </style>
 
 <div class="pull-right">
@@ -252,9 +256,16 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
     <div
         class="ng-hide"
         ng-hide="dataPoint._showDiff"
-            ng-class="dataPoint._maximized ? 'col-md-12': 'col-md-6'"
+            ng-class="{
+                'col-md-12': dataPoint._maximized,
+                'col-md-6': ! dataPoint._maximized
+            }"
         >
-        <pre>{{ dataPoint.oldValue }}</pre>
+        <pre
+            ng-class="{
+                'bg-danger': (dataPoint.oldValue | hasCorruptedData)
+            }"
+        >{{ dataPoint.oldValue }}</pre>
     </div>
 
     <div ng-class="dataPoint._maximized ? 'col-md-12': 'col-md-6'">
@@ -320,3 +331,12 @@ Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 </div>
 
 </div>
+
+<br>
+
+<div>
+    <strong>Legend: </strong>
+    <pre class="bg-danger" style="display: inline;">Corrupted</pre>
+</div>
+
+

@@ -86,7 +86,7 @@ class ConversionRepository extends EntityRepository
                     #}
                     $this->_em->flush();
 
-                    echo $sql . ";\n";
+                    $importSql[] = $sql . ';';
 
                 } catch (RuntimeException $e) {
                     $errors[] = array(
@@ -107,6 +107,12 @@ class ConversionRepository extends EntityRepository
 
             $start += 500;
             $paginator->getQuery()->setFirstResult($start);
+        }
+
+        if (! $errors) {
+            header('Content-Type: text/plain; charset=utf8');
+            echo implode("\n\n", $importSql);
+            die();
         }
 
         return $errors;

@@ -95,7 +95,7 @@ class IndexController extends AbstractActionController
             if (isset($databaseConnection['host']) and $databaseConnection['host']) {
                 echo " -h " . $databaseConnection['host'];
             }
-            echo " --opt --skip-set-charset --skip-extended-insert --default-character-set=" . $value['CHARACTER_SET_NAME'];
+            echo " --opt --skip-set-charset --default-character-set=" . $value['CHARACTER_SET_NAME'];
             echo " " . $databaseConnection['database'] . " --tables " . $value['TABLE_NAME'] . " > utf8convert.table.sql;\n";
             echo "perl -i -pe 's/DEFAULT CHARSET=" . $value['CHARACTER_SET_NAME'] . "/DEFAULT CHARSET=utf8/' utf8convert.table.sql;\n";
             echo "mysql -u " . $databaseConnection['username'];

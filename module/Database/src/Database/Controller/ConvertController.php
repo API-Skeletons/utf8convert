@@ -377,6 +377,13 @@ class ConvertController extends AbstractActionController
                 }
                 $primaryKeyString = implode(',', $values);
 
+                // Do a PHP check for the validity of the UTF8 string
+                if ($this->convertToUtf8($utf8record[$column->getName()])) {
+                    continue;
+                }
+
+                die('found invalid utf8 ' . $utf8record[$column->getName()]);
+
                 $dataPoint = new Entity\DataPoint();
                 $dataPoint->setColumnDef($column);
                 $dataPoint->setConversion($conversion);
@@ -433,5 +440,73 @@ class ConvertController extends AbstractActionController
             $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
         }
     }
-}
 
+    private function convertToUtf8($str)
+    {
+        $length = mb_strlen($str);
+        $return = '';
+
+        for($i = 0; $i < $length; $i++){
+
+            $char = mb_substr($str, $i, 1, 'UTF-8');
+            $ret = mb_convert_encoding($char, 'UTF-32BE', 'UTF-8');
+            $c = hexdec(bin2hex($ret));
+
+            $bytes = 1;
+
+            // If this character defines bytes then it
+            // could be a correct character or it could
+            // be the start of an invalid sequence.
+            if ($c >= 0xF0 && $c <= 0xF7) {
+                $bytes = 4;
+            } else if ($c >= 0xE0 && $c <= 0xEF) {
+                $bytes = 3;
+            } else if ($c >= 0xC0 && $c <= 0xDF) {
+                $bytes = 2;
+            }
+
+            // Convert invalid chars to utf8
+            $utf8Char = $char;
+            $multibyte = false;
+            $checkUtf8Char = false;
+            while ($bytes > 1) {
+                $i++;
+
+                $nextCharacter = mb_substr($str, $i, 1, 'UTF-8');
+                $next32BE = mb_convert_encoding($nextCharacter, 'UTF-32BE', 'UTF-8');
+                $nextCharacterCode = hexdec(bin2hex($next32BE));
+
+                $utf8Char .= $nextCharacter;
+
+                if ($nextCharacterCode < 0x80) {
+                    // The original character stands alone and is not an invalid byte sequence
+                    break;
+                }
+
+                $multibyte = true;
+                $bytes--;
+            }
+
+            if ($multibyte) {
+                // If these functions fail then the derive encoding found is invalid
+                // and the string is one or more valid utf8 characters together
+                $newUtf8Char = @mb_convert_encoding($utf8Char, "ISO-8859-1");
+                $checkUtf8Char = @mb_substr($newUtf8Char, 0, 1, 'UTF-8');
+
+                if ($checkUtf8Char) {
+                    // Successfully restored a UTF8 character
+                    $utf8Char = $newUtf8Char;
+                }
+            }
+
+            $return .= $utf8Char;
+        }
+
+        // Re-run to fix double or more encodings
+        if ($str != $return) {
+            return $this->convertToUtf8($return);
+        }
+
+        return $return;
+    }
+}

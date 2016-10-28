@@ -13,6 +13,8 @@ use Zend\Db\Sql\Where;
 use Zend\Db\Sql\Predicate;
 use Zend\Paginator\Adapter\DbSelect;
 use Zend\Paginator\Paginator;
+use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator;
+use Doctrine\ORM\Tools\Pagination\Paginator as ORMPaginator;
 
 use DateTime;
 use Db\Entity;
@@ -70,6 +72,7 @@ class ConvertController extends AbstractActionController
     {
         $conversionName = $this->getRequest()->getParam('name');
 
+        $config = $this->getServiceLocator()->get('Config');
         $informationSchema = $this->getServiceLocator()->get('information-schema');
         $database = $this->getServiceLocator()->get('database');
         $databaseConnection = $this->getServiceLocator()->get('Config');
@@ -94,20 +97,36 @@ class ConvertController extends AbstractActionController
 
         $conversion->setStartAt(new DateTime());
         $objectManager->flush();
+// asdf
+        $queryBuilder = $objectManager->createQueryBuilder();
+        $queryBuilder->select('dataPoint')
+            ->from('Db\Entity\DataPoint', 'dataPoint')
+            ->where($queryBuilder->expr()->eq('dataPoint.conversion', ':conversion'))
+            ->setParameter('conversion', $conversion)
+            ;
 
-        foreach ($conversion->getTableDef() as $table) {
-            foreach ($table->getColumnDef() as $column) {
-                $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
-                $objectManager->getRepository('Db\Entity\ConvertWorker')->mutateValueField($database, $column);
-                $objectManager->getRepository('Db\Entity\ConvertWorker')->fetchInvalidDataPoint($conversion, $column);
-                $objectManager->getRepository('Db\Entity\ConvertWorker')->utf8Convert();
-                $objectManager->getRepository('Db\Entity\ConvertWorker')->moveValidDataPoint();
-                $objectManager->getRepository('Db\Entity\ConvertWorker')->truncate();
+        $page = 1;
+        $adapter = new DoctrinePaginator(new ORMPaginator($queryBuilder));
+        $paginator = new Paginator($adapter);
+        $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
+        $paginator->setCurrentPageNumber($page);
 
-                $revertColumn = new Entity\ColumnDef();
-                $revertColumn->setDataType('longtext');
-                $objectManager->getRepository('Db\Entity\ConvertWorker')->mutateValueField($database, $revertColumn);
+        $rowCount = 0;
+        while (true) {
+            foreach ($paginator as $dataPoint) {
+                $rowCount ++;
+
+                $dataPoint->setNewValue($this->convertToUtf8($dataPoint->getOldValue()));
             }
+
+            $objectManager->flush();
+
+            if ($rowCount == $paginator->getTotalItemCount()) {
+                break;
+            }
+
+            $page ++;
+            $paginator->setCurrentPageNumber($page);
         }
 
         $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
@@ -332,9 +351,6 @@ class ConvertController extends AbstractActionController
             foreach ($paginator as $utf8record) {
                 $rowCount ++;
 
-#print_r($utf8record);
-
-#echo "running record $rowCount of " . $paginator->getTotalItemCount() . "\n";
                 $column = $objectManager->getRepository('Db\Entity\ColumnDef')->findOneBy(array(
                     'tableDef' => $table,
                     'name' => $row['COLUMN_NAME'],
@@ -376,13 +392,6 @@ class ConvertController extends AbstractActionController
                     $values[] = $utf8record[$primaryKey->getName()];
                 }
                 $primaryKeyString = implode(',', $values);
-
-                // Do a PHP check for the validity of the UTF8 string
-                if ($this->convertToUtf8($utf8record[$column->getName()])) {
-                    continue;
-                }
-
-                die('found invalid utf8 ' . $utf8record[$column->getName()]);
 
                 $dataPoint = new Entity\DataPoint();
                 $dataPoint->setColumnDef($column);
@@ -441,71 +450,142 @@ class ConvertController extends AbstractActionController
         }
     }
 
-    private function convertToUtf8($str)
+    /**
+     * Given a valid or invalid UTF8 string parse it and convert
+     * all UTF8 sequences into UTF8 characters while leaving valid
+     * UTF8 characters alone.
+     */
+    private function convertToUtf8($input, $counter = 0)
     {
-        $length = mb_strlen($str);
+        $length = mb_strlen($input);
         $return = '';
 
-        for($i = 0; $i < $length; $i++){
+        for($i = 0; $i < $length; $i++) {
+echo "$i of $length \n";
 
-            $char = mb_substr($str, $i, 1, 'UTF-8');
-            $ret = mb_convert_encoding($char, 'UTF-32BE', 'UTF-8');
-            $c = hexdec(bin2hex($ret));
-
+            // Fetch one UTF8 character
+            $character = mb_substr($input, $i, 1, 'UTF-8');
+            $characterUtf32BE= mb_convert_encoding($character, 'UTF-32BE', 'UTF-8');
+            $characterCode = hexdec(bin2hex($characterUtf32BE));
             $bytes = 1;
+            $multibyte = false;
 
             // If this character defines bytes then it
             // could be a correct character or it could
             // be the start of an invalid sequence.
-            if ($c >= 0xF0 && $c <= 0xF7) {
+            if ($characterCode >= 0xF0 && $characterCode <= 0xF7) {
                 $bytes = 4;
-            } else if ($c >= 0xE0 && $c <= 0xEF) {
+            } else if ($characterCode >= 0xE0 && $characterCode <= 0xEF) {
                 $bytes = 3;
-            } else if ($c >= 0xC0 && $c <= 0xDF) {
+            } else if ($characterCode >= 0xC0 && $characterCode <= 0xDF) {
                 $bytes = 2;
             }
 
             // Convert invalid chars to utf8
-            $utf8Char = $char;
-            $multibyte = false;
-            $checkUtf8Char = false;
             while ($bytes > 1) {
                 $i++;
 
-                $nextCharacter = mb_substr($str, $i, 1, 'UTF-8');
-                $next32BE = mb_convert_encoding($nextCharacter, 'UTF-32BE', 'UTF-8');
-                $nextCharacterCode = hexdec(bin2hex($next32BE));
+                $nextCharacter = mb_substr($input, $i, 1, 'UTF-8');
+                $nextCharacterUtf32BE = mb_convert_encoding($nextCharacter, 'UTF-32BE', 'UTF-8');
+                $nextCharacterCode = hexdec(bin2hex($nextCharacterUtf32BE));
 
-                $utf8Char .= $nextCharacter;
-
+                // Does the original character stands alone and is not an invalid byte sequence?
                 if ($nextCharacterCode < 0x80) {
-                    // The original character stands alone and is not an invalid byte sequence
+                    // Yes, stand alone.  $character is correctly encoded and $nextCharacter is re-enqueued
+                    // to be correctly encoded too.  This character is within the byte range of the
+                    // first were the first invalid.
+                    $i--;
                     break;
                 }
+
+                $character .= $nextCharacter;
 
                 $multibyte = true;
                 $bytes--;
             }
 
             if ($multibyte) {
-                // If these functions fail then the derive encoding found is invalid
+                // If these functions fail then the derived encoding found is invalid
                 // and the string is one or more valid utf8 characters together
-                $newUtf8Char = @mb_convert_encoding($utf8Char, "ISO-8859-1");
+                $newUtf8Char = @mb_convert_encoding($character, "ISO-8859-1");
                 $checkUtf8Char = @mb_substr($newUtf8Char, 0, 1, 'UTF-8');
 
                 if ($checkUtf8Char) {
                     // Successfully restored a UTF8 character
-                    $utf8Char = $newUtf8Char;
+                    $character = mb_convert_encoding($newUtf8Char, 'UTF-8');
+                } else {
+                    // Special case handling for Windows-125X charsets
+                    $specialCharacter = mb_substr($character, 0, 1, 'UTF-8');
+                    $specialCharacterUtf32BE = mb_convert_encoding($specialCharacter, 'UTF-32BE', 'UTF-8');
+                    $specialCharacterCode = hexdec(bin2hex($specialCharacterUtf32BE));
+
+                    if ($specialCharacterCode == 0xE2) {
+                        $specialCharacter2 = mb_substr($character, 1, 1, 'UTF-8');
+                        $specialCharacterUtf32BE2 = mb_convert_encoding($specialCharacter2, 'UTF-32BE', 'UTF-8');
+                        $specialCharacterCode2 = hexdec(bin2hex($specialCharacterUtf32BE2));
+
+                        if ($specialCharacterCode2 == 0x20AC) {
+                            $specialCharacter3 = mb_substr($character, 2, 1, 'UTF-8');
+                            $specialCharacterUtf32BE3 = mb_convert_encoding($specialCharacter3, 'UTF-32BE', 'UTF-8');
+                            $specialCharacterCode3 = hexdec(bin2hex($specialCharacterUtf32BE3));
+
+                            switch ($specialCharacterCode3) {
+                                case 0xA6:
+                                    $character = 0x2026; // elipsies
+                                    break;
+                                case 0x201D:
+                                case 0x201C:
+                                    $character = 0x2014; // long hyphen
+                                    break;
+                                case 0xA8:
+                                    $character = 0x2013; // short hyphen
+                                    break;
+                                case 0x2DC:
+                                    $character = 0x2018; // left single quotation mark
+                                    break;
+                                case 0x2122:
+                                    $character = 0x2019; // right single quotation mark
+                                    break;
+                                case 0xA1:
+                                    $character = 0x2021; // double plus? vertical align ++
+                                    break;
+                                case 0x153:
+                                    $character = 0x201C; // double curly open quote
+                                    break;
+                                case 0x9D:
+                                case 0xA0:
+                                    $character = 0x201D; // double curly close quote
+                                    break;
+                                case 0xA2:
+                                    $character = 0x2022;
+                                    break;
+                                default:
+                                    die($input . "\n" . $character . ' ' . $specialCharacterCode3);
+                                    break;
+                            }
+
+                            $character = mb_convert_encoding($newUtf8Char, 'UTF-8');
+                        }
+                    }
                 }
             }
 
-            $return .= $utf8Char;
+            // $character may be multiple characters by this point
+            $return .= $character;
         }
 
         // Re-run to fix double or more encodings
-        if ($str != $return) {
-            return $this->convertToUtf8($return);
+        if ($input != $return) {
+            $counter ++;
+
+            if ($counter > 2) {
+                die("$return $input break because than 3 iterations were ran.");
+            }
+
+            return $this->convertToUtf8($return, $counter);
         }
+
+        echo $return . "\n";
 
         return $return;
     }

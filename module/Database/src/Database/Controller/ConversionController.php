@@ -16,132 +16,32 @@ use Zend\Paginator\Paginator;
 use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator;
 use Doctrine\ORM\Tools\Pagination\Paginator as ORMPaginator;
 
-use DateTime;
 use Db\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
-class ConvertController extends AbstractActionController
+use Zend\Console\Request as ConsoleRequest;
+use Zend\Console\Adapter\AdapterInterface as Console;
+use Zend\Console\ColorInterface as Color;
+use Zend\Console\Prompt;
+use Zend\Console\Adapter\Posix;
+use Zend\ProgressBar\Adapter\Console as ProgressBarConsoleAdaper;
+use Zend\ProgressBar\ProgressBar;
+use DateTime;
+
+class ConversionController extends AbstractActionController
 {
-    public function copyConversionAction()
-    {
-        $fromConversionName = $this->getRequest()->getParam('from');
-        $toConversionName = $this->getRequest()->getParam('to');
-
-        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
-
-        $fromConversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
-            'name' => $fromConversionName
-        ));
-
-        if (!$fromConversion) {
-            die("\nThe from conversion name was not found\n");
-        }
-
-        try {
-            $conversion = new Entity\Conversion;
-            $conversion->setCreatedAt($fromConversion->getCreatedAt());
-            $conversion->setName($toConversionName);
-            if ($fromConversion->getStartAt()) {
-                $conversion->setStartAt($fromConversion->getStartAt());
-                $conversion->setEndAt($fromConversion->getEndAt());
-            }
-            $objectManager->persist($conversion);
-
-            foreach ($fromConversion->getTableDef() as $table) {
-                $table->addConversion($conversion);
-                $conversion->addTableDef($table);
-            }
-
-            $objectManager->flush();
-        } catch (UniqueConstraintViolationException $e) {
-            die("\nThe conversion name " . $toConversionName . " has already been used\n");
-        }
-
-        $objectManager->getConnection()->exec("
-            INSERT INTO DataPoint (conversion_id, column_def_id, primaryKey, oldValue, newValue, comment, flagged, approved, denied, importedAt, user_id)
-                SELECT " . $conversion->getId() . ", column_def_id, primaryKey, oldValue, newValue, comment, flagged, approved, denied, importedAt, user_id
-                FROM DataPoint
-                WHERE conversion_id = " . $fromConversion->getId() . "
-        ");
-
-        echo "\nConversion copy complete\n";
-    }
-
-    public function runConversionAction()
-    {
-        $conversionName = $this->getRequest()->getParam('name');
-
-        $config = $this->getServiceLocator()->get('Config');
-        $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $database = $this->getServiceLocator()->get('database');
-        $databaseConnection = $this->getServiceLocator()->get('Config');
-        $databaseConnection = $databaseConnection['db']['adapters']['database'];
-        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
-
-        $informationSchema->query("SET session wait_timeout=86400")->execute();
-
-        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
-            'name' => $conversionName,
-        ));
-
-        if (!$conversion) {
-            echo "Conversion $conversionName cannot be found.  Use --conversion=name\n";
-            return;
-        }
-
-        if ($conversion->getStartAt()) {
-            echo "This conversion has already been ran\n";
-            return;
-        }
-
-        $conversion->setStartAt(new DateTime());
-        $objectManager->flush();
-// asdf
-        $queryBuilder = $objectManager->createQueryBuilder();
-        $queryBuilder->select('dataPoint')
-            ->from('Db\Entity\DataPoint', 'dataPoint')
-            ->where($queryBuilder->expr()->eq('dataPoint.conversion', ':conversion'))
-            ->setParameter('conversion', $conversion)
-            ;
-
-        $page = 1;
-        $adapter = new DoctrinePaginator(new ORMPaginator($queryBuilder));
-        $paginator = new Paginator($adapter);
-        $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
-        $paginator->setCurrentPageNumber($page);
-
-        $rowCount = 0;
-        while (true) {
-            foreach ($paginator as $dataPoint) {
-                $rowCount ++;
-
-                $dataPoint->setNewValue($this->convertToUtf8($dataPoint->getOldValue()));
-            }
-
-            $objectManager->flush();
-
-            if ($rowCount == $paginator->getTotalItemCount()) {
-                break;
-            }
-
-            $page ++;
-            $paginator->setCurrentPageNumber($page);
-        }
-
-        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
-            'name' => $conversionName,
-        ));
-
-        $conversion->setEndAt(new DateTime());
-        $objectManager->flush();
-    }
-
     /**
      * Convert all data in all string columns to utf8 by correcting encoding
      */
-    public function createConversionAction()
+    public function createAction()
     {
+        if (! $this->getRequest() instanceof ConsoleRequest){
+            throw new \RuntimeException('You can only use this action from a console!');
+        }
+
+        $console = $this->getServiceLocator()->get('Console');
+
         $conversionName = $this->getRequest()->getParam('name');
         $consoleWhitelist = $this->getRequest()->getParam('whitelist');
         $consoleBlacklist = $this->getRequest()->getParam('blacklist');
@@ -205,6 +105,8 @@ class ConvertController extends AbstractActionController
             $blacklistTables
             ORDER BY COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME
         ", array($databaseConnection['database']));
+
+        $console->writeLine("Creating Conversion", Color::CYAN);
 
         try {
             $conversion = new Entity\Conversion;
@@ -293,7 +195,224 @@ class ConvertController extends AbstractActionController
 
         $objectManager->flush();
 
-        echo "\nConversion created\n";
+        $console->writeLine("Conversion created", Color::GREEN);
+    }
+
+    /**
+     * Run a conversion
+     */
+    public function convertAction()
+    {
+        if (! $this->getRequest() instanceof ConsoleRequest){
+            throw new \RuntimeException('You can only use this action from a console!');
+        }
+
+        $console = $this->getServiceLocator()->get('Console');
+
+        $conversionName = $this->getRequest()->getParam('name');
+
+        $config = $this->getServiceLocator()->get('Config');
+        $informationSchema = $this->getServiceLocator()->get('information-schema');
+        $database = $this->getServiceLocator()->get('database');
+        $databaseConnection = $this->getServiceLocator()->get('Config');
+        $databaseConnection = $databaseConnection['db']['adapters']['database'];
+        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+
+        $informationSchema->query("SET session wait_timeout=86400")->execute();
+
+        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
+            'name' => $conversionName,
+        ));
+
+        if (!$conversion) {
+            $console->writeLine("Conversion $conversionName cannot be found.  Use --conversion=name", Color::RED);
+            return;
+        }
+
+        $conversion->setStartAt(new DateTime());
+        $objectManager->flush();
+
+        $queryBuilder = $objectManager->createQueryBuilder();
+        $queryBuilder->select('dataPoint')
+            ->from('Db\Entity\DataPoint', 'dataPoint')
+            ->andwhere($queryBuilder->expr()->eq('dataPoint.conversion', ':conversion'))
+            ->setParameter('conversion', $conversion)
+            ->andwhere('dataPoint.oldValue = dataPoint.newValue')
+            ;
+
+        $page = 1;
+        $adapter = new DoctrinePaginator(new ORMPaginator($queryBuilder));
+        $paginator = new Paginator($adapter);
+        $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
+        $paginator->setCurrentPageNumber(0);
+
+        $console->writeLine("Converting " . $conversion->getName(), Color::CYAN);
+        $console->writeLine($paginator->getTotalItemCount() . " DataPoints", Color::YELLOW);
+        $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 0, $paginator->getTotalItemCount());
+
+        $rowCount = 0;
+        while (true) {
+            foreach ($paginator as $dataPoint) {
+                $rowCount ++;
+                $progressBar->update($rowCount);
+
+                $dataPoint->setNewValue($this->convertToUtf8($dataPoint->getOldValue(), $dataPoint));
+            }
+
+            $objectManager->flush();
+            $objectManager->clear();
+
+            if ($rowCount == $paginator->getTotalItemCount()) {
+                break;
+            }
+
+            $page ++;
+            $paginator->setCurrentPageNumber($page);
+        }
+
+        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
+            'name' => $conversionName,
+        ));
+
+        $conversion->setEndAt(new DateTime());
+        $objectManager->flush();
+    }
+
+    /**
+     * Generate the SQL to run to correct the database
+     */
+    public function exportAction()
+    {
+        $conversionName = $this->params('name');
+        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+        $database = $this->getServiceLocator()->get('database');
+
+        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy([
+            'name' => $conversionName
+        ]);
+        $errors = $objectManager->getRepository('Db\Entity\Conversion')->import($conversion, $database);
+
+        return array('conversion' => $conversion, 'errors' => $errors);
+    }
+
+    /**
+     * Clone an existing conversion
+     */
+    public function cloneAction()
+    {
+        if (! $this->getRequest() instanceof ConsoleRequest){
+            throw new \RuntimeException('You can only use this action from a console!');
+        }
+
+        $console = $this->getServiceLocator()->get('Console');
+
+        $fromConversionName = $this->getRequest()->getParam('from');
+        $toConversionName = $this->getRequest()->getParam('to');
+
+        $config = $this->getServiceLocator()->get('Config');
+        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+
+        $fromConversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy(array(
+            'name' => $fromConversionName
+        ));
+
+        if (!$fromConversion) {
+            $console->write("The from conversion '" . $fromConversionName . "' was not found", Color::RED);
+            return;
+        }
+
+
+        $console->writeLine("Cloning Conversion", Color::CYAN);
+
+        try {
+            $conversion = new Entity\Conversion;
+            $conversion->setCreatedAt($fromConversion->getCreatedAt());
+            $conversion->setName($toConversionName);
+            if ($fromConversion->getStartAt()) {
+                $conversion->setStartAt($fromConversion->getStartAt());
+                $conversion->setEndAt($fromConversion->getEndAt());
+            }
+            $objectManager->persist($conversion);
+
+            foreach ($fromConversion->getTableDef() as $table) {
+                $table->addConversion($conversion);
+                $conversion->addTableDef($table);
+            }
+
+            $objectManager->flush();
+            $conversionId = $conversion->getId();
+
+        } catch (UniqueConstraintViolationException $e) {
+            $console->write("The conversion name " . $toConversionName . " has already been used", Color::RED);
+            return;
+        }
+
+        $queryBuilder = $objectManager->createQueryBuilder();
+        $queryBuilder->select('dataPoint')
+            ->from('Db\Entity\DataPoint', 'dataPoint')
+            ->where($queryBuilder->expr()->eq('dataPoint.conversion', ':conversion'))
+            ->setParameter('conversion', $fromConversion)
+            ;
+
+        $page = 1;
+        $adapter = new DoctrinePaginator(new ORMPaginator($queryBuilder));
+        $paginator = new Paginator($adapter);
+        $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
+        $paginator->setCurrentPageNumber($page);
+
+        $console->writeLine("Cloning DataPoints", Color::CYAN);
+        $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 0, $paginator->getTotalItemCount());
+
+        $rowCount = 0;
+        while (true) {
+            foreach ($paginator as $dataPoint) {
+                $rowCount ++;
+
+                $progressBar->update($rowCount);
+
+                $newDataPoint = new Entity\DataPoint();
+                $newDataPoint
+                    ->setColumnDef($dataPoint->getColumnDef())
+                    ->setConversion($conversion)
+                    ->setPrimaryKey($dataPoint->getPrimaryKey())
+                    ->setOldValue($dataPoint->getOldValue())
+                    ->setNewValue($dataPoint->getNewValue())
+                    ->setComment($dataPoint->getComment())
+                    ->setFlagged($dataPoint->getFlagged())
+                    ->setApproved($dataPoint->getApproved())
+                    ->setDenied($dataPoint->getDenied())
+                    ->setImportedAt($dataPoint->getImportedAt())
+                    ->setUser($dataPoint->getUser())
+                    ;
+
+                $objectManager->persist($newDataPoint);
+
+                foreach ($dataPoint->getDataPointPrimaryKey() as $dataPointPrimaryKeyDef) {
+                    $newDataPointPrimaryKeyDef = new Entity\DataPointPrimaryKeyDef();
+                    $newDataPointPrimaryKeyDef
+                        ->setDataPoint($newDataPoint)
+                        ->setPrimaryKeyDef($dataPointPrimaryKeyDef->getPrimaryKeyDef())
+                        ->setValue($dataPointPrimaryKeyDef->getValue())
+                        ;
+
+                    $objectManager->persist($newDataPointPrimaryKeyDef);
+                }
+            }
+
+            $objectManager->flush();
+            $objectManager->clear();
+
+            if ($rowCount == $paginator->getTotalItemCount()) {
+                break;
+            }
+
+            $conversion = $objectManager->getRepository('Db\Entity\Conversion')->find($conversionId);
+
+            $page ++;
+            $paginator->setCurrentPageNumber($page);
+        }
+
+        $console->write('Conversion clone complete', Color::GREEN);
     }
 
     /**
@@ -302,6 +421,12 @@ class ConvertController extends AbstractActionController
      */
     private function convertColumn(Entity\Conversion $conversion, Entity\TableDef $table, $row)
     {
+        if (! $this->getRequest() instanceof ConsoleRequest){
+            throw new \RuntimeException('You can only use this action from a console!');
+        }
+
+        $console = $this->getServiceLocator()->get('Console');
+
         $database = $this->getServiceLocator()->get('database');
         $config = $this->getServiceLocator()->get('Config');
         $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
@@ -346,10 +471,17 @@ class ConvertController extends AbstractActionController
         $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
         $paginator->setCurrentPageNumber($page);
 
+        if ($paginator->getTotalItemCount()) {
+            $console->writeLine("Creating DataPoints for " . $table->getName() . '.' . $row['COLUMN_NAME'], Color::YELLOW);
+            $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 0, $paginator->getTotalItemCount());
+        }
+
         $rowCount = 0;
         while (true) {
             foreach ($paginator as $utf8record) {
                 $rowCount ++;
+
+                $progressBar->update($rowCount);
 
                 $column = $objectManager->getRepository('Db\Entity\ColumnDef')->findOneBy(array(
                     'tableDef' => $table,
@@ -372,7 +504,7 @@ class ConvertController extends AbstractActionController
                    ", array($databaseConnection['database'], $row['TABLE_NAME'], $row['COLUMN_NAME']));
 
                     if (sizeof($columnDefinition) != 1) {
-                        echo "\nCannot fetch definition of " . $row['TABLE_NAME'] . "." . $row['COLUMN_NAME'] . "\n";
+                        $console->write("Cannot fetch definition of " . $row['TABLE_NAME'] . "." . $row['COLUMN_NAME'], Color::RED);
                     }
 
                     foreach ($columnDefinition as $columnDef) {
@@ -455,18 +587,50 @@ class ConvertController extends AbstractActionController
      * all UTF8 sequences into UTF8 characters while leaving valid
      * UTF8 characters alone.
      */
-    private function convertToUtf8($input, $counter = 0)
+    private function convertToUtf8($input, Entity\DataPoint $dataPoint, $counter = 0)
     {
         $length = mb_strlen($input);
         $return = '';
+        $character = '';
 
-        for($i = 0; $i < $length; $i++) {
-echo "$i of $length \n";
+        // Chunk string into 1k working strings
+        // mb_ functions are slow on large strings
+        $chunkStringLength = $length;
+        $chunkString = $input;
+        $chunkSize = 1000;
+        $stringChunks = [];
+
+        while ($chunkStringLength) {
+            $stringChunks[] = mb_substr($chunkString, 0, $chunkSize, "UTF-8");
+            $chunkString = mb_substr($chunkString, $chunkSize);
+            $chunkStringLength = mb_strlen($chunkString);
+        }
+
+        $chunkCount = sizeof($stringChunks);
+        $chunk = 1;
+        $workingString = array_shift($stringChunks);
+
+        while ($workingString !== '') {
+            // If the working string is < 100 add the next chunk to the string
+            if (mb_strlen($workingString) < 100) {
+                if ($stringChunks) {
+                    $workingString .= array_shift($stringChunks);
+                    $chunk ++;
+                }
+            }
 
             // Fetch one UTF8 character
-            $character = mb_substr($input, $i, 1, 'UTF-8');
-            $characterUtf32BE= mb_convert_encoding($character, 'UTF-32BE', 'UTF-8');
+            $character = mb_substr($workingString, 0, 1, 'UTF-8');
+
+            $characterUtf32BE= @mb_convert_encoding($character, 'UTF-32BE', 'UTF-8');
+            if (!$characterUtf32BE) {
+                die ('invalid character on data point' . $dataPoint->getId() . "\n" . $character . "\n" . $input);
+                // \xF5\x8C\xAB\xBA
+            }
             $characterCode = hexdec(bin2hex($characterUtf32BE));
+
+
+
             $bytes = 1;
             $multibyte = false;
 
@@ -482,10 +646,11 @@ echo "$i of $length \n";
             }
 
             // Convert invalid chars to utf8
+            $i = 0;
             while ($bytes > 1) {
                 $i++;
 
-                $nextCharacter = mb_substr($input, $i, 1, 'UTF-8');
+                $nextCharacter = mb_substr($workingString, $i, 1, 'UTF-8');
                 $nextCharacterUtf32BE = mb_convert_encoding($nextCharacter, 'UTF-32BE', 'UTF-8');
                 $nextCharacterCode = hexdec(bin2hex($nextCharacterUtf32BE));
 
@@ -494,12 +659,10 @@ echo "$i of $length \n";
                     // Yes, stand alone.  $character is correctly encoded and $nextCharacter is re-enqueued
                     // to be correctly encoded too.  This character is within the byte range of the
                     // first were the first invalid.
-                    $i--;
                     break;
                 }
 
                 $character .= $nextCharacter;
-
                 $multibyte = true;
                 $bytes--;
             }
@@ -512,65 +675,32 @@ echo "$i of $length \n";
 
                 if ($checkUtf8Char) {
                     // Successfully restored a UTF8 character
-                    $character = mb_convert_encoding($newUtf8Char, 'UTF-8');
+                    $newUtf8Char = @mb_convert_encoding($newUtf8Char, 'UTF-8');
+
+                    if ($newUtf8Char) {
+                        $character = $newUtf8Char;
+                        $workingString = mb_substr($workingString, strlen($newUtf8Char) - 1);
+                    } else {
+                        die("Error \n$string\n[$newUtf8Char] \n");
+                    }
+
                 } else {
-                    // Special case handling for Windows-125X charsets
-                    $specialCharacter = mb_substr($character, 0, 1, 'UTF-8');
-                    $specialCharacterUtf32BE = mb_convert_encoding($specialCharacter, 'UTF-32BE', 'UTF-8');
-                    $specialCharacterCode = hexdec(bin2hex($specialCharacterUtf32BE));
+                    // Try Windows-125X charsets
+                    $newUtf8Char = @mb_convert_encoding($character, 'Windows-1252');
+                    $checkUtf8Char = @mb_substr($newUtf8Char, 0, 1, 'UTF-8');
 
-                    if ($specialCharacterCode == 0xE2) {
-                        $specialCharacter2 = mb_substr($character, 1, 1, 'UTF-8');
-                        $specialCharacterUtf32BE2 = mb_convert_encoding($specialCharacter2, 'UTF-32BE', 'UTF-8');
-                        $specialCharacterCode2 = hexdec(bin2hex($specialCharacterUtf32BE2));
-
-                        if ($specialCharacterCode2 == 0x20AC) {
-                            $specialCharacter3 = mb_substr($character, 2, 1, 'UTF-8');
-                            $specialCharacterUtf32BE3 = mb_convert_encoding($specialCharacter3, 'UTF-32BE', 'UTF-8');
-                            $specialCharacterCode3 = hexdec(bin2hex($specialCharacterUtf32BE3));
-
-                            switch ($specialCharacterCode3) {
-                                case 0xA6:
-                                    $character = 0x2026; // elipsies
-                                    break;
-                                case 0x201D:
-                                case 0x201C:
-                                    $character = 0x2014; // long hyphen
-                                    break;
-                                case 0xA8:
-                                    $character = 0x2013; // short hyphen
-                                    break;
-                                case 0x2DC:
-                                    $character = 0x2018; // left single quotation mark
-                                    break;
-                                case 0x2122:
-                                    $character = 0x2019; // right single quotation mark
-                                    break;
-                                case 0xA1:
-                                    $character = 0x2021; // double plus? vertical align ++
-                                    break;
-                                case 0x153:
-                                    $character = 0x201C; // double curly open quote
-                                    break;
-                                case 0x9D:
-                                case 0xA0:
-                                    $character = 0x201D; // double curly close quote
-                                    break;
-                                case 0xA2:
-                                    $character = 0x2022;
-                                    break;
-                                default:
-                                    die($input . "\n" . $character . ' ' . $specialCharacterCode3);
-                                    break;
-                            }
-
-                            $character = mb_convert_encoding($newUtf8Char, 'UTF-8');
-                        }
+                    if ($checkUtf8Char) {
+                        // Successfully restored a Windwows-125x character
+                        $character = mb_convert_encoding($newUtf8Char, 'UTF-8');
+                        $workingString = mb_substr($workingString, strlen($newUtf8Char) - 1);
+                    } else {
+                        // String is valid multiple UTF-8 characters as-is
                     }
                 }
             }
 
             // $character may be multiple characters by this point
+            $workingString = mb_substr($workingString, mb_strlen($character));
             $return .= $character;
         }
 
@@ -578,15 +708,14 @@ echo "$i of $length \n";
         if ($input != $return) {
             $counter ++;
 
-            if ($counter > 2) {
-                die("$return $input break because than 3 iterations were ran.");
+            if ($counter > 5) {
+                die("$return \n $input \n break because than 5 iterations were ran.");
             }
 
-            return $this->convertToUtf8($return, $counter);
+            return $this->convertToUtf8($return, $dataPoint, $counter);
         }
-
-        echo $return . "\n";
 
         return $return;
     }
 }
+

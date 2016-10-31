@@ -8,7 +8,7 @@ use Zend\Db\Adapter\Exception\RuntimeException;
 
 class IndexController extends AbstractActionController
 {
-    public function createAdministratorAction()
+    public function administratorCreateAction()
     {
         $email = $this->getRequest()->getParam('email');
         $displayName = $this->getRequest()->getParam('displayName');
@@ -72,7 +72,7 @@ class IndexController extends AbstractActionController
     /**
      * Create a shell script to convert tables to utf8
      */
-    public function generateUtf8TableConversionAction()
+    public function databaseGenerateUtf8TablesAction()
     {
         // Validate all database settings are utf8
         $informationSchema = $this->getServiceLocator()->get('information-schema');

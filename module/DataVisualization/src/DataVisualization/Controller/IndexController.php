@@ -78,18 +78,5 @@ class IndexController extends AbstractActionController
             'column' => $column,
         ));
     }
-
-    public function importAction()
-    {
-        $conversionId = $this->params()->fromRoute('conversion_id');
-        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
-        $database = $this->getServiceLocator()->get('database');
-
-        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->find($conversionId);
-
-        $errors = $objectManager->getRepository('Db\Entity\Conversion')->import($conversion, $database);
-
-        return array('conversion' => $conversion, 'errors' => $errors);
-    }
 }
 

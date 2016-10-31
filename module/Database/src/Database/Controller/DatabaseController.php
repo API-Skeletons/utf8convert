@@ -8,20 +8,6 @@ use Zend\Db\Adapter\Exception\RuntimeException;
 
 class DatabaseController extends AbstractActionController
 {
-    public function importAction()
-    {
-        $conversionName = $this->params('name');
-        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
-        $database = $this->getServiceLocator()->get('database');
-
-        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy([
-            'name' => $conversionName
-        ]);
-        $errors = $objectManager->getRepository('Db\Entity\Conversion')->import($conversion, $database);
-
-        return array('conversion' => $conversion, 'errors' => $errors);
-    }
-
     public function truncateUtf8ConvertDatabaseAction()
     {
         $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
@@ -43,7 +29,7 @@ class DatabaseController extends AbstractActionController
     /**
      * Check MySQL utf8 settings for the target database
      */
-    public function validateTargetDatabaseAction()
+    public function databaseValidateAction()
     {
         if (!$this->validateDatabaseSettings()) {
             // output sent in function

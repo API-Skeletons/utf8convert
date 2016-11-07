@@ -14,7 +14,7 @@ return array(
         'invokables' => array(
             'Database\Controller\Index' => 'Database\Controller\IndexController',
             'Database\Controller\Data' => 'Database\Controller\DataController',
-            'Database\Controller\Convertion' => 'Database\Controller\ConvertionController',
+            'Database\Controller\Conversion' => 'Database\Controller\ConversionController',
             'Database\Controller\Database' => 'Database\Controller\DatabaseController',
         ),
     ),
@@ -74,7 +74,7 @@ return array(
                 'administrator-create' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'administrator-create [--email=] [--displayName=]',
+                        'route'    => 'administrator:create [--email=] [--displayName=]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Index',
                             'action'        => 'administratorCreate',
@@ -111,12 +111,12 @@ return array(
                         ),
                     ),
                 ),
-                'convertion-create' => array(
+                'conversion-create' => array(
                     'type'    => 'simple',
                     'options' => array(
                         'route'    => 'conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Convertion',
+                            'controller'    => 'Database\Controller\Conversion',
                             'action'        => 'create',
                         ),
                     ),
@@ -126,7 +126,7 @@ return array(
                     'options' => array(
                         'route'    => 'conversion:convert --name=',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Convertion',
+                            'controller'    => 'Database\Controller\Conversion',
                             'action'        => 'convert',
                         ),
                     ),
@@ -146,7 +146,7 @@ return array(
                     'options' => array(
                         'route'    => 'conversion:clone [--from=] [--to=]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Convertion',
+                            'controller'    => 'Database\Controller\Conversion',
                             'action'        => 'clone',
                         ),
                     ),

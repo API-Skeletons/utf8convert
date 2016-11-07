@@ -125,4 +125,43 @@ class PrimaryKeyDef
     {
         return $this->tableDef;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $dataPointPrimaryKeyDef;
+
+
+    /**
+     * Add dataPointPrimaryKeyDef
+     *
+     * @param \Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKeyDef
+     *
+     * @return PrimaryKeyDef
+     */
+    public function addDataPointPrimaryKeyDef(\Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKeyDef)
+    {
+        $this->dataPointPrimaryKeyDef[] = $dataPointPrimaryKeyDef;
+
+        return $this;
+    }
+
+    /**
+     * Remove dataPointPrimaryKeyDef
+     *
+     * @param \Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKeyDef
+     */
+    public function removeDataPointPrimaryKeyDef(\Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKeyDef)
+    {
+        $this->dataPointPrimaryKeyDef->removeElement($dataPointPrimaryKeyDef);
+    }
+
+    /**
+     * Get dataPointPrimaryKeyDef
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getDataPointPrimaryKeyDef()
+    {
+        return $this->dataPointPrimaryKeyDef;
+    }
 }

@@ -237,36 +237,50 @@ class ConversionController extends AbstractActionController
             ->from('Db\Entity\DataPoint', 'dataPoint')
             ->andwhere($queryBuilder->expr()->eq('dataPoint.conversion', ':conversion'))
             ->setParameter('conversion', $conversion)
-            ->andwhere('dataPoint.oldValue = dataPoint.newValue')
+            ->addOrderBy('dataPoint.id', 'DESC')
+#            ->andWhere('dataPoint.id = 51267')
             ;
 
         $page = 1;
         $adapter = new DoctrinePaginator(new ORMPaginator($queryBuilder));
         $paginator = new Paginator($adapter);
         $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
-        $paginator->setCurrentPageNumber(0);
+        $paginator->setCurrentPageNumber($page);
 
         $console->writeLine("Converting " . $conversion->getName(), Color::CYAN);
         $console->writeLine($paginator->getTotalItemCount() . " DataPoints", Color::YELLOW);
-        $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 0, $paginator->getTotalItemCount());
+        $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 1, $paginator->count());
 
         $rowCount = 0;
-        while (true) {
+        while ($page <= $paginator->count()) {
+#            echo "Set page: $page, rowCount: $rowCount, Total Pages: " . $paginator->count() . "\n";
+
             foreach ($paginator as $dataPoint) {
                 $rowCount ++;
-                $progressBar->update($rowCount);
+
+                if ($dataPoint->getConvertedAt()) {
+#                    continue;
+                }
+
+                if (mb_strlen($dataPoint->getOldValue()) > 50000) {
+                    continue;
+                }
 
                 $dataPoint->setNewValue($this->convertToUtf8($dataPoint->getOldValue(), $dataPoint));
+                $dataPoint->setConvertedAt(new DateTime());
             }
 
             $objectManager->flush();
             $objectManager->clear();
 
-            if ($rowCount == $paginator->getTotalItemCount()) {
-                break;
-            }
-
             $page ++;
+            $paginator->setCurrentPageNumber($page);
+            $progressBar->update($page);
+
+            // Rebuild the paginator each iteration
+            $adapter = new DoctrinePaginator(new ORMPaginator($queryBuilder));
+            $paginator = new Paginator($adapter);
+            $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
             $paginator->setCurrentPageNumber($page);
         }
 
@@ -276,6 +290,10 @@ class ConversionController extends AbstractActionController
 
         $conversion->setEndAt(new DateTime());
         $objectManager->flush();
+
+        $progressBar->update($paginator->getTotalItemCount());
+
+        return;
     }
 
     /**
@@ -354,13 +372,12 @@ class ConversionController extends AbstractActionController
             ->setParameter('conversion', $fromConversion)
             ;
 
-        $page = 1;
+        $page = 0;
         $adapter = new DoctrinePaginator(new ORMPaginator($queryBuilder));
         $paginator = new Paginator($adapter);
         $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
         $paginator->setCurrentPageNumber($page);
 
-        $console->writeLine("Cloning DataPoints", Color::CYAN);
         $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 0, $paginator->getTotalItemCount());
 
         $rowCount = 0;
@@ -387,7 +404,7 @@ class ConversionController extends AbstractActionController
 
                 $objectManager->persist($newDataPoint);
 
-                foreach ($dataPoint->getDataPointPrimaryKey() as $dataPointPrimaryKeyDef) {
+                foreach ($dataPoint->getDataPointPrimaryKeyDef() as $dataPointPrimaryKeyDef) {
                     $newDataPointPrimaryKeyDef = new Entity\DataPointPrimaryKeyDef();
                     $newDataPointPrimaryKeyDef
                         ->setDataPoint($newDataPoint)
@@ -402,7 +419,7 @@ class ConversionController extends AbstractActionController
             $objectManager->flush();
             $objectManager->clear();
 
-            if ($rowCount == $paginator->getTotalItemCount()) {
+            if ($rowCount >= $paginator->getTotalItemCount()) {
                 break;
             }
 
@@ -465,14 +482,14 @@ class ConversionController extends AbstractActionController
             $resultSetPrototype
         );
 
-        $page = 1;
+        $page = 0;
 
         $paginator = new Paginator($paginatorAdapter);
         $paginator->setItemCountPerPage($config['utf8-convert']['convert']['fetch-limit']);
         $paginator->setCurrentPageNumber($page);
 
         if ($paginator->getTotalItemCount()) {
-            $console->writeLine("Creating DataPoints for " . $table->getName() . '.' . $row['COLUMN_NAME'], Color::YELLOW);
+            $console->writeLine($table->getName() . '.' . $row['COLUMN_NAME'], Color::YELLOW);
             $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 0, $paginator->getTotalItemCount());
         }
 
@@ -554,7 +571,7 @@ class ConversionController extends AbstractActionController
             $conversion = $objectManager->getRepository('Db\Entity\Conversion')->find($conversionKey);
             $table = $objectManager->getRepository('Db\Entity\TableDef')->find($tableKey);
 
-            if ($rowCount == $paginator->getTotalItemCount()) {
+            if ($rowCount >= $paginator->getTotalItemCount()) {
                 break;
             }
 
@@ -592,30 +609,26 @@ class ConversionController extends AbstractActionController
         $length = mb_strlen($input);
         $return = '';
         $character = '';
+        $showProgress = false;
 
-        // Chunk string into 1k working strings
-        // mb_ functions are slow on large strings
-        $chunkStringLength = $length;
-        $chunkString = $input;
-        $chunkSize = 1000;
-        $stringChunks = [];
-
-        while ($chunkStringLength) {
-            $stringChunks[] = mb_substr($chunkString, 0, $chunkSize, "UTF-8");
-            $chunkString = mb_substr($chunkString, $chunkSize);
-            $chunkStringLength = mb_strlen($chunkString);
+        if ($length > 20000) {
+            $showProgress = true;
+#            $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 1, $length);
         }
+#        $progressLength = 1;
+
+        // Chunk string into working strings
+        // mb_ functions are slow on large strings
+        $chunkSize = 100;
+        $stringChunks = mb_split('', $input, $chunkSize);
 
         $chunkCount = sizeof($stringChunks);
-        $chunk = 1;
         $workingString = array_shift($stringChunks);
-
-        while ($workingString !== '') {
+        while (mb_strlen($workingString)) {
             // If the working string is < 100 add the next chunk to the string
-            if (mb_strlen($workingString) < 100) {
+            if (mb_strlen($workingString) < 10) {
                 if ($stringChunks) {
                     $workingString .= array_shift($stringChunks);
-                    $chunk ++;
                 }
             }
 
@@ -628,8 +641,6 @@ class ConversionController extends AbstractActionController
                 // \xF5\x8C\xAB\xBA
             }
             $characterCode = hexdec(bin2hex($characterUtf32BE));
-
-
 
             $bytes = 1;
             $multibyte = false;
@@ -647,6 +658,7 @@ class ConversionController extends AbstractActionController
 
             // Convert invalid chars to utf8
             $i = 0;
+            $characterLength = 1;
             while ($bytes > 1) {
                 $i++;
 
@@ -668,44 +680,55 @@ class ConversionController extends AbstractActionController
             }
 
             if ($multibyte) {
-                // If these functions fail then the derived encoding found is invalid
-                // and the string is one or more valid utf8 characters together
-                $newUtf8Char = @mb_convert_encoding($character, "ISO-8859-1");
+                // Try Windows-125X charsets
+                $newUtf8Char = @mb_convert_encoding($character, 'Windows-1252');
                 $checkUtf8Char = @mb_substr($newUtf8Char, 0, 1, 'UTF-8');
+                $characterLength = mb_strlen($character);
 
                 if ($checkUtf8Char) {
-                    // Successfully restored a UTF8 character
-                    $newUtf8Char = @mb_convert_encoding($newUtf8Char, 'UTF-8');
-
-                    if ($newUtf8Char) {
-                        $character = $newUtf8Char;
-                        $workingString = mb_substr($workingString, strlen($newUtf8Char) - 1);
-                    } else {
-                        die("Error \n$string\n[$newUtf8Char] \n");
-                    }
-
+                    // Successfully restored a Windwows-125x character
+                    $character = mb_convert_encoding($newUtf8Char, 'UTF-8');
                 } else {
-                    // Try Windows-125X charsets
-                    $newUtf8Char = @mb_convert_encoding($character, 'Windows-1252');
+                    // Check UTF8
+
+                    // If these functions fail then the derived encoding found is invalid
+                    // and the string is one or more valid utf8 characters together
+                    $newUtf8Char = @mb_convert_encoding($character, "ISO-8859-1");
                     $checkUtf8Char = @mb_substr($newUtf8Char, 0, 1, 'UTF-8');
+                    $characterLength = mb_strlen($character);
 
                     if ($checkUtf8Char) {
-                        // Successfully restored a Windwows-125x character
-                        $character = mb_convert_encoding($newUtf8Char, 'UTF-8');
-                        $workingString = mb_substr($workingString, strlen($newUtf8Char) - 1);
-                    } else {
-                        // String is valid multiple UTF-8 characters as-is
+                        // Successfully restored a UTF8 character
+                        $newUtf8Char = @mb_convert_encoding($newUtf8Char, 'UTF-8');
+
+                        if ($newUtf8Char) {
+                            $character = $newUtf8Char;
+                            $workingString = mb_substr($workingString, mb_strlen($newUtf8Char) - 1);
+
+                            $characterLength = mb_strlen($character);
+                        } else {
+                            die("Error \n$string\n[$newUtf8Char] \n");
+                        }
                     }
                 }
             }
 
             // $character may be multiple characters by this point
-            $workingString = mb_substr($workingString, mb_strlen($character));
+            $workingString = mb_substr($workingString, $characterLength);
             $return .= $character;
+
+            if ($showProgress) {
+#                $progressBar->update($progressLength += mb_strlen($character));
+            }
         }
 
         // Re-run to fix double or more encodings
-        if ($input != $return) {
+
+#        if (isset($progressBar)) {
+#            $progressBar->update($length);
+#        }
+
+        if ($input !== $return) {
             $counter ++;
 
             if ($counter > 5) {

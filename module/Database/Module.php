@@ -13,15 +13,16 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
     public function getConsoleUsage(Console $console)
     {
         return array(
-            'create-administrator --email=email@net --displayName=administrator' => 'Create the administrator for this instance',
-            'truncate conversion data' => 'Reset the conversion database',
-            'validate' => 'Validate the database is configured for utf8',
-            'generate table conversion' => 'Create a shell script to move all non-utf8 tables to utf8 for non-valid database',
-#            'refactor --supplement-has-been-ran [--whitelist=table,list] [--blacklist=table,list]' => 'Refactor database character fields to varchar(255) and text to longtext',
-            'create conversion [--name=conversionName] [--whitelist=] [--blacklist=]' => 'Create a new conversion',
-            'run conversion --name=' => 'Run the initial conversion of utf8 multiple encodings',
-            'copy conversion [--from=] [--to=]' => 'Create a copy of a conversion',
+            'administrator:create --email=email@net --displayName=administrator' => 'Create the administrator for this instance',
 
+            'database:validate' => 'Validate the database is configured for utf8',
+            'database:generate:utf8-tables' => 'Create a shell script to move all non-utf8 tables to utf8 for non-valid database',
+            'database:truncate' => 'Remove all conversion data from the conversion database',
+
+            'conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]' => 'Create a new conversion',
+            'conversion:convert --name=' => 'Run the initial conversion of utf8 multiple encodings',
+            'conversion:export --name=' => 'Export the SQL result of the conversion',
+            'conversion:clone [--from=] [--to=]' => 'Create a clone of a conversion',
         );
     }
 

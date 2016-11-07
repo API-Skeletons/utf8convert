@@ -524,4 +524,72 @@ class DataPoint
     {
         return $this->importedAt;
     }
+    /**
+     * @var \DateTime
+     */
+    private $convertedAt;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $dataPointPrimaryKeyDef;
+
+
+    /**
+     * Set convertedAt
+     *
+     * @param \DateTime $convertedAt
+     *
+     * @return DataPoint
+     */
+    public function setConvertedAt($convertedAt)
+    {
+        $this->convertedAt = $convertedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get convertedAt
+     *
+     * @return \DateTime
+     */
+    public function getConvertedAt()
+    {
+        return $this->convertedAt;
+    }
+
+    /**
+     * Add dataPointPrimaryKeyDef
+     *
+     * @param \Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKeyDef
+     *
+     * @return DataPoint
+     */
+    public function addDataPointPrimaryKeyDef(\Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKeyDef)
+    {
+        $this->dataPointPrimaryKeyDef[] = $dataPointPrimaryKeyDef;
+
+        return $this;
+    }
+
+    /**
+     * Remove dataPointPrimaryKeyDef
+     *
+     * @param \Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKeyDef
+     */
+    public function removeDataPointPrimaryKeyDef(\Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKeyDef)
+    {
+        $this->dataPointPrimaryKeyDef->removeElement($dataPointPrimaryKeyDef);
+    }
+
+    /**
+     * Get dataPointPrimaryKeyDef
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getDataPointPrimaryKeyDef()
+    {
+        return $this->dataPointPrimaryKeyDef;
+    }
 }

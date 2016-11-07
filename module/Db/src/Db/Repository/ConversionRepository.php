@@ -21,8 +21,10 @@ class ConversionRepository extends EntityRepository
         $conversion->setDataPointCount($qb->getQuery()->getSingleScalarResult());
     }
 
-    public function import($conversion, $database)
+    public function import(Entity\Conversion $conversion, $database)
     {
+        set_time_limit(0);
+
         $qb = $this->_em->createQueryBuilder();
         $errors = array();
 
@@ -33,7 +35,7 @@ class ConversionRepository extends EntityRepository
             ->from('Db\Entity\DataPoint', 'dp')
             ->andwhere('dp.conversion = :conversion')
             ->andwhere('dp.approved = :approved')
-            ->andwhere('dp.importedAt is null')
+            ->andwhere($qb->expr()->isnull('dp.importedAt'))
             ->setParameter('approved', true)
             ->setParameter('conversion', $conversion)
             ;
@@ -43,14 +45,20 @@ class ConversionRepository extends EntityRepository
         $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults(500));
         while(true) {
             foreach ($paginator as $dataPoint) {
-                if ($dataPoint->getImportedAt()) {
-                    continue;
-                }
 
-                $rowDataPoints = $this->_em->getRepository('Db\Entity\DataPoint')->findBy(array(
-                    'primaryKey' => $dataPoint->getPrimaryKey(),
-                    'approved' => true,
-                ));
+                $queryBuilder = $this->_em->createQueryBuilder();
+                $queryBuilder->select('row')
+                    ->from('Db\Entity\DataPoint', 'row')
+                    ->innerJoin('row.columnDef', 'columnDef')
+                    ->andWhere('row.approved = :approved')
+                    ->andWhere('row.primaryKey = :primaryKey')
+                    ->andWhere('columnDef.tableDef = :tableDef')
+                    ->setParameter('approved', true)
+                    ->setParameter('primaryKey', $dataPoint->getPrimaryKey())
+                    ->setParameter('tableDef', $dataPoint->getColumnDef()->getTableDef())
+                    ;
+
+                $rowDataPoints = $queryBuilder->getQuery()->getResult();
 
                 $sql = 'UPDATE '
                     . $qi($dataPoint->getColumnDef()->getTableDef()->getName())
@@ -80,24 +88,31 @@ class ConversionRepository extends EntityRepository
                     ;
 
                 try {
+                    echo $sql . "; \n";
                     $database->query($sql)->execute();
                     foreach ($rowDataPoints as $dp) {
                         $dp->setImportedAt(new Datetime());
                     }
                     $this->_em->flush();
+
+                    $importSql[] = $sql . ';';
+
                 } catch (RuntimeException $e) {
                     $errors[] = array(
                         'message' => $e->getMessage(),
                         'sql' => $sql,
                     );
+
+                    throw $e;
                 }
 
+                $sql = '';
                 $dataCount ++;
             }
 
             $this->_em->clear();
 
-            if (!$dataCount) {
+            if (! $dataCount) {
                 break;
             }
             $dataCount = 0;
@@ -106,6 +121,9 @@ class ConversionRepository extends EntityRepository
             $paginator->getQuery()->setFirstResult($start);
         }
 
+        if ($errors) {
+            die($errors);
+        }
         return $errors;
     }
 }

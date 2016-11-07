@@ -29,7 +29,7 @@ class DatabaseController extends AbstractActionController
     /**
      * Check MySQL utf8 settings for the target database
      */
-    public function validateTargetDatabaseAction()
+    public function databaseValidateAction()
     {
         if (!$this->validateDatabaseSettings()) {
             // output sent in function

@@ -14,7 +14,7 @@ return array(
         'invokables' => array(
             'Database\Controller\Index' => 'Database\Controller\IndexController',
             'Database\Controller\Data' => 'Database\Controller\DataController',
-            'Database\Controller\Convert' => 'Database\Controller\ConvertController',
+            'Database\Controller\Conversion' => 'Database\Controller\ConversionController',
             'Database\Controller\Database' => 'Database\Controller\DatabaseController',
         ),
     ),
@@ -31,7 +31,7 @@ return array(
                     'route'    => '/validate',
                     'defaults' => array(
                         'controller'    => 'Database\Controller\Data',
-                        'action'     => 'validate',
+                        'action'     => 'database:validate',
                     ),
                 ),
             ),
@@ -71,85 +71,83 @@ return array(
     'console' => array(
         'router' => array(
             'routes' => array(
-                'validate' => array(
+                'administrator-create' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'validate',
+                        'route'    => 'administrator:create [--email=] [--displayName=]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Database',
-                            'action'        => 'validateTargetDatabase',
+                            'controller'    => 'Database\Controller\Index',
+                            'action'        => 'administratorCreate',
                         ),
                     ),
                 ),
-                'truncate' => array(
+                'database-validate' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'truncate conversion data',
+                        'route'    => 'database:validate',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Database',
+                            'action'        => 'databaseValidate',
+                        ),
+                    ),
+                ),
+                'database-generate-utf8tables' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'database:generate:utf8-tables',
+                        'defaults' => array(
+                            'controller'    => 'Database\Controller\Index',
+                            'action'        => 'databaseGenerateUtf8Tables',
+                        ),
+                    ),
+                ),
+                'database-truncate' => array(
+                    'type'    => 'simple',
+                    'options' => array(
+                        'route'    => 'database:truncate',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Database',
                             'action'        => 'truncateUtf8ConvertDatabase',
                         ),
                     ),
                 ),
-                'generateUtf8TableConversion' => array(
+                'conversion-create' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'generate table conversion',
+                        'route'    => 'conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Index',
-                            'action'        => 'generateUtf8TableConversion',
+                            'controller'    => 'Database\Controller\Conversion',
+                            'action'        => 'create',
                         ),
                     ),
                 ),
-                /*
-                'refactor' => array(
+                'conversion-convert' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'refactor --supplement-has-been-ran [--whitelist=] [--blacklist=]',
+                        'route'    => 'conversion:convert --name=',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Index',
-                            'action'        => 'refactor',
+                            'controller'    => 'Database\Controller\Conversion',
+                            'action'        => 'convert',
                         ),
                     ),
                 ),
-                */
-                'createConversion' => array(
+                'conversion-export' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'create conversion [--name=conversionName] [--whitelist=] [--blacklist=]',
+                        'route'    => 'conversion:export --name=conversionName',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Convert',
-                            'action'        => 'createConversion',
+                            'controller'    => 'Database\Controller\Conversion',
+                            'action'        => 'export',
                         ),
                     ),
                 ),
-                'runConversion' => array(
+                'conversion-clone' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'run conversion --name=',
+                        'route'    => 'conversion:clone [--from=] [--to=]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Convert',
-                            'action'        => 'runConversion',
-                        ),
-                    ),
-                ),
-                'copyConversion' => array(
-                    'type'    => 'simple',
-                    'options' => array(
-                        'route'    => 'copy conversion [--from=] [--to=]',
-                        'defaults' => array(
-                            'controller'    => 'Database\Controller\Convert',
-                            'action'        => 'copyConversion',
-                        ),
-                    ),
-                ),
-                'createAdministrator' => array(
-                    'type'    => 'simple',
-                    'options' => array(
-                        'route'    => 'create-administrator [--email=] [--displayName=]',
-                        'defaults' => array(
-                            'controller'    => 'Database\Controller\Index',
-                            'action'        => 'createAdministrator',
+                            'controller'    => 'Database\Controller\Conversion',
+                            'action'        => 'clone',
                         ),
                     ),
                 ),

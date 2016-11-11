@@ -35,11 +35,6 @@ class DataPoint
     private $id;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $dataPointPrimaryKey;
-
-    /**
      * @var \Db\Entity\User
      */
     private $user;
@@ -59,7 +54,7 @@ class DataPoint
      */
     public function __construct()
     {
-        $this->dataPointPrimaryKey = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->dataPointPrimaryKeyDef = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function getArrayCopy()
@@ -205,39 +200,6 @@ class DataPoint
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Add dataPointPrimaryKey
-     *
-     * @param \Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKey
-     * @return DataPoint
-     */
-    public function addDataPointPrimaryKey(\Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKey)
-    {
-        $this->dataPointPrimaryKey[] = $dataPointPrimaryKey;
-
-        return $this;
-    }
-
-    /**
-     * Remove dataPointPrimaryKey
-     *
-     * @param \Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKey
-     */
-    public function removeDataPointPrimaryKey(\Db\Entity\DataPointPrimaryKeyDef $dataPointPrimaryKey)
-    {
-        $this->dataPointPrimaryKey->removeElement($dataPointPrimaryKey);
-    }
-
-    /**
-     * Get dataPointPrimaryKey
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getDataPointPrimaryKey()
-    {
-        return $this->dataPointPrimaryKey;
     }
 
     /**

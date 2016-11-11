@@ -15,6 +15,7 @@ use Zend\Paginator\Adapter\DbSelect;
 use Zend\Paginator\Paginator;
 use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator;
 use Doctrine\ORM\Tools\Pagination\Paginator as ORMPaginator;
+use Doctrine\DBAL\Exception\DriverException;
 
 use Db\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -259,18 +260,29 @@ class ConversionController extends AbstractActionController
                 $rowCount ++;
 
                 if ($dataPoint->getConvertedAt()) {
-#                    continue;
-                }
-
-                if (mb_strlen($dataPoint->getOldValue()) > 50000) {
                     continue;
                 }
 
+                if (strlen($dataPoint->getOldValue()) > 50000) {
+                    continue;
+                }
+
+#echo mb_strlen($dataPoint->getOldValue()) . ' ' . $dataPoint->getId() . "\n";
                 $dataPoint->setNewValue($this->convertToUtf8($dataPoint->getOldValue(), $dataPoint));
                 $dataPoint->setConvertedAt(new DateTime());
+                $objectManager->merge($dataPoint);
+
+                try {
+                    $objectManager->flush();
+                } catch (DriverException $e) {
+                    $console->writeLine("Error converting DataPoint " . $dataPoint->getId(), Color::RED);
+
+                    $objectManagerConnection = $objectManager->getConnection();
+                    $objectManagerConfig     = $objectManager->getConfiguration();
+                    $objectManager = $objectManager->create($objectManagerConnection, $objectManagerConfig);
+                }
             }
 
-            $objectManager->flush();
             $objectManager->clear();
 
             $page ++;

@@ -17,7 +17,8 @@
         "issues": "https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell"
     },
     "config": {
-        "process-timeout": 5000
+        "process-timeout": 5000,
+        "secure-http": false
     },
     "repositories": [
         {
@@ -31,7 +32,7 @@
     ],
     "require": {
         "php": ">=5.4",
-        "zendframework/zendframework": ">=2.3.2,<3.0.0",
+        "zendframework/zendframework": "~2.4",
         "zendframework/zend-developer-tools": "dev-master",
         "zfcampus/zf-development-mode": "~2.0",
         "zfcampus/zf-apigility": "~1.0",
@@ -45,7 +46,8 @@
         "beberlei/DoctrineExtensions": "dev-master",
         "maglnet/magl-markdown": "~1.1",
         "zfcampus/zf-apigility-doctrine": "~0.3",
-        "pusher/pusher-php-server": "dev-master"
+        "pusher/pusher-php-server": "dev-master",
+        "rwoverdijk/assetmanager": "^1.7"
     },
     "require-dev": {
         "zendframework/zftool": "dev-master",

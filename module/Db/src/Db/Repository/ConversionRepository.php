@@ -1,4 +1,5 @@
 <?php
+
 namespace Db\Repository;
 
 use Doctrine\ORM\EntityRepository;
@@ -35,6 +36,7 @@ class ConversionRepository extends EntityRepository
             ->from('Db\Entity\DataPoint', 'dp')
             ->andwhere('dp.conversion = :conversion')
             ->andwhere('dp.approved = :approved')
+            ->andWhere('dp.importedAt is null')
             ->andwhere($qb->expr()->isnull('dp.importedAt'))
             ->setParameter('approved', true)
             ->setParameter('conversion', $conversion)
@@ -76,7 +78,8 @@ class ConversionRepository extends EntityRepository
                 $sql .= implode(', ', $columnSql);
 
                 $primaryKeySql = array();
-                foreach ($dataPoint->getDataPointPrimaryKey() as $pk) {
+
+                foreach ($dataPoint->getDataPointPrimaryKeyDef() as $pk) {
                     $primaryKeySql[] = $qi($pk->getPrimaryKeyDef()->getName())
                         . ' = '
                         . $qv($pk->getValue())
@@ -95,15 +98,14 @@ class ConversionRepository extends EntityRepository
                     }
                     $this->_em->flush();
 
-                    $importSql[] = $sql . ';';
-
                 } catch (RuntimeException $e) {
-                    $errors[] = array(
-                        'message' => $e->getMessage(),
-                        'sql' => $sql,
-                    );
-
-                    throw $e;
+                    foreach ($rowDataPoints as $dp) {
+                        $errors[] = array(
+                            'dataPoint' => $dp->getId(),
+                            'message' => $e->getMessage(),
+                            'sql' => $sql,
+                        );
+                    }
                 }
 
                 $sql = '';
@@ -122,8 +124,10 @@ class ConversionRepository extends EntityRepository
         }
 
         if ($errors) {
-            die($errors);
+            print_r($errors);
+            die('found errors');
         }
+
         return $errors;
     }
 }

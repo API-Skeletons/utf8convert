@@ -6,6 +6,10 @@
     }
 </style>
 
+<div class="pull-right">
+	<a class="btn btn-info" href="<?= $this->url('visualization/conversion/search', ['conversion_id' => $conversion->getId()]); ?>">Search DataPoints</a>
+</div>
+
 <h1>
     Conversion
     <a href="<?= $this->url('visualization/conversion', array('conversion_id' => $conversion->getId())); ?>">

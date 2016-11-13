@@ -84,6 +84,16 @@ return array(
                                     ),
                                 ),
                             ),
+                            'search' => array(
+                                'type'    => 'Segment',
+                                'options' => array(
+                                    'route'    => '/search',
+                                    'defaults' => array(
+                                        'controller'    => 'DataVisualization\Controller\Index',
+                                        'action'     => 'search',
+                                    ),
+                                ),
+                            ),
                         ),
                     ),
                 ),

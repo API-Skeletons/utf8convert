@@ -17,3 +17,4 @@ data/cache/*
 application.config.old
 data
 vendor
+composer.phar

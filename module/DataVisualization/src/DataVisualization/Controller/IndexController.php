@@ -78,5 +78,18 @@ class IndexController extends AbstractActionController
             'column' => $column,
         ));
     }
+
+    public function searchAction()
+    {
+        $conversionId = $this->params()->fromRoute('conversion_id');
+
+        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
+
+        $conversion = $objectManager->getRepository('Db\Entity\Conversion')->find($conversionId);
+
+        return new ViewModel(array(
+            'conversion' => $conversion,
+        ));
+    }
 }
 

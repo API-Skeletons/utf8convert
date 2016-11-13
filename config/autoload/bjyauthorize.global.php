@@ -43,6 +43,7 @@ return array(
                 array('route' => 'visualization/conversion', 'roles' => array('edit')),
                 array('route' => 'visualization/conversion/column', 'roles' => array('edit')),
                 array('route' => 'visualization/conversion/import', 'roles' => array('administrator')),
+                array('route' => 'visualization/conversion/search', 'roles' => array('view')),
 
                 array('route' => 'database-api.rest.doctrine.data-point', 'roles' => array('edit')),
                 array('route' => 'database-api.rest.data-point-data', 'roles' => array('edit')),

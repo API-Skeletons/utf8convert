@@ -35,7 +35,6 @@
         "zendframework/zendframework": "~2.4",
         "zendframework/zend-developer-tools": "dev-master",
         "zfcampus/zf-development-mode": "~2.0",
-        "zfcampus/zf-apigility": "~1.0",
         "zfcampus/zf-apigility-documentation": "~1.0",
         "zf-commons/zfc-user-doctrine-orm": "*",
         "bjyoungblood/bjy-authorize": "1.4.*",
@@ -45,7 +44,7 @@
         "danielss89/zfc-user-admin": "dev-master",
         "beberlei/DoctrineExtensions": "dev-master",
         "maglnet/magl-markdown": "~1.1",
-        "zfcampus/zf-apigility-doctrine": "~0.3",
+        "zfcampus/zf-apigility-doctrine": "^2.1",
         "pusher/pusher-php-server": "dev-master",
         "rwoverdijk/assetmanager": "^1.7"
     },

@@ -1,5 +1,5 @@
 angular.module('utf8convert')
-    .controller('columnController', ['$http', '$scope',
+    .controller('searchController', ['$http', '$scope',
     function($http, $scope) {
 
         var pusher = new Pusher('4a692f8bd0d32221b070');
@@ -34,54 +34,29 @@ angular.module('utf8convert')
 
         $scope.columnModel =
         {
-          dateUrl: '',
+            dateUrl: '',
 
-          init: function(url, conversion, column)
-          {
-            params = {
-              'page': 1,
-              'filter': [
-                {
-                    'field': 'conversion',
-                    'where': 'and',
-                    'type': 'eq',
-                    'value': conversion,
-                },
-                {
-                    'field': 'columnDef',
-                    'where': 'and',
-                    'type': 'eq',
-                    'value': column
+            init: function(url, conversion)
+            {
+                this.baseUrl = url;
+                this.load(url + '/api/data-point?conversion=' + conversion);
+            },
+
+            openUrl: function(dataPoint)
+            {
+              $scope.columnPromise = $http({
+                method: 'post',
+                timeout: 180000,
+                url: $scope.columnModel.baseUrl + '/api/url',
+                data: {
+                  dataPointId: dataPoint.id
                 }
-              ],
-              'order-by': [
-                {
-                  'type': 'field',
-                  'field': 'oldValue',
-                  'direction': 'asc'
-                }
-              ]
-            };
+              }).success(function(data) {
+                window.open(data.url);
+              });
 
-              this.baseUrl = url;
-              this.load(url + '/api/data-point', params);
-          },
-
-          openUrl: function(dataPoint)
-          {
-            $scope.columnPromise = $http({
-              method: 'post',
-              timeout: 180000,
-              url: $scope.columnModel.baseUrl + '/api/url',
-              data: {
-                dataPointId: dataPoint.id
-              }
-            }).success(function(data) {
-              window.open(data.url);
-            });
-
-            return false;
-          },
+              return false;
+            },
 
       hideNewValue: function(node)
       {
@@ -131,16 +106,12 @@ angular.module('utf8convert')
         });
       },
 
-            load: function(url, params)
+            load: function(url)
             {
-              if (params) {
-                url = url + '?' + $.param(params);
-              }
-
                 $scope.columnPromise = $http({
                     method: 'get',
                     timeout: 180000,
-                    url: url,
+                    url: url
                 }).success(function(data) {
                     $scope.dataPoint = data;
                 });
@@ -193,17 +164,17 @@ angular.module('utf8convert')
         return $scope.columnPromise;
       },
 
-            update: function(dataPoint, data)
-            {
-                $scope.columnPromise = $http({
-                    method: 'patch',
-                    timeout: 180000,
-                    url: this.baseUrl + '/api/data-point/' + dataPoint.id,
-                    data: data
-                }).success(function(data) {
-                });
+      update: function(dataPoint, data)
+      {
+          $scope.columnPromise = $http({
+              method: 'patch',
+              timeout: 180000,
+              url: this.baseUrl + '/api/data-point/' + dataPoint.id,
+              data: data
+          }).success(function(data) {
+          });
 
-                return $scope.columnPromise;
+          return $scope.columnPromise;
       },
 
       flagAll: function(status)

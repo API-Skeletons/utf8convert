@@ -1,10 +1,5 @@
 <?php
 return array(
-    'zf-apigility-doctrine-query-provider' => array(
-        'invokables' => array(
-            'data-point-fetch-all' => 'Db\\Query\\Provider\\DataPoint\\FetchAll',
-        ),
-    ),
     'router' => array(
         'routes' => array(
             'database-api.rest.doctrine.data-point' => array(

@@ -1,6 +1,5 @@
 <?php
 
-    $this->headScript()->appendFile($this->basePath() . '/js/controller/columnController1.js');
     $this->headScript()->appendFile($this->basePath() . '/js/controller/searchController.js');
 
 ?>
@@ -58,8 +57,7 @@
     </a>
 </h1>
 
-<div ng-controller="columnController" ng-init="columnModel.init('<?= $this->basePath(); ?>', <?= $conversion->getId(); ?>, null)">
-<div cg-busy="columnPromise"></div>
+<div ng-controller="searchController" ng-init="columnModel.init('<?= $this->basePath(); ?>', <?= $conversion->getId(); ?>, null)"><div cg-busy="columnPromise"></div>
 
 Page {{ dataPoint.page || 0 }} of {{ dataPoint.page_count || 0 }}
 <pagination page="1" max-size="20" total-items="1000" items-per-page="50"></pagination>

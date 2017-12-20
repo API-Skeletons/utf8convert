@@ -124,7 +124,7 @@ return array(
                 'conversion-convert' => array(
                     'type'    => 'simple',
                     'options' => array(
-                        'route'    => 'conversion:convert --name=',
+                        'route'    => 'conversion:convert --name= [--force]',
                         'defaults' => array(
                             'controller'    => 'Database\Controller\Conversion',
                             'action'        => 'convert',

@@ -7,6 +7,12 @@ use Db\Entity;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Datetime;
 use Zend\Db\Adapter\Exception\RuntimeException;
+use Zend\Console\Adapter\AdapterInterface;
+use Zend\Console\ColorInterface as Color;
+use Zend\Console\Prompt;
+use Zend\Console\Adapter\Posix;
+use Zend\ProgressBar\Adapter\Console as ProgressBarConsoleAdaper;
+use Zend\ProgressBar\ProgressBar;
 
 class ConversionRepository extends EntityRepository
 {
@@ -22,9 +28,11 @@ class ConversionRepository extends EntityRepository
         $conversion->setDataPointCount($qb->getQuery()->getSingleScalarResult());
     }
 
-    public function import(Entity\Conversion $conversion, $database)
+    public function import(Entity\Conversion $conversion, $database, AdapterInterface $console)
     {
         set_time_limit(0);
+
+        $console->writeLine("Start export converted DataPoints to target database", Color::YELLOW);
 
         $qb = $this->_em->createQueryBuilder();
         $errors = array();
@@ -44,9 +52,17 @@ class ConversionRepository extends EntityRepository
 
         $start = 0;
         $dataCount = 0;
-        $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults(500));
+        $rowCount = 0;
+
         while(true) {
+            $rowCount = 0;
+            $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults(500));
+
+            $console->writeLine($paginator->count() . " DataPoints to export.  Running 500.", Color::GREEN);
+            $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 1, 500);
             foreach ($paginator as $dataPoint) {
+
+                $rowCount ++;
 
                 $queryBuilder = $this->_em->createQueryBuilder();
                 $queryBuilder->select('row')
@@ -91,12 +107,13 @@ class ConversionRepository extends EntityRepository
                     ;
 
                 try {
-                    echo $sql . "; \n";
+//                    echo $sql . "; \n";
                     $database->query($sql)->execute();
                     foreach ($rowDataPoints as $dp) {
                         $dp->setImportedAt(new Datetime());
                     }
                     $this->_em->flush();
+                    $progressBar->update($rowCount);
 
                 } catch (RuntimeException $e) {
                     foreach ($rowDataPoints as $dp) {
@@ -122,6 +139,8 @@ class ConversionRepository extends EntityRepository
             $start += 500;
             $paginator->getQuery()->setFirstResult($start);
         }
+
+        $progressBar->update($paginator->count());
 
         if ($errors) {
             print_r($errors);

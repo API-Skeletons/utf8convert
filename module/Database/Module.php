@@ -13,7 +13,7 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
     public function getConsoleUsage(Console $console)
     {
         return array(
-            'administrator:create --email=email@net --displayName=administrator' => 'Create the administrator for this instance',
+#            'administrator:create --email=email@net --displayName=administrator' => 'Create the administrator for this instance',
 
             'database:validate' => 'Validate the database is configured for utf8',
             'database:generate:utf8-tables' => 'Create a shell script to move all non-utf8 tables to utf8 for non-valid database',
@@ -21,7 +21,8 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
 
             'conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]' => 'Create a new conversion',
             'conversion:convert --name=' => 'Run the initial conversion of utf8 multiple encodings',
-            'conversion:export --name=' => 'Export the SQL result of the conversion',
+            'conversion:export --name=' => 'Run the SQL result of the conversion against the target database',
+
             'conversion:clone [--from=] [--to=]' => 'Create a clone of a conversion',
         );
     }

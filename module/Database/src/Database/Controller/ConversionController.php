@@ -211,6 +211,7 @@ class ConversionController extends AbstractActionController
         $console = $this->getServiceLocator()->get('Console');
 
         $conversionName = $this->getRequest()->getParam('name');
+        $forceConversion = $this->getRequest()->getParam('force');
 
         $config = $this->getServiceLocator()->get('Config');
         $informationSchema = $this->getServiceLocator()->get('information-schema');
@@ -268,18 +269,35 @@ class ConversionController extends AbstractActionController
                 }
 
 #echo mb_strlen($dataPoint->getOldValue()) . ' ' . $dataPoint->getId() . "\n";
-                $dataPoint->setNewValue($this->convertToUtf8($dataPoint->getOldValue(), $dataPoint));
+                $newValue = $this->convertToUtf8($dataPoint->getOldValue(), $dataPoint);
+#                if ($dataPoint->getOldValue() === $newValue) {
+#                    die('utf8 found matching old and new values');
+#                }
+
+                $dataPoint->setNewValue($newValue);
                 $dataPoint->setConvertedAt(new DateTime());
                 $objectManager->merge($dataPoint);
 
                 try {
                     $objectManager->flush();
                 } catch (DriverException $e) {
-                    $console->writeLine("Error converting DataPoint " . $dataPoint->getId(), Color::RED);
-
                     $objectManagerConnection = $objectManager->getConnection();
-                    $objectManagerConfig     = $objectManager->getConfiguration();
+                    $objectManagerConfig = $objectManager->getConfiguration();
                     $objectManager = $objectManager->create($objectManagerConnection, $objectManagerConfig);
+
+                    if ($forceConversion) {
+                        $dataPoint->setNewValue(utf8_encode($dataPoint->getOldValue()));
+                        $dataPoint->setConvertedAt(new DateTime());
+                        $objectManager->merge($dataPoint);
+
+                        try {
+                            $objectManager->flush();
+                        } catch (DriverException $e) {
+                            die($e->getMessage());
+                        }
+                    } else {
+                        $console->writeLine("Error converting DataPoint " . $dataPoint->getId(), Color::RED);
+                    }
                 }
             }
 
@@ -316,11 +334,12 @@ class ConversionController extends AbstractActionController
         $conversionName = $this->params('name');
         $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
         $database = $this->getServiceLocator()->get('database');
+        $console = $this->getServiceLocator()->get('Console');
 
         $conversion = $objectManager->getRepository('Db\Entity\Conversion')->findOneBy([
             'name' => $conversionName
         ]);
-        $errors = $objectManager->getRepository('Db\Entity\Conversion')->import($conversion, $database);
+        $errors = $objectManager->getRepository('Db\Entity\Conversion')->import($conversion, $database, $console);
 
         return array('conversion' => $conversion, 'errors' => $errors);
     }
@@ -744,7 +763,7 @@ class ConversionController extends AbstractActionController
             $counter ++;
 
             if ($counter > 5) {
-                die("$return \n $input \n break because than 5 iterations were ran.");
+                die("$return \n $input \n break because 5 iterations of convertToUtf8 were ran.");
             }
 
             return $this->convertToUtf8($return, $dataPoint, $counter);

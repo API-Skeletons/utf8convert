@@ -31,17 +31,17 @@ class DatabaseController extends AbstractActionController
      */
     public function databaseValidateAction()
     {
-        if (!$this->validateDatabaseSettings()) {
+        if (! $this->validateDatabaseSettings()) {
             // output sent in function
             return;
         }
 
-        if (!$this->validateAllTablesAreUtf8()) {
+        if (! $this->validateAllTablesAreUtf8()) {
             echo "\nOne or more tables are not utf8.  Run 'generate table conversion' and save the output to a shell script then run.\n";
             return;
         }
 
-        if (!$this->validateAllColumnsAreUtf8()) {
+        if (! $this->validateAllColumnsAreUtf8()) {
             // output sent in function
             return;
         }

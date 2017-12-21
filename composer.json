@@ -20,16 +20,6 @@
         "process-timeout": 5000,
         "secure-http": false
     },
-    "repositories": [
-        {
-            "type": "pear",
-            "url": "http://pear.php.net"
-        },
-        {
-            "type": "pear",
-            "url": "http://pear.horde.org"
-        }
-    ],
     "require": {
         "php": ">=5.4",
         "zendframework/zendframework": "~2.4",
@@ -40,7 +30,6 @@
         "bjyoungblood/bjy-authorize": "1.4.*",
         "hounddog/doctrine-data-fixture-module": "0.0.*",
         "san/san-session-toolbar": "0.*",
-        "pear-pear.horde.org/horde_text_diff": "2.*",
         "danielss89/zfc-user-admin": "dev-master",
         "beberlei/DoctrineExtensions": "dev-master",
         "maglnet/magl-markdown": "~1.1",

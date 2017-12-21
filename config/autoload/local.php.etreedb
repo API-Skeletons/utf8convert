@@ -3,7 +3,7 @@ $ormParams = [
     'database'  => 'utf8convert',
     'username'  => 'root',
     'password'  => '123',
-    'hostname'  => 'localhost',
+    'hostname'  => 'mysql',
     'port'  => '3306',
 ];
 
@@ -12,8 +12,16 @@ return array(
         'convert' => array(
             'fetch-limit' => 1000,
             'blacklist-tables' => array(
+                'artists_audit',
+                'md5s_audit',
+                'pending_shninfo_audit',
+                'shninfo_audit',
+                'shows_audit',
+                'userrating_audit',
+                'Utf8Convert',
             ),
             'whitelist-tables' => array(
+#                'artists',
             ),
         ),
         'refactor' => array(
@@ -62,8 +70,8 @@ return array(
         'adapters' => array(
             'database' => array(
                 'driver' => 'Mysqli',
-                'hostname' => 'localhost',
-                'database' => 'dbaudit',
+                'hostname' => 'mysql',
+                'database' => 'etreedb',
                 'username' => 'root',
                 'password' => '123',
                 'charset' => 'utf8',
@@ -73,7 +81,7 @@ return array(
             ),
             'information-schema' => array(
                 'driver' => 'Mysqli',
-                'host' => 'localhost',
+                'host' => 'mysql',
                 'database' => 'information_schema',
                 'username' => 'root',
                 'password' => '123',

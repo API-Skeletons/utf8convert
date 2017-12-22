@@ -63,7 +63,7 @@ return array(
             'database' => array(
                 'driver' => 'Mysqli',
                 'hostname' => 'localhost',
-                'database' => 'dbaudit',
+                'database' => 'etreedb',
                 'username' => 'root',
                 'password' => '123',
                 'charset' => 'utf8',

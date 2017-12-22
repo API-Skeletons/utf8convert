@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<skipper version="3.2.7.1338" mvc="Without MVC" orm="Doctrine2" name="Utf8Convert" uuid="a90f0648-66e9-4a07-91db-c4c8e3a51864">
+<skipper version="3.2.10.1370" mvc="Without MVC" orm="Doctrine2" name="Utf8Convert" uuid="a90f0648-66e9-4a07-91db-c4c8e3a51864">
   <module name="\Utf8Convert" local-name="Utf8Convert" namespace="\Db\Entity" local-namespace="Db\Entity" export-format="Doctrine2Xml" export-path="../module/Db/config/xml" uuid="2492e6cc-ebbf-4021-b0da-9b8a264a678a">
     <entity name="\Db\Entity\User" local-name="User" namespace="\Db\Entity" uuid="d39deddb-4b37-453e-a0d9-94804f0b2a12">
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="d9cb0bd8-d391-4147-9df1-12e8aaaa6b9f"/>
@@ -43,6 +43,7 @@
       <field name="importedAt" type="datetime" uuid="a9993f1b-fce6-42d3-ba6d-9cb875948a3a"/>
       <field name="convertedAt" type="datetime" uuid="d7c30e67-c09e-42f2-b7f4-cf1bb550be00"/>
       <field name="user_id" type="integer" uuid="bb0adc08-383f-4c15-b3dc-f48d90899ba4"/>
+      <field name="errored" type="boolean" uuid="ffae4cbb-0abe-47a1-b8a9-dd6986b0eda1"/>
     </entity>
     <association from="\Db\Entity\DataPoint" to="\Db\Entity\User" owner-alias="dataPoint" inverse-alias="user" many-owner="true" many-inverse="false" uuid="de1e9a1b-7384-44ea-928a-a478eb26a18d">
       <association-field from="user_id" to="id"/>
@@ -148,7 +149,7 @@
     <association uuid="de1e9a1b-7384-44ea-928a-a478eb26a18d" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
     <association uuid="fed34212-bcbe-4793-8055-4d8f50b731be" caption1-position-x="0" caption1-position-y="0" center-position-x="0" center-position-y="0" color="4288059030"/>
     <entity uuid="1486a327-c989-4d35-8065-c62cdb0d538b" bg-color="4294967295" hdr-color="4292006610" position-x="193" position-y="46" size-x="0" size-x2="89" size-y="0" size-y2="60"/>
-    <entity uuid="34c62268-3f13-4e57-97ba-8ee0e7e54ad9" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="31" position-y="299" size-x="0" size-x2="118" size-y="0" size-y2="157"/>
+    <entity uuid="34c62268-3f13-4e57-97ba-8ee0e7e54ad9" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="32" position-y="298" size-x="0" size-x2="118" size-y="0" size-y2="199"/>
     <entity uuid="51b89a76-be62-4924-89a6-34f29b523c7f" bg-color="4294967295" hdr-color="4292006610" position-x="457" position-y="369" size-x="0" size-x2="77" size-y="0" size-y2="59"/>
     <entity uuid="52df128b-f83c-4485-9b2f-556667815fed" bg-color="#FFFFFF" hdr-color="#FF9CA5" position-x="684" position-y="25" size-x="0" size-x2="108" size-y="0" size-y2="157"/>
     <entity uuid="5b71554e-4c20-4b72-85fd-fbb05c04beb5" bg-color="4294967295" hdr-color="4292006610" position-x="21" position-y="547" size-x="0" size-x2="138" size-y="0" size-y2="73"/>

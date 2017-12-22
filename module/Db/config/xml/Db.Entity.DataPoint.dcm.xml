@@ -13,6 +13,7 @@
     <field name="denied" type="boolean" nullable="true"/>
     <field name="importedAt" type="datetime" nullable="true"/>
     <field name="convertedAt" type="datetime" nullable="true"/>
+    <field name="errored" type="boolean" nullable="true"/>
     <many-to-one field="user" target-entity="Db\Entity\User" inversed-by="dataPoint">
       <join-columns>
         <join-column name="user_id" referenced-column-name="id"/>

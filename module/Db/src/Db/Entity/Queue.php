@@ -284,4 +284,3 @@ class Queue
         return $this->id;
     }
 }
-

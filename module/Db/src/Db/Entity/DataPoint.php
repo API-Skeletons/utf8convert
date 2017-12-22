@@ -554,4 +554,33 @@ class DataPoint
     {
         return $this->dataPointPrimaryKeyDef;
     }
+    /**
+     * @var bool|null
+     */
+    private $errored;
+
+
+    /**
+     * Set errored.
+     *
+     * @param bool|null $errored
+     *
+     * @return DataPoint
+     */
+    public function setErrored($errored = null)
+    {
+        $this->errored = $errored;
+
+        return $this;
+    }
+
+    /**
+     * Get errored.
+     *
+     * @return bool|null
+     */
+    public function getErrored()
+    {
+        return $this->errored;
+    }
 }

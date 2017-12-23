@@ -291,13 +291,13 @@ class ConversionController extends AbstractActionController
                         $objectManager->merge($dataPoint);
 
                         try {
-                            $objectManager->merge($dataPoint);
                             $objectManager->flush();
                         } catch (DriverException $e) {
                             die($e->getMessage());
                         }
                     } else {
                         $console->writeLine("Error converting DataPoint " . $dataPoint->getId(), Color::RED);
+                        $objectManager->merge($dataPoint);
                         $dataPoint->setErrored(true);
                         $objectManager->flush();
                     }

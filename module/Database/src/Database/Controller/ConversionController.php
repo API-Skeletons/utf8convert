@@ -298,6 +298,7 @@ class ConversionController extends AbstractActionController
                     } else {
                         $console->writeLine("Error converting DataPoint " . $dataPoint->getId(), Color::RED);
                         $objectManager->merge($dataPoint);
+                        $dataPoint->setNewValue(null);
                         $dataPoint->setErrored(true);
                         $objectManager->flush();
                     }

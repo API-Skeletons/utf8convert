@@ -297,9 +297,9 @@ class ConversionController extends AbstractActionController
                         }
                     } else {
                         $console->writeLine("Error converting DataPoint " . $dataPoint->getId(), Color::RED);
-                        $objectManager->merge($dataPoint);
                         $dataPoint->setNewValue(null);
                         $dataPoint->setErrored(true);
+                        $objectManager->merge($dataPoint);
                         $objectManager->flush();
                     }
                 }
@@ -683,11 +683,11 @@ class ConversionController extends AbstractActionController
             // If this character defines bytes then it
             // could be a correct character or it could
             // be the start of an invalid sequence.
-            if ($characterCode >= 0xF0 && $characterCode <= 0xF7) {
+            if ($characterCode >= 0xf0 && $characterCode <= 0xf7) {
                 $bytes = 4;
-            } else if ($characterCode >= 0xE0 && $characterCode <= 0xEF) {
+            } else if ($characterCode >= 0xe0 && $characterCode <= 0xef) {
                 $bytes = 3;
-            } else if ($characterCode >= 0xC0 && $characterCode <= 0xDF) {
+            } else if ($characterCode >= 0xc0 && $characterCode <= 0xdf) {
                 $bytes = 2;
             }
 

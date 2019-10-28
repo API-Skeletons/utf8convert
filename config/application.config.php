@@ -25,7 +25,6 @@ return array(
         'ZF\\Apigility\\Doctrine\\Server',
         'DoctrineModule',
         'DoctrineORMModule',
-        'DoctrineDataFixtureModule',
         'ZfcBase',
         'ZfcUser',
         'ZfcUserDoctrineORM',

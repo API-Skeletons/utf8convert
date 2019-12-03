@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'Zend\Db',
     'Zend\Mvc\Console',
     'Zend\I18n',
     'Zend\Cache',

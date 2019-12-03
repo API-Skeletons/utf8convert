@@ -16,8 +16,9 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
 #            'administrator:create --email=email@net --displayName=administrator' => 'Create the administrator for this instance',
 
             'database:validate' => 'Validate the database is configured for utf8',
-            'database:generate:utf8-tables' => 'Create a shell script to move all non-utf8 tables to utf8 for non-valid database',
             'database:truncate' => 'Remove all conversion data from the conversion database',
+
+            'database:generate:utf8mb4-tables' => 'Create a shell script to move all non-utf8 tables to utf8mb4 for non-valid database',
 
             'conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]' => 'Create a new conversion',
             'conversion:convert --name=' => 'Run the initial conversion of utf8 multiple encodings',
@@ -29,7 +30,7 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
 
     public function getConsoleBanner(Console $console)
     {
-        return 'Stuki Org Utf8Convert';
+        return 'API Skeletons - Utf8Convert';
     }
 
     public function getConfig()
@@ -37,16 +38,6 @@ class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInte
         return include __DIR__ . '/config/module.config.php';
     }
 
-    public function getAutoloaderConfig()
-    {
-        return array(
-            'Zend\Loader\StandardAutoloader' => array(
-                'namespaces' => array(
-                    __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
-                ),
-            ),
-        );
-    }
     public function getServiceConfig()
     {
         return array(

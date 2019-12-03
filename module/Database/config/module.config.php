@@ -1,5 +1,7 @@
 <?php
 
+namespace Database;
+
 return array(
     'doctrine' => array(
         'configuration' => array(
@@ -14,80 +16,29 @@ return array(
         'invokables' => array(
             'Database\Controller\Index' => 'Database\Controller\IndexController',
             'Database\Controller\Data' => 'Database\Controller\DataController',
-            'Database\Controller\Conversion' => 'Database\Controller\ConversionController',
+            Controller\ConversionController::class => Controller\ConversionController::class,
             'Database\Controller\Database' => 'Database\Controller\DatabaseController',
         ),
+        'factories' => [
+            Controller\ValidateController::class => Controller\ValidateControllerFactory::class,
+        ],
     ),
     'view_manager' => array(
         'template_path_stack' => array(
             __DIR__.'/../view',
         ),
     ),
-    'router' => array(
-        'routes' => array(
-            'validate' => array(
-                'type' => 'Segment',
-                'options' => array(
-                    'route'    => '/validate',
-                    'defaults' => array(
-                        'controller'    => 'Database\Controller\Data',
-                        'action'     => 'database:validate',
-                    ),
-                ),
-            ),
-            'database' => array(
-                'type' => 'Segment',
-                'options' => array(
-                    'route'    => '/database',
-                    'defaults' => array(
-                        'controller'    => 'Database\Controller\Data',
-                        'action'     => 'index',
-                    ),
-                ),
-            ),
-            'iteration' => array(
-                'type' => 'Segment',
-                'options' => array(
-                    'route'    => '/iteration/:entity/:field/:iteration',
-                    'defaults' => array(
-                        'controller'    => 'Database\Controller\Data',
-                        'action'     => 'iteration',
-                    ),
-                ),
-            ),
-            'row' => array(
-                'type' => 'Segment',
-                'options' => array(
-                    'route'    => '/row/:entity/:primaryKey',
-                    'defaults' => array(
-                        'controller'    => 'Database\Controller\Data',
-                        'action'     => 'row',
-                    ),
-                ),
-            ),
-        ),
-    ),
-    // Placeholder for console routes
+
     'console' => array(
         'router' => array(
             'routes' => array(
-                'administrator-create' => array(
-                    'type'    => 'simple',
-                    'options' => array(
-                        'route'    => 'administrator:create [--email=] [--displayName=]',
-                        'defaults' => array(
-                            'controller'    => 'Database\Controller\Index',
-                            'action'        => 'administratorCreate',
-                        ),
-                    ),
-                ),
                 'database-validate' => array(
                     'type'    => 'simple',
                     'options' => array(
                         'route'    => 'database:validate',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Database',
-                            'action'        => 'databaseValidate',
+                            'controller'    => Controller\ValidateController::class,
+                            'action'        => 'validate',
                         ),
                     ),
                 ),

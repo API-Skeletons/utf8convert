@@ -6,44 +6,17 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\Db\Adapter\Exception\RuntimeException;
 
-class IndexController extends AbstractActionController
+final class IndexController extends AbstractActionController
 {
-    public function administratorCreateAction()
+    private $database;
+    private $informationSchema;
+    private $this->config;
+
+    public function __construct($database, $informationSchema, array $this->config)
     {
-        $email = $this->getRequest()->getParam('email');
-        $displayName = $this->getRequest()->getParam('displayName');
-
-        $objectManager = $this->getServiceLocator()->get('doctrine.entitymanager.orm_default');
-
-        $zfcUserService = $this->getServiceLocator()->get('zfcuser_user_service');
-
-        $password = 'u' . substr(hash('sha512', rand()), 0, 10);
-        $data = array(
-            'display_name' => $displayName,
-            'email' => $email,
-            'password' => $password,
-            'passwordVerify' => $password,
-        );
-
-        $user = $zfcUserService->register($data);
-
-        if (!$user) {
-            echo "\nFailed to create administrator\n";
-            return;
-        }
-
-        $user = $objectManager->getRepository('Db\Entity\User')->find($user->getId());
-        $administratorRole = $objectManager->getRepository('Db\Entity\Role')->findOneBy(array(
-            'roleId' => 'administrator'
-        ));
-
-        $user->addRole($administratorRole);
-        $administratorRole->addUser($user);
-
-        $objectManager->flush();
-
-        echo "\nCreated Administrator: " . $user->getEmail() . " " . $password . "\n";
-        return;
+        $this->database = $database;
+        $this->informationSchema = $informationSchema;
+        $this->config = $config;
     }
 
     /**
@@ -56,12 +29,12 @@ class IndexController extends AbstractActionController
             return;
         }
 
-        if (!$this->validateAllTablesAreUtf8()) {
+        if (!$this->validateAllTablesAreUtf8mb4()) {
             echo "\nOne or more tables are not utf8.  Run 'generate table conversion' and save the output to a shell script then run.\n";
             return;
         }
 
-        if (!$this->validateAllColumnsAreUtf8()) {
+        if (!$this->validateAllColumnsAreUtf8mb4()) {
             // output sent in function
             return;
         }
@@ -75,11 +48,9 @@ class IndexController extends AbstractActionController
     public function databaseGenerateUtf8TablesAction()
     {
         // Validate all database settings are utf8
-        $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config');
-        $databaseConnection = $databaseConnection['db']['adapters']['database'];
+        $databaseConnection = $this->config['db']['adapters']['database'];
 
-        $invalidTables = $informationSchema->query("
+        $invalidTables = $this->informationSchema->query("
             SELECT TABLE_NAME, COLLATION_CHARACTER_SET_APPLICABILITY.CHARACTER_SET_NAME
               FROM TABLES, COLLATION_CHARACTER_SET_APPLICABILITY
              WHERE COLLATION_CHARACTER_SET_APPLICABILITY.COLLATION_NAME = TABLES.TABLE_COLLATION
@@ -120,14 +91,10 @@ class IndexController extends AbstractActionController
         $consoleWhitelist = $this->getRequest()->getParam('whitelist');
         $consoleBlacklist = $this->getRequest()->getParam('blacklist');
 
-        $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config');
-        $databaseConnection = $databaseConnection['db']['adapters']['database'];
+        $databaseConnection = $this->config['db']['adapters']['database'];
+        $refactorDataTypes = $this->config['utf8-convert']['refactor']['data-types'];
 
-        $refactorDataTypes = $this->getServiceLocator()->get('Config');
-        $refactorDataTypes = $refactorDataTypes['utf8-convert']['refactor']['data-types'];
-
-        $informationSchema->query("SET session wait_timeout=86400")->execute();
+        $this->informationSchema->query("SET session wait_timeout=86400")->execute();
 
         if (!$refactorDataTypes) {
             echo "\nNo data types to refactor have been defined\n";
@@ -139,8 +106,8 @@ class IndexController extends AbstractActionController
             $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", explode(',', $consoleBlacklist))
                 . "')";
         } else {
-            if (isset($config['utf8-convert']['refactor']['blacklist-tables']) and $config['utf8-convert']['convert']['blacklist-tables']) {
-                $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", $config['utf8-convert']['blacklist-tables'])
+            if (isset($this->config['utf8-convert']['refactor']['blacklist-tables']) and $this->config['utf8-convert']['convert']['blacklist-tables']) {
+                $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", $this->config['utf8-convert']['blacklist-tables'])
                     . "')";
             }
         }
@@ -150,13 +117,13 @@ class IndexController extends AbstractActionController
             $whitelistTables = "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", explode(',', $consoleWhitelist))
                 . "')";
         } else {
-            if (isset($config['utf8-convert']['refactor']['whitelist-tables']) and $config['utf8-convert']['convert']['whitelist-tables']) {
-                $whitelistTables= "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", $config['utf8-convert']['whitelist-tables'])
+            if (isset($this->config['utf8-convert']['refactor']['whitelist-tables']) and $this->config['utf8-convert']['convert']['whitelist-tables']) {
+                $whitelistTables= "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", $this->config['utf8-convert']['whitelist-tables'])
                     . "')";
             }
         }
 
-        $refactorColumns = $informationSchema->query("
+        $refactorColumns = $this->informationSchema->query("
             SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME,
                 COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH,
                 COLUMNS.IS_NULLABLE, COLUMNS.COLUMN_DEFAULT
@@ -185,9 +152,8 @@ class IndexController extends AbstractActionController
 
     private function refactorTable($rows)
     {
-        $database = $this->getServiceLocator()->get('database');
-        $refactorDataTypes = $this->getServiceLocator()->get('Config');
-        $refactorDataTypes = $refactorDataTypes['utf8-convert']['refactor']['data-types'];
+        $database = $this->database;
+        $refactorDataTypes = $this->config['utf8-convert']['refactor']['data-types'];
 
         $sql = array();
         foreach ($rows as $row) {
@@ -232,21 +198,17 @@ class IndexController extends AbstractActionController
         $consoleBlacklist = $this->getRequest()->getParam('blacklist');
         $clearLog = $this->getRequest()->getParam('clear-log');
 
-        $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config');
-        $databaseConnection = $databaseConnection['db']['adapters']['database'];
+        $databaseConnection = $this->config['db']['adapters']['database'];
 
-        $config = $this->getServiceLocator()->get('Config');
-
-        $informationSchema->query("SET session wait_timeout=86400")->execute();
+        $this->informationSchema->query("SET session wait_timeout=86400")->execute();
 
         $blacklistTables = '';
         if ($consoleBlacklist) {
             $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", explode(',', $consoleBlacklist))
                 . "')";
         } else {
-            if (isset($config['utf8-convert']['convert']['blacklist-tables']) and $config['utf8-convert']['convert']['blacklist-tables']) {
-                $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", $config['utf8-convert']['convert']['blacklist-tables'])
+            if (isset($this->config['utf8-convert']['convert']['blacklist-tables']) and $this->config['utf8-convert']['convert']['blacklist-tables']) {
+                $blacklistTables = "AND COLUMNS.TABLE_NAME NOT IN ('" . implode("', '", $this->config['utf8-convert']['convert']['blacklist-tables'])
                     . "')";
             }
         }
@@ -257,13 +219,13 @@ class IndexController extends AbstractActionController
                 . "')";
         } else {
             $whitelistTables= '';
-            if (isset($config['utf8-convert']['convert']['whitelist-tables']) and $config['utf8-convert']['convert']['whitelist-tables']) {
-                $whitelistTables= "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", $config['utf8-convert']['convert']['whitelist-tables'])
+            if (isset($this->config['utf8-convert']['convert']['whitelist-tables']) and $this->config['utf8-convert']['convert']['whitelist-tables']) {
+                $whitelistTables= "AND COLUMNS.TABLE_NAME IN ('" . implode("', '", $this->config['utf8-convert']['convert']['whitelist-tables'])
                     . "')";
             }
         }
 
-        $convertColumns = $informationSchema->query("
+        $convertColumns = $this->informationSchema->query("
             SELECT COLUMNS.TABLE_NAME, COLUMNS.COLUMN_NAME, COLUMNS.DATA_TYPE, COLUMNS.EXTRA, COLUMNS.CHARACTER_MAXIMUM_LENGTH
             FROM COLUMNS, TABLES
             WHERE COLUMNS.TABLE_SCHEMA = ?
@@ -281,7 +243,7 @@ class IndexController extends AbstractActionController
         }
 
         foreach ($convertColumns as $row) {
-            $primaryKeys = $informationSchema->query("
+            $primaryKeys = $this->informationSchema->query("
                 SELECT COLUMN_NAME, COLUMN_KEY
                   FROM COLUMNS
                  WHERE TABLE_SCHEMA = ?
@@ -317,9 +279,8 @@ class IndexController extends AbstractActionController
     {
         $dirtyData = true;
         $iteration = 0;
-        $database = $this->getServiceLocator()->get('database');
-        $refactorDataTypes = $this->getServiceLocator()->get('Config');
-        $refactorDataTypes = $refactorDataTypes['utf8-convert']['refactor']['data-types'];
+        $database = $this->database;
+        $refactorDataTypes = $config['utf8-convert']['refactor']['data-types'];
 
         echo "\n" . $row['TABLE_NAME'] . ' ' . $row['COLUMN_NAME'] . "\n";
 
@@ -327,7 +288,7 @@ class IndexController extends AbstractActionController
             $iteration ++;
             try {
                 $command = "DROP TEMPORARY TABLE temptable";
-                $database->query($command)->execute();
+                $this->database->query($command)->execute();
             } catch (RuntimeException $e) {
                 // table does not exist
             }
@@ -337,28 +298,28 @@ class IndexController extends AbstractActionController
                 . $row['COLUMN_NAME'] . "`) != char_length(`"
                 . $row['COLUMN_NAME'] . "`))";
 
-            $database->query($sql)->execute();
+            $this->database->query($sql)->execute();
 
             $sql = "INSERT INTO Utf8Convert (entity, field, iteration, oldValue, primaryKey) "
                 . " select '" . $row['TABLE_NAME'] . "', '" . $row['COLUMN_NAME']
                 . "', " . $iteration . ", " . "`" . $row['COLUMN_NAME'] . "`, "
                 . $primaryKey . " FROM temptable";
 
-            $database->query($sql)->execute();
+            $this->database->query($sql)->execute();
 
             $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` " . $refactorDataTypes[$row['DATA_TYPE']] . " character set latin1";
-            $database->query($sql)->execute();
+            $this->database->query($sql)->execute();
 
             $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` blob";
-            $database->query($sql)->execute();
+            $this->database->query($sql)->execute();
 
             $sql = "alter table temptable modify `" . $row['COLUMN_NAME'] . "` " . $refactorDataTypes[$row['DATA_TYPE']] . " character set utf8";
-            $database->query($sql)->execute();
+            $this->database->query($sql)->execute();
 
             $sql = "DELETE FROM temptable WHERE length(`"
                 . $row['COLUMN_NAME'] . "`) = char_length(`"
                 . $row['COLUMN_NAME'] . "`)";
-            $database->query($sql)->execute();
+            $this->database->query($sql)->execute();
 
             $sql = "
                 UPDATE Utf8Convert SET newValue = (
@@ -370,51 +331,31 @@ class IndexController extends AbstractActionController
                 AND Utf8Convert.entity = '" . $row['TABLE_NAME'] . "'
                 AND Utf8Convert.field = '" . $row['COLUMN_NAME'] . "'
             ";
-            $database->query($sql)->execute();
+            $this->database->query($sql)->execute();
 
             $sql = "REPLACE INTO `" . $row['TABLE_NAME'] . "` (select * from temptable)";
-            $result = $database->query($sql)->execute();
+            $result = $this->database->query($sql)->execute();
 
             if (!$result->getAffectedRows()) {
                 $dirtyData = false;
             }
 
             $command = "DROP TEMPORARY TABLE temptable";
-            $database->query($command)->execute();
+            $this->database->query($command)->execute();
 
             echo "Replaced " . $result->getAffectedRows() . " rows on iteration $iteration\n";
         }
     }
 
     /**
-     * Delete the Utf8Convert table
-     */
-    private function deleteUtf8ConvertTable()
-    {
-        $database = $this->getServiceLocator()->get('database');
-
-        $sql = "DROP TABLE Utf8Convert";
-
-        try {
-            $database->query($sql)->execute();
-        } catch (RuntimeException $e) {
-            // table didn't exist
-        }
-
-        return true;
-    }
-
-    /**
      * Verify all table are utf8
      */
-    private function validateAllTablesAreUtf8()
+    private function validateAllTablesAreUtf8mb4()
     {
         // Validate all database settings are utf8
-        $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config');
-        $databaseConnection = $databaseConnection['db']['adapters']['database'];
+        $databaseConnection = $this->config['db']['adapters']['database'];
 
-        $invalidTables = $informationSchema->query("
+        $invalidTables = $this->informationSchema->query("
             SELECT TABLE_NAME, COLLATION_CHARACTER_SET_APPLICABILITY.CHARACTER_SET_NAME
               FROM TABLES, COLLATION_CHARACTER_SET_APPLICABILITY
              WHERE COLLATION_CHARACTER_SET_APPLICABILITY.COLLATION_NAME = TABLES.TABLE_COLLATION
@@ -432,14 +373,12 @@ class IndexController extends AbstractActionController
     /**
      * Verify all columns are utf8
      */
-    private function validateAllColumnsAreUtf8()
+    private function validateAllColumnsAreUtf8mb4()
     {
         // Validate all database settings are utf8
-        $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseConnection = $this->getServiceLocator()->get('Config');
-        $databaseConnection = $databaseConnection['db']['adapters']['database'];
+        $databaseConnection = $this->config['db']['adapters']['database'];
 
-        $invalidColumns = $informationSchema->query("
+        $invalidColumns = $this->informationSchema->query("
             SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME, COLLATION_NAME
             FROM COLUMNS
             WHERE TABLE_SCHEMA = ?
@@ -467,8 +406,7 @@ class IndexController extends AbstractActionController
     private function validateDatabaseSettings()
     {
         // Validate all database settings are utf8
-        $informationSchema = $this->getServiceLocator()->get('information-schema');
-        $databaseVariables = $informationSchema->query("SHOW VARIABLES LIKE 'char%'")->execute();
+        $databaseVariables = $this->informationSchema->query("SHOW VARIABLES LIKE 'char%'")->execute();
 
         $utf8Settings = array(
             'character_set_client' => null,

@@ -107,7 +107,7 @@ class ConversionRepository extends EntityRepository
                     ;
 
                 try {
-//                    echo $sql . "; \n";
+#                    echo $sql . "; \n";
                     $database->query($sql)->execute();
                     foreach ($rowDataPoints as $dp) {
                         $dp->setImportedAt(new Datetime());
@@ -116,6 +116,7 @@ class ConversionRepository extends EntityRepository
                     $progressBar->update($rowCount);
 
                 } catch (RuntimeException $e) {
+                    throw $e;
                     foreach ($rowDataPoints as $dp) {
                         $errors[] = array(
                             'dataPoint' => $dp->getId(),

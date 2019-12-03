@@ -1,18 +1,16 @@
 {
-    "name": "stuki/utf8-convert",
-    "description": "A tool to facilitate a MySQL database conversion to UTF8",
-    "type": "library",
+    "name": "api-skeletons/utf8convert",
+    "description": "A tool to facilitate a MySQL database conversion to correct invalid utf characters in a database",
+    "type": "application",
     "license": "proprietary",
     "keywords": [
         "mysql",
         "database",
-        "character",
-        "set",
-        "hell",
-        "redeption",
-        "kit"
+        "character set",
+        "utf8",
+        "utf88mb4"
     ],
-    "homepage": "https://github.com/StukiOrg/Utf8Convert",
+    "homepage": "https://github.com/api-skeletons/utf8Convert",
     "support": {
         "issues": "https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell"
     },
@@ -21,23 +19,27 @@
         "secure-http": false
     },
     "require": {
-        "php": ">=5.4",
-        "zendframework/zendframework": "~2.4",
-        "zendframework/zend-developer-tools": "dev-master",
+        "php": ">=7.2",
+        "zendframework/zend-component-installer": "^1.0",
+        "zendframework/zend-stdlib": "^3.2",
+        "zendframework/zend-session": "^2.9",
+        "zendframework/zend-log": "^2.11",
+        "zendframework/zend-mvc": "^3.1",
+        "zendframework/zend-router": "3.3.0",
+        "zendframework/zend-i18n": "^2.10",
+        "doctrine/doctrine-orm-module": "^2.1",
         "zfcampus/zf-development-mode": "~2.0",
-        "zfcampus/zf-apigility-documentation": "~1.0",
-        "zf-commons/zfc-user-doctrine-orm": "*",
-        "bjyoungblood/bjy-authorize": "1.4.*",
-        "san/san-session-toolbar": "0.*",
-        "danielss89/zfc-user-admin": "dev-master",
         "beberlei/DoctrineExtensions": "dev-master",
-        "maglnet/magl-markdown": "~1.1",
-        "zfcampus/zf-apigility-doctrine": "^2.1",
-        "rwoverdijk/assetmanager": "^1.7"
+        "zendframework/zend-mvc-console": "^1.2"
     },
     "require-dev": {
-        "zendframework/zftool": "dev-master",
-        "zfcampus/zf-apigility-admin": "~1.0",
-        "zfcampus/zf-deploy": "~1.0"
+        "zendframework/zftool": "^0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Application\\": "module/Application/src",
+            "Db\\": "module/Db/src/Db",
+            "Database\\": "module/Database/src/Database"
+        }
     }
 }

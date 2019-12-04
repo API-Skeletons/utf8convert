@@ -28,17 +28,19 @@ class ConversionRepository extends EntityRepository
         $conversion->setDataPointCount($qb->getQuery()->getSingleScalarResult());
     }
 
-    public function import(Entity\Conversion $conversion, $database, AdapterInterface $console)
+    public function export(Entity\Conversion $conversion, $database, AdapterInterface $console)
     {
         set_time_limit(0);
-
-        $console->writeLine("Start export converted DataPoints to target database", Color::YELLOW);
 
         $qb = $this->_em->createQueryBuilder();
         $errors = array();
 
-        $qi = function($name) use ($database) { return $database->platform->quoteIdentifier($name); };
-        $qv = function($value) use ($database) { return $database->platform->quoteValue($value); };
+        $qi = function($name) use ($database) {
+            return $database->platform->quoteIdentifier($name);
+        };
+        $qv = function($value) use ($database) {
+            return $database->platform->quoteValue($value);
+        };
 
         $qb->select("dp")
             ->from('Db\Entity\DataPoint', 'dp')
@@ -54,12 +56,29 @@ class ConversionRepository extends EntityRepository
         $dataCount = 0;
         $rowCount = 0;
 
-        while(true) {
-            $rowCount = 0;
-            $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults(500));
+        $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults(500));
+        $limit = $paginator->count() < 500 ? $paginator->count() : 500;
+        if ($limit) {
+            $console->writeLine("Start export converted DataPoints to target database", Color::YELLOW);
+        } else {
+            $console->writeLine('No DataPoints to export', Color::YELLOW);
 
-            $console->writeLine($paginator->count() . " DataPoints to export.  Running 500.", Color::GREEN);
-            $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 1, 500);
+            return [];
+        }
+
+        while($limit) {
+            $rowCount = 0;
+
+            $paginator = new Paginator($qb->getQuery()->setFirstResult(0)->setMaxResults($limit));
+            $limit = $paginator->count() < 500 ? $paginator->count() : 500;
+            if (! $limit) {
+                break;
+            }
+
+            $console->writeLine($paginator->count() . " DataPoints to export.  Running $limit.", Color::GREEN);
+            if ($limit) {
+                $progressBar = new ProgressBar(new ProgressBarConsoleAdaper(), 1, $limit);
+            }
             foreach ($paginator as $dataPoint) {
 
                 $rowCount ++;
@@ -137,11 +156,9 @@ class ConversionRepository extends EntityRepository
             }
             $dataCount = 0;
 
-            $start += 500;
+            $start += $limit;
             $paginator->getQuery()->setFirstResult($start);
         }
-
-        $progressBar->update($paginator->count());
 
         if ($errors) {
             print_r($errors);

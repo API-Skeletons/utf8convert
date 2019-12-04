@@ -354,7 +354,7 @@ class ConversionController extends AbstractConsoleController implements
         $conversion = $this->getObjectManager()->getRepository('Db\Entity\Conversion')->findOneBy([
             'name' => $conversionName
         ]);
-        $errors = $this->getObjectManager()->getRepository('Db\Entity\Conversion')->import($conversion, $this->database, $this->console);
+        $errors = $this->getObjectManager()->getRepository('Db\Entity\Conversion')->export($conversion, $this->database, $this->console);
 
         return array('conversion' => $conversion, 'errors' => $errors);
     }

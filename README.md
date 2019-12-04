@@ -7,6 +7,15 @@ and analyzes each DataPoint
 looking for invalid utf8 sequences.  This is a command line only application.
 
 
+utf8convert database
+--------------------
+
+The utf8convert database stores a deconstructed target database and provides
+a working environment for storing conversions and converted data.
+
+![erd](https://raw.githubusercontent.com/API-Skeletons/utf8convert/master/media/erd.png)
+
+
 Invalid utf8 sequence
 ---------------------
 

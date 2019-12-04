@@ -13,22 +13,11 @@ return array(
         ),
     ),
     'controllers' => array(
-        'invokables' => array(
-            'Database\Controller\Index' => 'Database\Controller\IndexController',
-            'Database\Controller\Data' => 'Database\Controller\DataController',
-            'Database\Controller\Database' => 'Database\Controller\DatabaseController',
-        ),
         'factories' => [
             Controller\ValidateController::class => Controller\ValidateControllerFactory::class,
             Controller\TruncateController::class => Controller\TruncateControllerFactory::class,
-            Controller\GenerateTableSqlController::class => Controller\GenerateTableSqlControllerFactory::class,
             Controller\ConversionController::class => Controller\ConversionControllerFactory::class,
         ],
-    ),
-    'view_manager' => array(
-        'template_path_stack' => array(
-            __DIR__.'/../view',
-        ),
     ),
     'view_helpers' => array(
         'factories' => array(

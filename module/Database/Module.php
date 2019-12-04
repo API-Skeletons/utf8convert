@@ -8,20 +8,18 @@ use Zend\ModuleManager\Feature\ConsoleBannerProviderInterface;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\Console\Adapter\AdapterInterface as Console;
 
-class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInterface
+class Module implements
+    ConsoleUsageProviderInterface,
+    ConsoleBannerProviderInterface
 {
     public function getConsoleUsage(Console $console)
     {
         return array(
             'database:validate' => 'Validate the database is configured for utf8',
 
-# Drop your database and recreate it instead.
-#            'database:truncate' => 'Remove all conversion data from the conversion database',
-
             'conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]' => 'Create a new conversion',
             'conversion:convert --name=' => 'Run the initial conversion of utf8 multiple encodings',
             'conversion:export --name=' => 'Run the SQL result of the conversion against the target database',
-
             'conversion:clone [--from=] [--to=]' => 'Create a clone of a conversion',
         );
     }

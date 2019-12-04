@@ -8,6 +8,7 @@ use Zend\Db\Adapter\Exception\RuntimeException;
 use Zend\Db\Adapter\Adapter as DbAdapter;
 use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
 use Zend\Console\ColorInterface as Color;
+use Zend\Console\Prompt;
 
 final class ValidateController extends AbstractConsoleController
 {
@@ -39,15 +40,25 @@ final class ValidateController extends AbstractConsoleController
             return;
         }
 
-        if (!$this->validateAllTablesAreUtf8mb4()) {
-            $this->console->writeLine("One or more tables are not utf8mb4.  "
-                . "Run 'index.php generate table conversion' and save the output "
-                . "to a shell script then run the script.", Color::RED);
+        $invalidTables = $this->validateAllTablesAreUtf8mb4();
+        if ($invalidTables) {
+            foreach ($invalidTables as $t) {
+                $this->console->writeLine($t['TABLE_NAME'], Color::YELLOW);
+            }
+            $this->console->writeLine("The table(s) listed above are not utf8mb4", Color::RED);
+            $confirm = new Prompt\Confirm('Would you like to print the SQL to correct these?');
+            $result = $confirm->show();
+
+            if ($result == 1) {
+                foreach ($invalidTables as $t) {
+                    $this->console->writeLine("ALTER TABLE `" . $t['TABLE_NAME'] . "` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+                }
+            }
 
             return;
         }
 
-        if (!$this->validateAllColumnsAreUtf8mb4()) {
+        if (! $this->validateAllColumnsAreUtf8mb4()) {
             // output sent in function
             return;
         }
@@ -137,10 +148,10 @@ final class ValidateController extends AbstractConsoleController
         ", array($databaseConnection['database']));
 
         if (sizeof($invalidTables)) {
-            return false;
+            return $invalidTables;
         }
 
-        return true;
+        return false;
     }
 
     /**

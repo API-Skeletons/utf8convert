@@ -3,12 +3,11 @@
 namespace Db\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use BjyAuthorize\Acl\HierarchicalRoleInterface;
 
 /**
  * Role
  */
-class Role implements HierarchicalRoleInterface
+class Role
 {
     /**
      * @var string

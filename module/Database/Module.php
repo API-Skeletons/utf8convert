@@ -5,20 +5,18 @@ namespace Database;
 use Zend\ServiceManager\ServiceManager;
 use Zend\Db\Adapter\Adapter;
 use Zend\ModuleManager\Feature\ConsoleBannerProviderInterface;
-use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
+use Zend\Console\Adapter\AdapterInterface as Console;
 
 class Module implements ConsoleUsageProviderInterface, ConsoleBannerProviderInterface
 {
     public function getConsoleUsage(Console $console)
     {
         return array(
-#            'administrator:create --email=email@net --displayName=administrator' => 'Create the administrator for this instance',
-
             'database:validate' => 'Validate the database is configured for utf8',
-            'database:truncate' => 'Remove all conversion data from the conversion database',
 
-            'database:generate:utf8mb4-tables' => 'Create a shell script to move all non-utf8 tables to utf8mb4 for non-valid database',
+# Drop your database and recreate it instead.
+#            'database:truncate' => 'Remove all conversion data from the conversion database',
 
             'conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]' => 'Create a new conversion',
             'conversion:convert --name=' => 'Run the initial conversion of utf8 multiple encodings',

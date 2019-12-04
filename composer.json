@@ -30,8 +30,10 @@
         "zendframework/zend-db": "^2.10",
         "doctrine/doctrine-orm-module": "^2.1",
         "zfcampus/zf-development-mode": "~2.0",
-        "beberlei/DoctrineExtensions": "dev-master",
-        "zendframework/zend-mvc-console": "^1.2"
+        "beberlei/doctrineextensions": "^1.2",
+        "zendframework/zend-mvc-console": "^1.2",
+        "zendframework/zend-progressbar": "^2.7",
+        "api-skeletons/correct-utf8-encoding": "^1.0"
     },
     "require-dev": {
         "zendframework/zftool": "^0.1"

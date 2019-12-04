@@ -16,11 +16,13 @@ return array(
         'invokables' => array(
             'Database\Controller\Index' => 'Database\Controller\IndexController',
             'Database\Controller\Data' => 'Database\Controller\DataController',
-            Controller\ConversionController::class => Controller\ConversionController::class,
             'Database\Controller\Database' => 'Database\Controller\DatabaseController',
         ),
         'factories' => [
             Controller\ValidateController::class => Controller\ValidateControllerFactory::class,
+            Controller\TruncateController::class => Controller\TruncateControllerFactory::class,
+            Controller\GenerateTableSqlController::class => Controller\GenerateTableSqlControllerFactory::class,
+            Controller\ConversionController::class => Controller\ConversionControllerFactory::class,
         ],
     ),
     'view_manager' => array(
@@ -28,7 +30,11 @@ return array(
             __DIR__.'/../view',
         ),
     ),
-
+    'view_helpers' => array(
+        'factories' => array(
+            'countDataPoint' => View\Helper\CountDataPointFactory::class,
+        ),
+    ),
     'console' => array(
         'router' => array(
             'routes' => array(
@@ -42,22 +48,12 @@ return array(
                         ),
                     ),
                 ),
-                'database-generate-utf8tables' => array(
-                    'type'    => 'simple',
-                    'options' => array(
-                        'route'    => 'database:generate:utf8-tables',
-                        'defaults' => array(
-                            'controller'    => 'Database\Controller\Index',
-                            'action'        => 'databaseGenerateUtf8Tables',
-                        ),
-                    ),
-                ),
                 'database-truncate' => array(
                     'type'    => 'simple',
                     'options' => array(
                         'route'    => 'database:truncate',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Database',
+                            'controller'    => Controller\TruncateController::class,
                             'action'        => 'truncateUtf8ConvertDatabase',
                         ),
                     ),
@@ -67,7 +63,7 @@ return array(
                     'options' => array(
                         'route'    => 'conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Conversion',
+                            'controller'    => Controller\ConversionController::class,
                             'action'        => 'create',
                         ),
                     ),
@@ -77,7 +73,7 @@ return array(
                     'options' => array(
                         'route'    => 'conversion:convert --name= [--force]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Conversion',
+                            'controller'    => Controller\ConversionController::class,
                             'action'        => 'convert',
                         ),
                     ),
@@ -87,7 +83,7 @@ return array(
                     'options' => array(
                         'route'    => 'conversion:export --name=conversionName',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Conversion',
+                            'controller'    => Controller\ConversionController::class,
                             'action'        => 'export',
                         ),
                     ),
@@ -97,7 +93,7 @@ return array(
                     'options' => array(
                         'route'    => 'conversion:clone [--from=] [--to=]',
                         'defaults' => array(
-                            'controller'    => 'Database\Controller\Conversion',
+                            'controller'    => Controller\ConversionController::class,
                             'action'        => 'clone',
                         ),
                     ),

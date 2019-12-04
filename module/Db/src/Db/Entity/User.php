@@ -3,14 +3,12 @@
 namespace Db\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use BjyAuthorize\Provider\Role\ProviderInterface;
 use Doctrine\Common\Collections\ArrayCollection;
-use ZfcUser\Entity\UserInterface;
 
 /**
  * User
  */
-class User implements UserInterface, ProviderInterface
+class User
 {
     /**
      * @var string
@@ -255,7 +253,7 @@ class User implements UserInterface, ProviderInterface
     /**
      * Get dataPoint
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getDataPoint()
     {

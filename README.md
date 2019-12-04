@@ -111,6 +111,15 @@ To clone a conversion to a new name:
 php public/index.php conversion:clone --from=conversionName --to=conversionName
 ```
 
+Watch Out For These
+-------------------
+
+Any text field containing data which is not just text may cause a problem.  
+Examples are a text field to store serialized data or a text field which
+stores otherwise binary data.  If you have any fields like this be sure to 
+set their `approved` flag in the DataPoint table to 0 (false) before 
+exporting a conversion.
+
 
 Troubleshooting
 ---------------

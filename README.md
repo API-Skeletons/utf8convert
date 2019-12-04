@@ -2,9 +2,9 @@ utf8convert
 ============
 
 This application reads every text and character field in a MySQL database 
-and deconstructs the database then analyzes each DataPoint 
+and analyzes each DataPoint 
 (the intersection of a row and column like a cell in a spreadsheet)
-looking for invalid utf8 sequences.  
+looking for invalid utf8 sequences.  This is a command line only application.
 
 
 Invalid utf8 sequence

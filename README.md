@@ -1,30 +1,51 @@
-UTF8 Convert
+utf8convert
 ============
 
-If you're stuck in hell it's time to convert!  If you did not consider the whole world as your user you probably didn't create your database in UTF8.  This leads to a long road of ugly consequences such as utf8 encoding in latin1, double, triple, quadrouple and more utf8 encoding!  Oh gentle reader, take heed and convert your MySQL database to utf8 before the time is latter than it was when I wrote this.
+This application reads every text and character field in a MySQL database 
+and deconstructs the database then analyzes each DataPoint 
+(the intersection of a row and column like a cell in a spreadsheet)
+looking for invalid utf8 sequences.  
+
+
+Invalid utf8 sequence
+---------------------
+
+`8Â°6 crew`
+
+This should be rendered as `8°6 crew` but the extended ° character has been decoded
+from utf8 into multibyte component parts.  Where there is one there are 
+probably many.  
+
+`Duvalierâ€™s Dream`
+
+This will be corrected to `Duvalier’s Dream`.
+
+I created this tool to correct every invalid utf8 sequence in my database in 
+a single conversion.  My example database finds around 89,000 invalid sequences.
+Only DataPoints which have been converted will be exported.  Valid utf8 characters
+will be evaluated too and ignored if they are correct.
 
 
 About
 -----
 
-This is a program to facilitate the commands and sql as outlined in [https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell](https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell)
+This application was inspired by [https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell](https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell)
 
 
 Install
 -------
 
 ```
-./composer.phar install
+composer install
 cp config/autoload/local.php.dist config/autoload/local.php
 ; edit local for specific environment
 php public/index orm:schema-tool:create
-php public/index data-fixture:import
-php public/index create-administrator --email=email@net --displayName=administrator
 ```
-The admin login information is returned from create-administrator
+
 
 Use
 ---
+
 
 Validation
 ----------
@@ -34,64 +55,56 @@ Validation occurs before a conversion may be ran.
 Step 1: Validate the database.  This command will verify all database settings, table data types, and column data types are utf8.
 
 ```sh
-php public/index.php validate
+php public/index.php database:validate
 ```
 
-Step 2: If the validate command failed you my create a SQL script with the commands to fix the database.
+If the validate command failed you must correct the problem(s) before continuing.
 
-```sh
-php public/index.php generate table conversion
-```
 
 Create a Conversion
 -------------------
 
-You can create multiple conversions in order to break up the sections of your data.  This isn't necessary and one
-large conversion will work too.  At any rate, you need to create a conversion.  Each conversion requires a name.
+You need to create a conversion.  Each conversion requires a name.
 
-whitelist and blacklist are comma delimited lists of table names.
+whitelist and blacklist are comma delimited lists of table names.  If not specified then all tables will be evaluated.
 
 ```sh
-php public/index.php create conversion [--name=conversionName] [--whitelist=] [--blacklist=]
+php public/index.php conversion:create [--name=conversionName] [--whitelist=] [--blacklist=]
 ```
+
 
 Run a Conversion
 ----------------
 
-This step is not a part of creating a conversion.  After your conversion has been created you must run it.  
+After your conversion has been created you must convert it.  
 
 ```sh
-php public/index.php run conversion --name=conversionName
+php public/index.php conversion:convert --name=conversionName
 ```
+
+
+Export a Conversion
+-------------------
+
+To copy corrected utf8 data back into your database you must export it:
+
+```sh
+php public/index.php conversion:export --name=conversionName
+```
+
+
 
 Copy a Conversion
 -----------------
 
-To copy a conversion which has already been ran to a new name.
+To copy a conversion to a new name:
 
 ```sh
 php public/index.php copy conversion --from=conversionName --to=conversionName
 ```
 
-Refactor
---------
-
-You may choose to refactor your database.  With this tool you can create a script to convert all varchar, char, and enum
-fields to varchar(255) and all text, mediumtext to longtext.  This is a *strong* command which will change your database
-structure permenantly.  Because of this a supplement.sql script is necessary to setup the database usually to adjust
-table keys and indexes.
-
-whitelist and blacklist are comma delimited lists of table names.
-
-```sh
-php public/index.php refactor --supplement-has-been-ran [--whitelist=] [--blacklist=]
-```
 
 Troubleshooting
 ---------------
 
-Delete all the conversion data for all conversions from the conversion database
-```sh
-php public/index.php truncate conversion data
-```
-
+If you ever get stuck you can always delete the `utf8convert` database and start over.

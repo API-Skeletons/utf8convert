@@ -2,7 +2,7 @@
     "name": "api-skeletons/utf8convert",
     "description": "A tool to facilitate a MySQL database conversion to correct invalid utf characters in a database",
     "type": "application",
-    "license": "proprietary",
+    "license": "MIT",
     "keywords": [
         "mysql",
         "database",
@@ -10,7 +10,7 @@
         "utf8",
         "utf88mb4"
     ],
-    "homepage": "https://github.com/api-skeletons/utf8Convert",
+    "homepage": "https://github.com/api-skeletons/utf8convert",
     "support": {
         "issues": "https://www.bluebox.net/insight/blog-article/getting-out-of-mysql-character-set-hell"
     },

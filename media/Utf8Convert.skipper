@@ -57,9 +57,6 @@
       <field name="id" type="integer" required="true" unique="true" primary="true" auto-increment="true" uuid="e7d6bf11-1e56-489e-80c4-0613a17646c4"/>
       <field name="name" type="string" unique="true" uuid="35c0d7c8-afa4-4da0-a0e7-0b4d19c6f4d4"/>
       <field name="url" type="text" uuid="8c39d95b-baa4-47dc-bf42-3191bf12a857"/>
-      <orm-attributes>
-        <attribute name="repository-class">Db\Repository\TableDefRepository</attribute>
-      </orm-attributes>
     </entity>
     <entity name="\Db\Entity\ConversionToTableDef" local-name="ConversionToTableDef" namespace="\Db\Entity" uuid="f523074d-eb26-48d1-9e8a-8b124f0347d1">
       <field name="conversion_id" type="integer" required="true" primary="true" uuid="6a556620-8ef5-489c-8d28-e2cfc8129426"/>

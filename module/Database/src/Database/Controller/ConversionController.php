@@ -483,7 +483,6 @@ class ConversionController extends AbstractConsoleController implements
             throw new \RuntimeException('You can only use this action from a console!');
         }
 
-        $refactorDataTypes = $this->config['utf8-convert']['refactor']['data-types'];
         $databaseConnection = $this->config['db']['adapters']['database'];
 
         $columns = array();

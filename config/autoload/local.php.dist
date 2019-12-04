@@ -1,87 +1,57 @@
 <?php
-$ormParams = [
-    'database'  => 'utf8convert',
-    'username'  => 'root',
-    'password'  => '123',
-    'hostname'  => 'localhost',
-    'port'  => '3306',
-];
 
-return array(
-    'utf8-convert' => array(
-        'convert' => array(
+return [
+    'utf8-convert' => [
+        'convert' => [
             'fetch-limit' => 1000,
-            'blacklist-tables' => array(
-            ),
-            'whitelist-tables' => array(
-            ),
-        ),
-        'refactor' => array(
-            'blacklist-tables' => array(
-                'artist_groups_seq',
-                'artists_seq',
-                'auth_user_seq',
-                'md5s_seq',
-                'myshows_seq',
-                'shninfo_seq',
-                'shows_seq',
-                'states_seq',
-                'tips_seq',
-                'venue_seq',
-            ),
-            'whitelist-tables' => array(
-#                'artists',
-            ),
-            'data-types' => array(
-                'varchar' => 'varchar(255)',
-                'char' => 'varchar(255)',
-                'enum' => 'varchar(255)',
-                'text' => 'longtext',
-                'mediumtext' => 'longtext',
-                'longtext' => 'longtext',
-            ),
-        ),
-    ),
-    'doctrine' => array(
-        'connection' => array(
-            'orm_default' => array(
+            'blacklist-tables' => [
+            ],
+            'whitelist-tables' => [
+            ],
+        ],
+    ],
+    'doctrine' => [
+        'connection' => [
+            // Connection for the utf8convert database
+            'orm_default' => [
                 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver',
-                'params' => array(
-                    'database'  => $ormParams['database'],
-                    'user'  => $ormParams['username'],
-                    'password'  => $ormParams['password'],
-                    'host'  => $ormParams['hostname'],
-                    'dbname'  => $ormParams['database'],
-                    'port'  => $ormParams['port'],
-                    'charset'  => 'utf8',
-                ),
-            ),
-        ),
-    ),
-    'db' => array(
-        'adapters' => array(
-            'database' => array(
+                'params' => [
+                    'user'  => 'root',
+                    'password'  => '123',
+                    'host'  => 'mysql',
+                    'dbname'  => 'utf8convert',
+                    'port'  => 3306,
+                    'charset'  => 'utf8mb4',
+                ],
+            ],
+        ],
+    ],
+    'db' => [
+        'adapters' => [
+            // Connection for the target database
+            'database' => [
                 'driver' => 'Mysqli',
-                'hostname' => 'localhost',
+                'hostname' => 'mysql',
                 'database' => 'etreedb',
                 'username' => 'root',
                 'password' => '123',
-                'charset' => 'utf8',
-                'options' => array(
+                'charset' => 'utf8mb4',
+                'options' => [
                     'buffer_results' => true,
-                ),
-            ),
-            'information-schema' => array(
+                ],
+            ],
+            // Connection to the information_schema database on the target database server
+            'information-schema' => [
                 'driver' => 'Mysqli',
-                'host' => 'localhost',
+                'host' => 'mysql',
                 'database' => 'information_schema',
                 'username' => 'root',
                 'password' => '123',
-                'charset' => 'utf8',
-                'options' => array(
+                'charset' => 'utf8mb4',
+                'options' => [
                     'buffer_results' => true,
-                ),
-            ),
-        ),
-    ),
-);
+                ],
+            ],
+        ],
+    ],
+];

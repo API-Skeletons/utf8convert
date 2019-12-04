@@ -16,7 +16,6 @@ return [
     'Zend\Validator',
     'Zend\Log',
     'ZF\\DevelopmentMode',
-//    'Phpro\DoctrineHydrationModule',
     'DoctrineModule',
     'DoctrineORMModule',
     'Application',

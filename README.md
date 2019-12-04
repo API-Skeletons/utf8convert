@@ -102,14 +102,13 @@ php public/index.php conversion:export --name=conversionName
 ```
 
 
-
-Copy a Conversion
+Clone a Conversion
 -----------------
 
-To copy a conversion to a new name:
+To clone a conversion to a new name:
 
 ```sh
-php public/index.php copy conversion --from=conversionName --to=conversionName
+php public/index.php conversion:clone --from=conversionName --to=conversionName
 ```
 
 
